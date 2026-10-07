@@ -33,7 +33,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Evaluación de Six Eyes en NAB")
     parser.add_argument(
         "--detector",
-        choices=["random", "zscore", "zscore_v2", "zscore_v3", "seasonal", "seasonal_pct"],
+        choices=["random", "zscore", "zscore_v2", "zscore_v3", "zscore_pct", "seasonal", "seasonal_pct"],
         default="random",
         help="Detector a evaluar: 'random' (RandomDetector), 'zscore' (RollingRobustZ), o 'seasonal' (DailySeasonalRobustZ)",
     )
@@ -57,6 +57,11 @@ def main() -> None:
     elif args.detector == "zscore_v2":
         nombre_detector = "sixeyes_zscore_v2"
         fabrica_detector = lambda: RollingRobustZ()
+    elif args.detector == "zscore_pct":
+        from detectors.zscore_robusto import RollingRobustZ
+        from detectors.calibrador_percentil import PercentileCalibrator
+        nombre_detector = "sixeyes_zscore_pct"
+        fabrica_detector = lambda: PercentileCalibrator(RollingRobustZ())
     elif args.detector == "zscore_v3":
         nombre_detector = "sixeyes_zscore_v3"
         fabrica_detector = lambda: RollingRobustZ()
