@@ -30,7 +30,7 @@ def run():
     thresholds = [0.5, 0.9, 0.99, 0.999, 0.9999, 1.0]
     
     results = {
-        'zscore_v3': {'pts_ge': {t: 0 for t in thresholds}, 'anom_ge': {t: 0 for t in thresholds}},
+        'seasonal': {'pts_ge': {t: 0 for t in thresholds}, 'anom_ge': {t: 0 for t in thresholds}},
         'random': {'pts_ge': {t: 0 for t in thresholds}, 'anom_ge': {t: 0 for t in thresholds}}
     }
     
@@ -44,7 +44,7 @@ def run():
         category = rel_path.split('/')[0]
         filename = rel_path.split('/')[1]
         
-        z_path = os.path.join(nab_root, "results", "sixeyes_zscore_v3", category, f"sixeyes_zscore_v3_{filename}")
+        z_path = os.path.join(nab_root, "results", "sixeyes_seasonal", category, f"sixeyes_seasonal_{filename}")
         r_path = os.path.join(nab_root, "results", "sixeyes_random", category, f"sixeyes_random_{filename}")
         
         if not os.path.exists(z_path) or not os.path.exists(r_path):
@@ -81,9 +81,9 @@ def run():
                 
             for t in thresholds:
                 if z_s >= t:
-                    results['zscore_v3']['pts_ge'][t] += 1
+                    results['seasonal']['pts_ge'][t] += 1
                     if anom:
-                        results['zscore_v3']['anom_ge'][t] += 1
+                        results['seasonal']['anom_ge'][t] += 1
                 if r_s >= t:
                     results['random']['pts_ge'][t] += 1
                     if anom:
@@ -122,19 +122,19 @@ def run():
     print("\n2. Puntos >= T y precisión (Puntos en ventana / Puntos >= T):")
     for t in thresholds:
         print(f" Umbral {t}:")
-        z_pts = results['zscore_v3']['pts_ge'][t]
-        z_anom = results['zscore_v3']['anom_ge'][t]
+        z_pts = results['seasonal']['pts_ge'][t]
+        z_anom = results['seasonal']['anom_ge'][t]
         z_prec = (z_anom/z_pts*100) if z_pts else 0
         r_pts = results['random']['pts_ge'][t]
         r_anom = results['random']['anom_ge'][t]
         r_prec = (r_anom/r_pts*100) if r_pts else 0
-        print(f"   - zscore_v3 : {z_pts:5d} pts, {z_anom:5d} en ventana ({z_prec:5.2f}%)")
+        print(f"   - seasonal : {z_pts:5d} pts, {z_anom:5d} en ventana ({z_prec:5.2f}%)")
         print(f"   - random    : {r_pts:5d} pts, {r_anom:5d} en ventana ({r_prec:5.2f}%)")
         
-    print(f"\n3. Puntos con score == 1.0 exacto en zscore_v3: {exact_1_count}")
+    print(f"\n3. Puntos con score == 1.0 exacto en seasonal: {exact_1_count}")
 
         
-    print("\n3. Desglose por categoría para zscore_v2 en T=0.99:")
+    print("\n3. Desglose por categoría para seasonal en T=0.99:")
     for c in categories:
         pts = cat_zscore_099[c]['pts_ge']
         anoms = cat_zscore_099[c]['anom_ge']

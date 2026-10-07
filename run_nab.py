@@ -33,9 +33,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Evaluación de Six Eyes en NAB")
     parser.add_argument(
         "--detector",
-        choices=["random", "zscore", "zscore_v2", "zscore_v3"],
+        choices=["random", "zscore", "zscore_v2", "zscore_v3", "seasonal", "seasonal_pct"],
         default="random",
-        help="Detector a evaluar: 'random' (RandomDetector) o 'zscore' (RollingRobustZ)",
+        help="Detector a evaluar: 'random' (RandomDetector), 'zscore' (RollingRobustZ), o 'seasonal' (DailySeasonalRobustZ)",
     )
     parser.add_argument(
         "--nab-path",
@@ -60,6 +60,15 @@ def main() -> None:
     elif args.detector == "zscore_v3":
         nombre_detector = "sixeyes_zscore_v3"
         fabrica_detector = lambda: RollingRobustZ()
+    elif args.detector == "seasonal_pct":
+        from detectors.seasonal import DailySeasonalRobustZ
+        from detectors.calibrador_percentil import PercentileCalibrator
+        nombre_detector = "sixeyes_seasonal_pct"
+        fabrica_detector = lambda: PercentileCalibrator(DailySeasonalRobustZ())
+    elif args.detector == "seasonal":
+        from detectors.seasonal import DailySeasonalRobustZ
+        nombre_detector = "sixeyes_seasonal"
+        fabrica_detector = lambda: DailySeasonalRobustZ()
     else:
         raise ValueError(f"Detector desconocido: {args.detector}")
 
