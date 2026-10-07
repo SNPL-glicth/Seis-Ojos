@@ -1,6 +1,6 @@
 """Pruebas de la interfaz base para detectores."""
 
-from sixeyes.detectors.base import Detector
+from detectors.base import Detector
 
 
 class DetectorEjemplo:
