@@ -1,0 +1,10 @@
+# Configuración de GitHub Linguist para estadísticas de lenguaje
+
+# Tratar reportes y visualizaciones HTML autogeneradas como artefactos (no computan en % de lenguaje)
+*.html linguist-vendored
+*.html linguist-generated=true
+*.html linguist-detectable=false
+
+# Tratar archivos de resultados JSON y CSVs generados como datos/artefactos
+*.json linguist-generated=true
+*.csv linguist-generated=true
