@@ -42,7 +42,7 @@ def get_min_diff(values):
     return min(non_zero) if non_zero else 0.0
 
 def main():
-    base_dir = r"c:\Users\Nicolas Pachon\Desktop\Seis Ojos\benchmarks\nab\data"
+    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "benchmarks", "nab", "data"))
     files = glob.glob(os.path.join(base_dir, "*", "*.csv"))
     
     total_points = 0

@@ -10,7 +10,7 @@ def _parse_ts(ts):
         return datetime.strptime(ts, "%Y-%m-%d %H:%M:%S.%f")
 
 def run():
-    nab_root = r"c:\Users\Nicolas Pachon\Desktop\Seis Ojos\benchmarks\nab"
+    nab_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "benchmarks", "nab"))
     labels_file = os.path.join(nab_root, "labels", "combined_windows.json")
     
     with open(labels_file, "r", encoding="utf-8") as f:
@@ -71,10 +71,10 @@ def run():
         total_anomalies += anom_cnt
         cat_anomalies[category] += anom_cnt
         
-        for i, row in df_z.iterrows():
+        for idx_pos, (_, row) in enumerate(df_z.iterrows()):
             z_s = row['anomaly_score']
-            r_s = df_r.iloc[i]['anomaly_score']
-            anom = is_anom_list[i]
+            r_s = df_r.iloc[idx_pos]['anomaly_score']
+            anom = is_anom_list[idx_pos]
             
             if z_s == 1.0:
                 exact_1_count += 1

@@ -17,3 +17,9 @@ dev = [
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pyright]
+extraPaths = [
+    ".",
+    "../benchmarks/tsb_ad/TSB-AD"
+]

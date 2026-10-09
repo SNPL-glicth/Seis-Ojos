@@ -7,7 +7,7 @@ files_to_plot = [
     "realKnownCause/sixeyes_zscore_machine_temperature_system_failure.csv"
 ]
 
-base_dir = r"c:\Users\Nicolas Pachon\Desktop\Seis Ojos\benchmarks\nab"
+base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "benchmarks", "nab"))
 labels_file = os.path.join(base_dir, "labels", "combined_windows.json")
 
 with open(labels_file, "r") as f:

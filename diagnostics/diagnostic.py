@@ -58,6 +58,6 @@ def analyze(name, pattern):
     print(f"Decimales: {min_decimals} a {max_decimals}\n")
 
 if __name__ == '__main__':
-    base_dir = r"c:\Users\Nicolas Pachon\Desktop\Seis Ojos\benchmarks\nab\results"
+    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "benchmarks", "nab", "results"))
     analyze("sixeyes_zscore", os.path.join(base_dir, "sixeyes_zscore", "*", "*.csv"))
     analyze("sixeyes_random", os.path.join(base_dir, "sixeyes_random", "*", "*.csv"))
