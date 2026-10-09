@@ -1,7 +1,10 @@
 import numpy as np 
 import math
 from collections import deque
-from src.detectors.base import Detector
+try:
+    from detectors.base import Detector
+except ImportError:
+    from src.detectors.base import Detector
 #ajustamos los valores predeterminados segun el articulo 
 VENTANA = 32
 BUFFER_MAX = 1000

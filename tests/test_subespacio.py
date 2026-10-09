@@ -1,6 +1,10 @@
 import numpy as np
 import pytest
-from src.detectors.subespacio import SubspaceResidualDetector
+
+try:
+    from detectors.subespacio import SubspaceResidualDetector
+except ImportError:
+    from src.detectors.subespacio import SubspaceResidualDetector
 
 def test_subspace_limits():
     det = SubspaceResidualDetector(ventana=5, buffer_max=20, min_ventanas=10, reajuste_cada=5)
@@ -76,7 +80,9 @@ def test_mecanismo_con_varianza_alta():
     assert max_cambio > max_seno
 
 def test_cumple_interfaz():
-    # g) Cumple la interfaz
-    from src.detectors.base import Detector
+    try:
+        from detectors.base import Detector
+    except ImportError:
+        from src.detectors.base import Detector
     det = SubspaceResidualDetector()
     assert isinstance(det, Detector)

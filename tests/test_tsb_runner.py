@@ -2,9 +2,14 @@ import os
 import pytest
 import numpy as np
 import pandas as pd
-from src.evaluation.tsb_runner import run_single_series, get_tuning_files, _get_tsb_metrics
-from src.detectors.calibrador_percentil import PercentileCalibrator
-from src.detectors.zscore_robusto import RollingRobustZ
+try:
+    from evaluation.tsb_runner import run_single_series, get_tuning_files, _get_tsb_metrics
+    from detectors.calibrador_percentil import PercentileCalibrator
+    from detectors.zscore_robusto import RollingRobustZ
+except ImportError:
+    from src.evaluation.tsb_runner import run_single_series, get_tuning_files, _get_tsb_metrics
+    from src.detectors.calibrador_percentil import PercentileCalibrator
+    from src.detectors.zscore_robusto import RollingRobustZ
 
 def test_runner_descarta_nab_y_calcula_metricas(tmp_path):
     list_csv = tmp_path / "Tuning.csv"

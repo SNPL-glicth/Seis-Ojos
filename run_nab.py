@@ -1,8 +1,11 @@
 """Script principal para ejecutar la evaluación de Six Eyes en el benchmark oficial NAB."""
 
 import argparse
+import json
+import logging
 import os
 from pathlib import Path
+import shutil
 import sys
 
 # Configurar sys.path y PYTHONPATH para compatibilidad con multiprocessing en Windows
@@ -24,14 +27,27 @@ if existing_pp:
     extra_paths.append(existing_pp)
 os.environ["PYTHONPATH"] = os.pathsep.join(extra_paths)
 
-from detectors.aleatorio import RandomDetector
-from detectors.zscore_robusto import RollingRobustZ
-from detectors.seasonal import DailySeasonalRobustZ
-from detectors.biseasonal import BiSeasonalRobustZ
-from detectors.calibrador_percentil import PercentileCalibrator
-from detectors.subespacio import SubspaceResidualDetector
-from detectors.peak_decay import StreamingPeakDecay
-from evaluation.nab_runner import NABRunner
+try:
+    from detectors.aleatorio import RandomDetector
+    from detectors.zscore_robusto import RollingRobustZ
+    from detectors.seasonal import DailySeasonalRobustZ
+    from detectors.biseasonal import BiSeasonalRobustZ
+    from detectors.calibrador_percentil import PercentileCalibrator
+    from detectors.subespacio import SubspaceResidualDetector
+    from detectors.peak_decay import StreamingPeakDecay
+except ImportError:
+    from src.detectors.aleatorio import RandomDetector
+    from src.detectors.zscore_robusto import RollingRobustZ
+    from src.detectors.seasonal import DailySeasonalRobustZ
+    from src.detectors.biseasonal import BiSeasonalRobustZ
+    from src.detectors.calibrador_percentil import PercentileCalibrator
+    from src.detectors.subespacio import SubspaceResidualDetector
+    from src.detectors.peak_decay import StreamingPeakDecay
+
+try:
+    from evaluation.nab_runner import NABRunner
+except ImportError:
+    from src.evaluation.nab_runner import NABRunner
 
 RUTA_DEFECTO_NAB = NAB_DIR
 
@@ -106,29 +122,39 @@ def main() -> None:
     for perfil, score in puntajes.items():
         print(f"  * {perfil:28s}: {score:6.2f}")
     print("=" * 60)
-    import json
-    import shutil
+
     orig_final = runner.results_dir / "final_results.json"
     if orig_final.is_file():
         dest_results = ROOT_DIR / "results"
         dest_results.mkdir(parents=True, exist_ok=True)
+
+        # 1. Preservar copia cruda sin mutar generada por NAB
+        raw_target = dest_results / "nab_raw_results.json"
+        shutil.copy2(orig_final, raw_target)
+        print(f"Resultado crudo original de NAB preservado en: {raw_target}")
+
+        # 2. Generar consolidado limpio con manejo explícito de errores
         try:
             with open(orig_final, "r", encoding="utf-8") as f:
                 data = json.load(f)
+
             if "sixeyes" in data:
-                # Normalizar para que sixeyes quede limpio exactamente como los demás detectores
                 data["sixeyes"] = {
                     "reward_low_FN_rate": puntajes.get("reward_low_FN_rate", 0.0),
                     "reward_low_FP_rate": puntajes.get("reward_low_FP_rate", 0.0),
                     "standard": puntajes.get("standard", 0.0),
                 }
-                with open(orig_final, "w", encoding="utf-8") as f:
-                    json.dump(data, f, indent=4, sort_keys=True)
-        except Exception:
-            pass
-        shutil.copy2(orig_final, dest_results / "final_results.json")
-        shutil.copy2(orig_final, ROOT_DIR / "final_results.json")
-        print(f"Resultados consolidados guardados en: results/final_results.json")
+
+            consolidado_path = dest_results / "final_results.json"
+            with open(consolidado_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=4, sort_keys=True)
+
+            shutil.copy2(consolidado_path, ROOT_DIR / "final_results.json")
+            print(f"Resultados consolidados guardados en: {consolidado_path}")
+
+        except (IOError, json.JSONDecodeError) as e:
+            logging.error(f"Error al procesar y normalizar final_results.json: {e}")
+            raise
 
 
 if __name__ == "__main__":
