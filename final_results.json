@@ -60,9 +60,9 @@
         "standard": 54.64274893469828
     },
     "sixeyes": {
-        "zscore_pct_reward_low_FN_rate": 40.79439946592189,
-        "zscore_pct_reward_low_FP_rate": 23.539097263156133,
-        "zscore_pct_standard": 32.74332333681387
+        "reward_low_FN_rate": 46.79780302770531,
+        "reward_low_FP_rate": 29.13319006017621,
+        "standard": 40.024290748454526
     },
     "skyline": {
         "reward_low_FN_rate": 44.4810173429885,

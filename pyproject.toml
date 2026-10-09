@@ -23,3 +23,6 @@ extraPaths = [
     ".",
     "../benchmarks/tsb_ad/TSB-AD"
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

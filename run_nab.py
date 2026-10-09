@@ -27,8 +27,10 @@ os.environ["PYTHONPATH"] = os.pathsep.join(extra_paths)
 from detectors.aleatorio import RandomDetector
 from detectors.zscore_robusto import RollingRobustZ
 from detectors.seasonal import DailySeasonalRobustZ
+from detectors.biseasonal import BiSeasonalRobustZ
 from detectors.calibrador_percentil import PercentileCalibrator
 from detectors.subespacio import SubspaceResidualDetector
+from detectors.peak_decay import StreamingPeakDecay
 from evaluation.nab_runner import NABRunner
 
 RUTA_DEFECTO_NAB = NAB_DIR
@@ -38,9 +40,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Evaluación de Six Eyes en NAB")
     parser.add_argument(
         "--detector",
-        choices=["random", "zscore", "zscore_v2", "zscore_v3", "zscore_pct", "seasonal", "seasonal_pct", "subspace"],
-        default="subspace",
-        help="Detector a evaluar: 'random' (RandomDetector), 'zscore' (RollingRobustZ), o 'seasonal' (DailySeasonalRobustZ)",
+        choices=["peak_decay", "seasonal_pct", "biseasonal_pct", "biseasonal", "seasonal", "zscore_pct", "subspace", "zscore", "random", "zscore_v2", "zscore_v3"],
+        default="peak_decay",
+        help="Detector a evaluar (por defecto: 'peak_decay' = DailySeasonalRobustZ + PercentileCalibrator + StreamingPeakDecay, récord de 40.02)",
     )
     parser.add_argument(
         "--nab-path",
@@ -53,7 +55,10 @@ def main() -> None:
 
     runner = NABRunner(nab_root=args.nab_path)
 
-    if args.detector == "random":
+    if args.detector == "peak_decay":
+        nombre_detector = "sixeyes_peak_decay"
+        fabrica_detector = lambda: StreamingPeakDecay(PercentileCalibrator(DailySeasonalRobustZ()), k_window=12, tau=2.0)
+    elif args.detector == "random":
         nombre_detector = "sixeyes_random"
         fabrica_detector = lambda: RandomDetector(seed=42)
     elif args.detector == "zscore":
@@ -68,17 +73,19 @@ def main() -> None:
     elif args.detector == "zscore_v3":
         nombre_detector = "sixeyes_zscore_v3"
         fabrica_detector = lambda: RollingRobustZ()
+    elif args.detector == "biseasonal_pct":
+        nombre_detector = "sixeyes_biseasonal_pct"
+        fabrica_detector = lambda: PercentileCalibrator(BiSeasonalRobustZ())
+    elif args.detector == "biseasonal":
+        nombre_detector = "sixeyes_biseasonal"
+        fabrica_detector = lambda: BiSeasonalRobustZ()
     elif args.detector == "seasonal_pct":
-        # from detectors.seasonal import DailySeasonalRobustZ
-        # from detectors.calibrador_percentil import PercentileCalibrator
         nombre_detector = "sixeyes_seasonal_pct"
         fabrica_detector = lambda: PercentileCalibrator(DailySeasonalRobustZ())
     elif args.detector == "seasonal":
-        # from detectors.seasonal import DailySeasonalRobustZ
         nombre_detector = "sixeyes_seasonal"
         fabrica_detector = lambda: DailySeasonalRobustZ()
     elif args.detector == "subspace":
-        # from detectors.subespacio import SubspaceResidualDetector
         nombre_detector = "sixeyes_subspace"
         fabrica_detector = lambda: SubspaceResidualDetector()
     else:
@@ -99,11 +106,26 @@ def main() -> None:
     for perfil, score in puntajes.items():
         print(f"  * {perfil:28s}: {score:6.2f}")
     print("=" * 60)
+    import json
     import shutil
     orig_final = runner.results_dir / "final_results.json"
     if orig_final.is_file():
         dest_results = ROOT_DIR / "results"
         dest_results.mkdir(parents=True, exist_ok=True)
+        try:
+            with open(orig_final, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            if "sixeyes" in data:
+                # Normalizar para que sixeyes quede limpio exactamente como los demás detectores
+                data["sixeyes"] = {
+                    "reward_low_FN_rate": puntajes.get("reward_low_FN_rate", 0.0),
+                    "reward_low_FP_rate": puntajes.get("reward_low_FP_rate", 0.0),
+                    "standard": puntajes.get("standard", 0.0),
+                }
+                with open(orig_final, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=4, sort_keys=True)
+        except Exception:
+            pass
         shutil.copy2(orig_final, dest_results / "final_results.json")
         shutil.copy2(orig_final, ROOT_DIR / "final_results.json")
         print(f"Resultados consolidados guardados en: results/final_results.json")
