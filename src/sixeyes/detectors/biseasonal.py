@@ -4,8 +4,8 @@ from datetime import datetime
 import math
 from typing import Any
 
-from detectors.base import Detector
-from detectors.zscore_robusto import RollingRobustZ
+from sixeyes.detectors.base import Detector
+from sixeyes.detectors.zscore_robusto import RollingRobustZ
 
 
 class BiSeasonalRobustZ(Detector):

@@ -2,8 +2,8 @@ import math
 import random
 import pytest
 from typing import Any
-from detectors.calibrador_percentil import PercentileCalibrator
-from detectors.base import Detector
+from sixeyes.detectors.calibrador_percentil import PercentileCalibrator
+from sixeyes.detectors.base import Detector
 
 class FakeDetector(Detector):
     def __init__(self, sequence):

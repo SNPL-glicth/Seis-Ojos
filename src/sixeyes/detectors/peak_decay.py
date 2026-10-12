@@ -4,7 +4,7 @@ from collections import deque
 import math
 from typing import Optional
 
-from detectors.base import Detector
+from sixeyes.detectors.base import Detector
 
 
 class StreamingPeakDecay(Detector):

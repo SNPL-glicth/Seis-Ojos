@@ -11,8 +11,8 @@ sys.path.insert(0, str(root_dir))
 sys.path.insert(0, str(Path("../benchmarks/nab").resolve()))
 
 from nab.sweeper import Sweeper
-from detectors.seasonal import DailySeasonalRobustZ
-from detectors.calibrador_percentil import PercentileCalibrator
+from sixeyes.detectors.seasonal import DailySeasonalRobustZ
+from sixeyes.detectors.calibrador_percentil import PercentileCalibrator
 
 
 class OutputGatedCalibrator(PercentileCalibrator):

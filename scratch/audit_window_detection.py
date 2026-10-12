@@ -9,8 +9,8 @@ sys.path.insert(0, str(root_dir / "src"))
 sys.path.insert(0, str(root_dir))
 sys.path.insert(0, str(Path("../benchmarks/nab").resolve()))
 
-from detectors.seasonal import DailySeasonalRobustZ
-from detectors.calibrador_percentil import PercentileCalibrator
+from sixeyes.detectors.seasonal import DailySeasonalRobustZ
+from sixeyes.detectors.calibrador_percentil import PercentileCalibrator
 from dateutil import parser as date_parser
 
 with open("../benchmarks/nab/labels/combined_windows.json") as f:

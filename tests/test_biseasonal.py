@@ -1,7 +1,7 @@
 """Pruebas unitarias y de anti-fuga para BiSeasonalRobustZ."""
 
-from detectors.base import Detector
-from detectors.biseasonal import BiSeasonalRobustZ
+from sixeyes.detectors.base import Detector
+from sixeyes.detectors.biseasonal import BiSeasonalRobustZ
 
 
 def test_biseasonal_cumple_protocolo():

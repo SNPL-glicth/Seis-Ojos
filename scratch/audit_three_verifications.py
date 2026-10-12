@@ -9,10 +9,10 @@ sys.path.insert(0, str(Path("../benchmarks/nab").resolve()))
 
 import numpy as np
 import pandas as pd
-from detectors.base import Detector
-from detectors.seasonal import DailySeasonalRobustZ
-from detectors.calibrador_percentil import PercentileCalibrator
-from evaluation.nab_runner import NABRunner
+from sixeyes.detectors.base import Detector
+from sixeyes.detectors.seasonal import DailySeasonalRobustZ
+from sixeyes.detectors.calibrador_percentil import PercentileCalibrator
+from sixeyes.evaluation.nab_runner import NABRunner
 
 
 class StreamingPeakDecay(Detector):

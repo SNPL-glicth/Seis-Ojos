@@ -2,8 +2,8 @@ import os
 from pathlib import Path
 import time
 import pandas as pd
-from src.evaluation.tsb_runner import run_single_series
-from src.detectors.combinador import Combinado
+from sixeyes.evaluation.tsb_runner import run_single_series
+from sixeyes.detectors.combinador import Combinado
 
 LIMITE_S = 120.0
 

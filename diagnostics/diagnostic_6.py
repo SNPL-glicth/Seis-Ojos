@@ -3,7 +3,7 @@ import sys
 import pandas as pd
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
-from detectors.seasonal import DailySeasonalRobustZ
+from sixeyes.detectors.seasonal import DailySeasonalRobustZ
 
 df = pd.read_csv("../benchmarks/nab/data/realAWSCloudwatch/ec2_cpu_utilization_77c1ca.csv", parse_dates=["timestamp"])
 timestamps = df["timestamp"].tolist()

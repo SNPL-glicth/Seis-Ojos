@@ -27,27 +27,14 @@ if existing_pp:
     extra_paths.append(existing_pp)
 os.environ["PYTHONPATH"] = os.pathsep.join(extra_paths)
 
-try:
-    from detectors.aleatorio import RandomDetector
-    from detectors.zscore_robusto import RollingRobustZ
-    from detectors.seasonal import DailySeasonalRobustZ
-    from detectors.biseasonal import BiSeasonalRobustZ
-    from detectors.calibrador_percentil import PercentileCalibrator
-    from detectors.subespacio import SubspaceResidualDetector
-    from detectors.peak_decay import StreamingPeakDecay
-except ImportError:
-    from src.detectors.aleatorio import RandomDetector
-    from src.detectors.zscore_robusto import RollingRobustZ
-    from src.detectors.seasonal import DailySeasonalRobustZ
-    from src.detectors.biseasonal import BiSeasonalRobustZ
-    from src.detectors.calibrador_percentil import PercentileCalibrator
-    from src.detectors.subespacio import SubspaceResidualDetector
-    from src.detectors.peak_decay import StreamingPeakDecay
-
-try:
-    from evaluation.nab_runner import NABRunner
-except ImportError:
-    from src.evaluation.nab_runner import NABRunner
+from sixeyes.detectors.aleatorio import RandomDetector
+from sixeyes.detectors.zscore_robusto import RollingRobustZ
+from sixeyes.detectors.seasonal import DailySeasonalRobustZ
+from sixeyes.detectors.biseasonal import BiSeasonalRobustZ
+from sixeyes.detectors.calibrador_percentil import PercentileCalibrator
+from sixeyes.detectors.subespacio import SubspaceResidualDetector
+from sixeyes.detectors.peak_decay import StreamingPeakDecay
+from sixeyes.evaluation.nab_runner import NABRunner
 
 RUTA_DEFECTO_NAB = NAB_DIR
 
@@ -149,7 +136,6 @@ def main() -> None:
             with open(consolidado_path, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=4, sort_keys=True)
 
-            shutil.copy2(consolidado_path, ROOT_DIR / "final_results.json")
             print(f"Resultados consolidados guardados en: {consolidado_path}")
 
         except (IOError, json.JSONDecodeError) as e:

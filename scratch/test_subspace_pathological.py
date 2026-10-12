@@ -8,9 +8,9 @@ import numpy as np
 root_dir = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(root_dir / "src"))
 sys.path.insert(0, str(root_dir))
-from detectors.subespacio import SubspaceResidualDetector
-from detectors.calibrador_percentil import PercentileCalibrator
-from detectors.seasonal import DailySeasonalRobustZ
+from sixeyes.detectors.subespacio import SubspaceResidualDetector
+from sixeyes.detectors.calibrador_percentil import PercentileCalibrator
+from sixeyes.detectors.seasonal import DailySeasonalRobustZ
 
 windows_path = Path("../benchmarks/nab/labels/combined_windows.json")
 with open(windows_path, "r", encoding="utf-8") as f:

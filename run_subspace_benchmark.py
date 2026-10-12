@@ -4,8 +4,8 @@ sys.path.insert(0, os.path.abspath("."))
 sys.path.insert(0, os.path.abspath("src"))
 import time
 import pandas as pd
-from src.evaluation.tsb_runner import run_single_series
-from src.detectors.subespacio import SubspaceResidualDetector
+from sixeyes.evaluation.tsb_runner import run_single_series
+from sixeyes.detectors.subespacio import SubspaceResidualDetector
 
 LIMITE_S = 120.0
 

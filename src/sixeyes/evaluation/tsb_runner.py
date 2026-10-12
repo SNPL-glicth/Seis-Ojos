@@ -11,7 +11,7 @@ def get_tuning_files(list_file: str) -> List[str]:
     return df[~df['file_name'].str.contains('_NAB_')]['file_name'].tolist()
 
 def _get_tsb_metrics(scores: np.ndarray, labels: np.ndarray, sliding_window: int) -> Dict[str, float]:
-    tsb_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'benchmarks', 'tsb_ad', 'TSB-AD'))
+    tsb_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', 'benchmarks', 'tsb_ad', 'TSB-AD'))
     if tsb_path not in sys.path:
         sys.path.append(tsb_path)
     
@@ -39,7 +39,7 @@ def run_single_series(detector_factory, file_path: str, timeout_s: float | None 
         data = df.iloc[:, 0:-1].values.astype(float)
         labels = df['Label'].astype(int).to_numpy()
         
-        tsb_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'benchmarks', 'tsb_ad', 'TSB-AD'))
+        tsb_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', 'benchmarks', 'tsb_ad', 'TSB-AD'))
         if tsb_path not in sys.path:
             sys.path.append(tsb_path)
             

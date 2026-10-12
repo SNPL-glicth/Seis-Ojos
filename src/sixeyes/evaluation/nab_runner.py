@@ -10,9 +10,9 @@ from typing import Callable
 
 from dateutil import parser as date_parser
 
-from detectors.base import Detector
+from sixeyes.detectors.base import Detector
 
-DEFAULT_NAB_PATH = (Path(__file__).resolve().parent.parent.parent.parent / "benchmarks" / "nab")
+DEFAULT_NAB_PATH = Path(__file__).resolve().parents[4] / "benchmarks" / "nab"
 if not DEFAULT_NAB_PATH.is_dir():
     DEFAULT_NAB_PATH = Path("benchmarks/nab")
 

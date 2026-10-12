@@ -1,4 +1,4 @@
-from detectors.seasonal import DailySeasonalRobustZ
+from sixeyes.detectors.seasonal import DailySeasonalRobustZ
 
 def test_daily_seasonal_robusto():
     detector = DailySeasonalRobustZ(bucket_size_minutes=15, window_size=5, min_observations=2)

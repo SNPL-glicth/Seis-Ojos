@@ -6,8 +6,8 @@ root_dir = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(root_dir / "src"))
 sys.path.insert(0, str(root_dir))
 
-from detectors.seasonal import DailySeasonalRobustZ
-from detectors.calibrador_percentil import PercentileCalibrator
+from sixeyes.detectors.seasonal import DailySeasonalRobustZ
+from sixeyes.detectors.calibrador_percentil import PercentileCalibrator
 
 df = pd.read_csv("../benchmarks/nab/data/realTweets/Twitter_volume_IBM.csv")
 det = DailySeasonalRobustZ()

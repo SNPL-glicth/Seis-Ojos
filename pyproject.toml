@@ -18,6 +18,9 @@ dev = [
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+sixeyes = ["py.typed"]
+
 [tool.pyright]
 extraPaths = [
     ".",

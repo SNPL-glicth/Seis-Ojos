@@ -4,10 +4,10 @@ import math
 import numpy as np
 import pytest
 
-from detectors.base import Detector
-from detectors.peak_decay import StreamingPeakDecay
-from detectors.seasonal import DailySeasonalRobustZ
-from detectors.calibrador_percentil import PercentileCalibrator
+from sixeyes.detectors.base import Detector
+from sixeyes.detectors.peak_decay import StreamingPeakDecay
+from sixeyes.detectors.seasonal import DailySeasonalRobustZ
+from sixeyes.detectors.calibrador_percentil import PercentileCalibrator
 
 
 class DummyDetector(Detector):

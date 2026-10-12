@@ -3,8 +3,8 @@
 import math
 import random
 
-from detectors import Detector, RandomDetector, RollingRobustZ
-from detectors.zscore_robusto import Z_MEDIO
+from sixeyes.detectors import Detector, RandomDetector, RollingRobustZ
+from sixeyes.detectors.zscore_robusto import Z_MEDIO
 
 
 def _generar_serie_sintetica(longitud: int = 100, semilla: int = 42) -> list[float]:

@@ -153,7 +153,7 @@ for det in detectors:
 print()
 
 # 5. Test anti-fuga real para el seasonal
-import sys; sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src"))); from src.detectors.seasonal import DailySeasonalRobustZ
+import sys; sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src"))); from sixeyes.detectors.seasonal import DailySeasonalRobustZ
 print("5. Test anti-fuga causal")
 det_fuga = DailySeasonalRobustZ()
 scores_normal = []

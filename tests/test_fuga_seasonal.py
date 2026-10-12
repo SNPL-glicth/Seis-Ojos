@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from detectors.seasonal import DailySeasonalRobustZ
+from sixeyes.detectors.seasonal import DailySeasonalRobustZ
 
 def test_anti_fuga_seasonal_permanente():
     """

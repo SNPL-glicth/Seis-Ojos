@@ -5,8 +5,8 @@ from datetime import datetime
 
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
-from detectors.seasonal import DailySeasonalRobustZ
-from detectors.zscore_robusto import NORMAL_SCALE_MAD, SCORE_SIN_EVIDENCIA
+from sixeyes.detectors.seasonal import DailySeasonalRobustZ
+from sixeyes.detectors.zscore_robusto import NORMAL_SCALE_MAD, SCORE_SIN_EVIDENCIA
 
 def _parse_ts(ts_str):
     return datetime.strptime(ts_str, "%Y-%m-%d %H:%M:%S")

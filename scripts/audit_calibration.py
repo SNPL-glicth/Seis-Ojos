@@ -9,9 +9,9 @@ root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if os.path.join(root, "src") not in sys.path:
     sys.path.insert(0, os.path.join(root, "src"))
 
-from detectors.calibrador_percentil import PercentileCalibrator
-from detectors.zscore_robusto import RollingRobustZ
-from detectors.subespacio import SubspaceResidualDetector
+from sixeyes.detectors.calibrador_percentil import PercentileCalibrator
+from sixeyes.detectors.zscore_robusto import RollingRobustZ
+from sixeyes.detectors.subespacio import SubspaceResidualDetector
 
 def auditar_serie(file_name, file_path):
     df = pd.read_csv(file_path).dropna()

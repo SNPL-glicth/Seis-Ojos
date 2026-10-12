@@ -4,14 +4,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-try:
-    from detectors.base import Detector
-    from detectors.combinador import MaxOfDetectors, Combinado
-    from detectors.subespacio import SubspaceResidualDetector
-except ImportError:
-    from src.detectors.base import Detector
-    from src.detectors.combinador import MaxOfDetectors, Combinado
-    from src.detectors.subespacio import SubspaceResidualDetector
+from sixeyes.detectors.base import Detector
+from sixeyes.detectors.combinador import MaxOfDetectors, Combinado
+from sixeyes.detectors.subespacio import SubspaceResidualDetector
 
 
 class FakeDetector(Detector):

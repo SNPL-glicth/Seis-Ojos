@@ -5,7 +5,7 @@ from datetime import datetime
 import math
 import statistics
 
-from detectors.zscore_robusto import RollingRobustZ
+from sixeyes.detectors.zscore_robusto import RollingRobustZ
 
 
 class DailySeasonalRobustZ:
