@@ -21,6 +21,6 @@
 1. **Condición In-Sample en NAB:**
    El valor de $K=12$ se determinó mediante un barrido de cuadrícula ($K \in [4, 16]$) sobre las mismas 58 series evaluadas. Si bien la curva es suave ($K=8 \to 39.78$, $K=12 \to 40.02$, $\Delta = 0.24$), representa una estimación optimista dentro de la muestra.
 2. **Posición Global en el Benchmark NAB:**
-   Con 40.02 puntos Standard, Six Eyes se ubica en el puesto **11° de 16 modelos oficiales** (sin contar `null`). Supera a baselines clásicos como `skyline` (35.69) y `windowedGaussian` (39.65), pero se sitúa por debajo de modelos supervisados o con memoria temporal profunda como `ARTime` (74.85), `numenta` (70.10) o `twitterADVec` (47.06).
-3. **Subconjunto de Ajuste en TSB-AD:**
-   El puntaje de **0.3572 VUS-PR** se obtuvo estrictamente sobre el subconjunto de ajuste de 43 series de TSB-AD. Queda pendiente la evaluación generalizada sobre las 472 series de evaluación intocadas.
+   Con 40.02 puntos Standard, Six Eyes se ubica en el puesto **11° de 16 modelos oficiales** (sin contar `null`). Supera a baselines clásicos como `skyline` (35.69) y `windowedGaussian` (39.65), pero se sitúa por debajo de modelos con aprendizaje en línea (p. ej. ART, HTM) como `ARTime` (74.85) o `numenta` (70.10), y de `twitterADVec` (47.06).
+3. **Subconjunto de Ajuste en TSB-AD y Verdad sobre Eva:**
+   El puntaje de **0.3572 VUS-PR** se obtuvo estrictamente sobre el subconjunto de ajuste de 43 series de TSB-AD (Tuning Set, excluyendo NAB). La referencia de $\sim 0.42$ VUS-PR de los mejores modelos de la literatura corresponde al conjunto de evaluación *Eva* de 350 series. El conjunto extendido *Eva-Full* consta de 822 series reales (las 350 de Eva más 472 series de evaluación intocadas que no forman parte de Eva ni de Tuning). La evaluación sobre estas 472 series intocadas permanece pendiente.

@@ -40,7 +40,7 @@ En la clasificación oficial de NAB, Six Eyes se posiciona en el **puesto 11° d
 
 | Posición | Detector | Standard Score | Low FN | Low FP | Tipo de Modelo |
 | :---: | :--- | :---: | :---: | :---: | :--- |
-| 1 | `ARTime` | **74.85** | 80.36 | 65.15 | Auto-regresivo supervisado |
+| 1 | `ARTime` | **74.85** | 80.36 | 65.15 | Aprendizaje en línea (red ART) |
 | 2 | `numenta` | **70.10** | 74.32 | 63.12 | Red Jerárquica Temporal (HTM) |
 | 3 | `contextOSE` | **69.90** | 73.18 | 66.98 | Memoria de contexto espacial |
 | 4 | `htmjava` | **65.55** | 70.42 | 53.26 | HTM implementación Java |
@@ -64,7 +64,7 @@ En la clasificación oficial de NAB, Six Eyes se posiciona en el **puesto 11° d
 ### 2. TSB-AD — Subconjunto de Ajuste (43 Series)
 
 > [!IMPORTANT]
-> **Subconjunto de Ajuste vs. Evaluación Completa:** La métrica de **0.3572 VUS-PR** fue obtenida exclusivamente sobre el **subconjunto de ajuste de 43 series** (Tuning Set). **No es comparable** con la tabla de referencia de evaluación (donde los mejores modelos alcanzan $\sim 0.42$ sobre el testbed completo de evaluación *Eva* de 472 series). La evaluación sobre las 472 series intocadas permanece pendiente.
+> **Subconjunto de Ajuste vs. Evaluación Completa:** La métrica de **0.3572 VUS-PR** fue obtenida exclusivamente sobre el **subconjunto de ajuste de 43 series** (Tuning Set, excluyendo NAB). **No es comparable** con la tabla de referencia de evaluación (donde los mejores modelos de la literatura alcanzan $\sim 0.42$ sobre el conjunto oficial *Eva* de 350 series). El testbed extendido *Eva-Full* consta de 822 series reales (las 350 de Eva más 472 series de evaluación intocadas que no forman parte de Eva ni de Tuning). La evaluación sobre estas 472 series intocadas permanece pendiente.
 
 #### Trade-offs Reales del Buffer Gating en `SubspaceResidualDetector`
 
@@ -74,12 +74,14 @@ El análisis comparativo por familia en el conjunto de ajuste muestra que la ing
 | :--- | :---: | :---: | :---: | :---: |
 | **Exathlon** | 2 | 0.2673 | **0.9561** | **+0.6888** 🟢 |
 | **SMD** | 5 | 0.7398 | 0.7398 | 0.0000 ➖ |
-| **Yahoo** | 24 | 0.3693 | 0.3402 | **-0.0291** 🔴 |
-| **NEK** | 4 | 0.5076 | 0.4542 | **-0.0534** 🔴 |
-| **MSL** | 4 | 0.5833 | 0.2378 | **-0.3455** 🔴 |
+| **Yahoo** | 5 | 0.3693 | 0.3402 | **-0.0291** 🔴 |
+| **MSL** | 2 | 0.5833 | 0.2378 | **-0.3455** 🔴 |
+| **NEK** | 1 | 0.5076 | 0.4542 | **-0.0534** 🔴 |
 | **Promedio por Serie** | 43 | 0.3535 | **0.3572** | **+0.0037** |
 
-* **Conclusión:** El gating rescata brillantemente Exathlon al evitar la absorción de anomalías prolongadas, pero degrada fuertemente familias con transiciones dinámicas como MSL (-0.345) y NEK (-0.053), generando una ganancia global marginal de solo $+0.0037$.
+* **Advertencia estadística sobre tamaños muestrales ($n \le 2$):** Los tamaños de muestra reales por familia en el Tuning Set son reducidos (Yahoo $n=5$, SMD $n=5$, MSL $n=2$, Exathlon $n=2$, NEK $n=1$). Con $n \le 2$ no se puede inferir generalización estadística: diferencias como el $+0.6888$ en Exathlon o el $-0.3455$ en MSL son puramente anecdóticas y responden a varianza muestral extrema de series aisladas.
+* **Origen de la columna «Subespacio Estándar» y discrepancia en SMD:** Durante la experimentación, el script `run_subspace_benchmark.py` sobrescribió el archivo original `Subspace_tsb_results.csv` al correr con gating habilitado. Los valores de la columna estándar provienen de registros de corridas previas, donde el valor de SMD estándar figuró inicialmente como 0.7267 (frente al 0.7398 reflejado en la tabla consolidada).
+* **Riesgo crítico de congelación del buffer ante cambios de régimen (*Concept Drift*):** Si una serie experimenta un cambio permanente de dinámica o nivel de base y el residuo se mantiene en $s \ge 0.70$, la compuerta bloquea indefinidamente la admisión de nuevas muestras normales al buffer Hankel. Como consecuencia, el subespacio nunca aprende la nueva normalidad y el detector queda disparando alarmas de manera permanente.
 
 #### Autopsia del Ensamble Combinado: ¿Por qué se descartó?
 Se evaluó un ensamble por unión simple $\max(S_{\text{estacional}}, S_{\text{subespacio}})$ bajo dos criterios de aceptación prefijados:

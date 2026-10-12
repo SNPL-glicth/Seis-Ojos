@@ -117,8 +117,11 @@ def test_anti_fuga_datos_reales_smd():
     # Prueba anti-fuga con DATOS REALES: toma una serie SMD del set de ajuste,
     # altera todos los valores posteriores a la mitad y verifica que los scores
     # del SubspaceResidualDetector hasta la mitad son idénticos.
-    smd_path = r"..\benchmarks\tsb_ad\TSB-AD\Datasets\TSB-AD-U\182_SMD_id_5_Facility_tr_7174_1st_21230.csv"
-    assert os.path.exists(smd_path), f"No se encontró el archivo de prueba SMD: {smd_path}"
+    from pathlib import Path
+    repo_root = Path(__file__).resolve().parent.parent
+    smd_path = repo_root.parent / "benchmarks" / "tsb_ad" / "TSB-AD" / "Datasets" / "TSB-AD-U" / "182_SMD_id_5_Facility_tr_7174_1st_21230.csv"
+    if not smd_path.exists():
+        pytest.skip(f"Dataset local SMD no encontrado: {smd_path}")
 
     df = pd.read_csv(smd_path)
     valores = df.iloc[:, 0].values.astype(float)
