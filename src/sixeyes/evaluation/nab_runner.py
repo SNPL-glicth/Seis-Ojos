@@ -133,13 +133,13 @@ class NABRunner:
 
         orig_getLabels = labeler.CorpusLabel.getLabels
 
-        def _compat_getLabels(labeler_self):
+        def _compat_getLabels(self):
             import pandas
 
-            labeler_self.labels = {}
-            for relativePath, dataSet in labeler_self.corpus.dataFiles.items():
-                if relativePath in labeler_self.windows:
-                    windows = labeler_self.windows[relativePath]
+            self.labels = {}
+            for relativePath, dataSet in self.corpus.dataFiles.items():
+                if relativePath in self.windows:
+                    windows = self.windows[relativePath]
                     labels = pandas.DataFrame({"timestamp": dataSet.data["timestamp"]})
                     labels["label"] = 0
                     for t1, t2 in windows:
@@ -147,7 +147,7 @@ class NABRunner:
                         betweenT1AndT2 = moreThanT1[moreThanT1["timestamp"] <= t2]
                         indices = betweenT1AndT2.loc[:, "label"].index
                         labels.loc[indices, "label"] = 1
-                    labeler_self.labels[relativePath] = labels
+                    self.labels[relativePath] = labels
 
         labeler.CorpusLabel.getLabels = _compat_getLabels
 
