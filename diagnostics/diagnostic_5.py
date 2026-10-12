@@ -160,7 +160,7 @@ scores_normal = []
 import datetime
 ts = datetime.datetime(2026, 10, 7, 0, 0, 0)
 for i in range(100):
-    scores_normal.append(det_fuga.update(10.0, ts))
+    scores_normal.append(det_fuga.update(10.0, ts.isoformat()))
     ts += datetime.timedelta(minutes=5)
 
 det_alt = DailySeasonalRobustZ()
@@ -168,7 +168,7 @@ scores_alt = []
 ts = datetime.datetime(2026, 10, 7, 0, 0, 0)
 for i in range(100):
     val = 10.0 if i < 50 else 999.9  # Modify from 50 onwards
-    scores_alt.append(det_alt.update(val, ts))
+    scores_alt.append(det_alt.update(val, ts.isoformat()))
     ts += datetime.timedelta(minutes=5)
 
 diff = False

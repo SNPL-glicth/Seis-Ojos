@@ -128,8 +128,8 @@ class NABRunner:
         # En CorpusLabel.getLabels se realizaba 'labels["label"].values[...] = 1',
         # lo cual genera ValueError. Aplicamos un adaptador temporal en memoria para
         # usar '.loc', evitando alterar el código fuente en disco de NAB.
-        import nab.labeler as labeler
-        from nab.runner import Runner
+        import nab.labeler as labeler  # type: ignore
+        from nab.runner import Runner  # type: ignore
 
         orig_getLabels = labeler.CorpusLabel.getLabels
 

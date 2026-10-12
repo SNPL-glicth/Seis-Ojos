@@ -24,7 +24,8 @@ sixeyes = ["py.typed"]
 [tool.pyright]
 extraPaths = [
     ".",
-    "../benchmarks/tsb_ad/TSB-AD"
+    "../benchmarks/tsb_ad/TSB-AD",
+    "../benchmarks/nab"
 ]
 
 [tool.pytest.ini_options]
