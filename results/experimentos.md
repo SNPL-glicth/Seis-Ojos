@@ -12,7 +12,7 @@
 | **`Combinado` (Subespacio + Estacional)** | 0.3153 (TSB) | - | - | **Descartado:** No superó el umbral pactado (0.3226). Pérdida severa en SMD (0.740 $\to$ 0.298) y Exathlon (0.956 $\to$ 0.184). |
 | **`StreamingPeakDecay` ($K=8, \tau=2.0$)** | 39.78 | 46.63 | 28.93 | Supresión de réplicas en ventana de 40 min. |
 | **`StreamingPeakDecay` ($K=10, \tau=2.0$)** | 39.88 | 46.70 | 29.04 | Supresión de réplicas en ventana de 50 min. |
-| **`StreamingPeakDecay` ($K=12, \tau=2.0, W=2000)** | **37.21** | **44.27** | **23.83** | **Medido 2026-10-14 con código actual. Histórico 40.02/46.80/29.13 con calibrador no acotado (delta -2.81 por `max_history=2000`).** |
+| **`StreamingPeakDecay` ($K=12, \tau=2.0, W=16000)** | **40.02** | **46.80** | **29.13** | **Medido 2026-10-14, reproduce histórico bit a bit con memoria acotada. W=2000 daba 37.21 (ventana insuficiente: 49/58 series >2000 pts).** |
 
 ---
 

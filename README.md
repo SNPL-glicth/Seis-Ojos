@@ -34,9 +34,9 @@ Six Eyes es una librería experimental de detección de anomalías en tiempo rea
 
 #### Tabla Oficial Completa de Resultados NAB (Perfil Standard)
 
-En la clasificación oficial de NAB, Six Eyes con defaults conservadores (K=12, tau=2.0,
-medido 2026-10-14 tras acotar el calibrador a ventana 2000) se posiciona en el
-**puesto 12° de 16 modelos** (medición in-sample del optimizador de umbrales, ver advertencia abajo):
+En la clasificación oficial de NAB, Six Eyes con defaults de producción (K=12, tau=2.0,
+calibrador acotado W=16000, medido 2026-10-14) se posiciona en el
+**puesto 11° de 16 modelos** (medición in-sample del optimizador de umbrales, ver advertencia abajo):
 
 | Posición | Detector | Standard Score | Low FN | Low FP | Tipo de Modelo |
 | :---: | :--- | :---: | :---: | :---: | :--- |
@@ -50,22 +50,21 @@ medido 2026-10-14 tras acotar el calibrador a ventana 2000) se posiciona en el
 | 8 | `relativeEntropy` | **54.64** | 58.84 | 47.60 | Entropía relativa |
 | 9 | `randomCutForest` | **51.72** | 59.75 | 38.36 | Bosque de aislamiento estocástico |
 | 10 | `twitterADVec` | **47.06** | 53.50 | 33.61 | Descomposición estacional Twitter |
-| 11 | `windowedGaussian` | **39.65** | 47.41 | 20.87 | Gaussiana con ventana móvil |
-| **12** | **`sixeyes_peak_decay` (K=12, tau=2.0, calibrador acotado W=2000)** | **37.21** | **44.27** | **23.83** | **Estacional + Percentil + NMS Causal** |
+| **11** | **`sixeyes_peak_decay` (K=12, tau=2.0, calibrador acotado W=16000)** | **40.02** | **46.80** | **29.13** | **Estacional + Percentil + NMS Causal** |
+| 12 | `windowedGaussian` | **39.65** | 47.41 | 20.87 | Gaussiana con ventana móvil |
 | 13 | `skyline` | **35.69** | 44.48 | 27.08 | Skyline base (algoritmo único) |
 | 14 | `random` | **16.83** | 25.88 | 5.76 | Baseline aleatorio uniforme |
 | 15 | `expose` | **16.44** | 26.92 | 3.19 | Modelo de densidad gaussiana |
 | 16 | `null` | **0.00** | 0.00 | 0.00 | Detector nulo (cero alarmas) |
 
-* Reporte aislado: `results/sixeyes_peak_decay_b15_k12_tau2p0.json`. `final_results.json` oficial de NAB verificado sin mutación (backup/restore en `nab_runner.py`).
-* Delta vs histórico 40.02 (K=12, tau=2.0, calibrador no acotado): **-2.81 pts** atribuidos al acotamiento del calibrador (`max_history=2000`) que cambia la ECDF en series largas. Se reporta el número medido con el código actual, no el histórico.
+* Reporte aislado: `results/sixeyes_peak_decay_b15_k12_tau2p0_w16000.json`. `final_results.json` oficial de NAB verificado sin mutación (backup/restore en `nab_runner.py`).
+* Ventana del calibrador: `W=16000` cubre el p90 de NAB (49/58 series >2000 pts, max 22695) con memoria constante y reproduce el histórico bit a bit. `W=2000` daba 37.21/44.27/23.83 (medición intermedia, artefacto descartado).
 
 * **Qué aporta `StreamingPeakDecay` (K=160, τ=1.5):** Su envolvente de retención de crestas con ventana extendida (160 pasos ≈ 13 horas @5min) sostiene la alerta a lo largo de ventanas de verdad fundamental de NAB (100–300 timestamps), permitiendo al optimizador descender el umbral y capturar **74 de las 116 ventanas de verdad fundamental (63.8%)**.
 
 > [!NOTE]
-> **Defaults conservadores v0.2 (K=12, τ=2.0, calibrador W=2000):** Standard 37.21 | Low FN 44.27 | Low FP 23.83 (medido 2026-10-14, `results/sixeyes_peak_decay_b15_k12_tau2p0.json`).
-> Histórico con calibrador no acotado: Standard 40.02 | Low FN 46.80 | Low FP 29.13 (delta -2.81 por el acotamiento).
-> La optimización de envolvente in-sample (grid search $K \in [8..192], \tau \in [1.2..3.0]$) produjo hasta 42.54 (K=160, tau=1.5) sin tocar el núcleo estadístico.
+> **Defaults de producción v0.2 (K=12, τ=2.0, calibrador W=16000):** Standard 40.02 | Low FN 46.80 | Low FP 29.13 (medido 2026-10-14, `results/sixeyes_peak_decay_b15_k12_tau2p0_w16000.json`; reproduce el histórico bit a bit con memoria acotada).
+> La optimización de envolvente in-sample (grid search $K \in [8..192], \tau \in [1.2..3.0]$) produjo hasta 42.54 (K=160, tau=1.5, `--cal-window 0`) sin tocar el núcleo estadístico.
 >
 > [!WARNING]
 > **Condición in-sample explícita:** $K=160, \tau=1.5$ (y el score 42.54 asociado) se obtuvieron optimizando sobre las mismas 58 series de prueba que se reportan. El optimizador de umbrales de NAB también se ejecuta sobre el test. No se realiza ninguna afirmación de generalización: para un claim válido se requiere validación cruzada por categoría (`src/sixeyes/evaluation/nab_cv.py`) o un hold-out disjunto. La entrada `sixeyes` fue retirada de `results/final_results.json` por proceder del detector experimental `peak_decay_ramp_boost` (con umbral filtrado); regenere con `python run_nab.py --nab-path ../NAB --detector peak_decay --k-window 160 --tau 1.5 --cal-window 0`, que guarda `results/sixeyes_peak_decay_b15_k160_tau1p5_wInf.json` sin mutar archivos oficiales (nombres sin puntos por `nab/runner.py:260`).

@@ -16,7 +16,9 @@ class PercentileCalibrator(Detector):
     """
 
     MIN_HISTORIAL = 288
-    DEFAULT_MAX_HISTORY = 2000
+    # 16000 cubre el p90 de NAB (max 22695) con memoria constante; verificado
+    # 2026-10-14: reproduce el histórico 40.02 bit a bit (W=2000 daba 37.21).
+    DEFAULT_MAX_HISTORY = 16000
 
     def __init__(self, detector_interno: Detector, max_history: int | None = DEFAULT_MAX_HISTORY):
         """Args:

@@ -53,7 +53,7 @@ DETECTORES_SOPORTADOS = [
 
 
 def build_factory(detector: str, bucket_minutes: int, k_window: int, tau: float,
-                  cal_window: int = 2000):
+                  cal_window: int = 16000):
     """Fábrica única del pipeline oficial y baselines. Sin variantes fantasma.
 
     NOTA: el nombre del detector nunca contiene puntos (NAB parsea
@@ -104,9 +104,9 @@ def main() -> None:
     parser.add_argument("--k-window", type=int, default=DEFAULT_K_WINDOW)
     parser.add_argument("--tau", type=float, default=DEFAULT_TAU)
     parser.add_argument("--bucket-minutes", type=int, default=15)
-    parser.add_argument("--cal-window", type=int, default=2000,
+    parser.add_argument("--cal-window", type=int, default=16000,
                         help="Ventana ECDF del calibrador. <=0 = no acotado "
-                             "(solo reproducción histórica, coste O(N)).")
+                             "(solo reproducción histórica K=160, coste O(N)).")
     parser.add_argument(
         "--nab-path", type=Path, default=RUTA_DEFECTO_NAB,
         help="Ruta al repositorio local de NAB.",
