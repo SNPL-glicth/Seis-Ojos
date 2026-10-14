@@ -1,0 +1,8 @@
+{
+  "detector": "sixeyes_ablation_refractory_only",
+  "scores": {
+    "reward_low_FN_rate": 62.92915228739408,
+    "reward_low_FP_rate": 38.49450285518728,
+    "standard": 55.54799203380177
+  }
+}

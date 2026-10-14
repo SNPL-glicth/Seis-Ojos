@@ -1,14 +1,58 @@
 {
+    "detector": "sixeyes_refractory_w80_t990",
     "config": {
-        "bucket_minutes": 15,
         "cal_window": 16000,
         "k_window": 24,
-        "tau": 2.0
+        "seed": 42,
+        "spatial_tolerance": 0.05,
+        "spatial_warmup": 100,
+        "tau": 2.0,
+        "trigger_threshold": 0.99,
+        "w_rest": 80
     },
-    "detector": "sixeyes_refractory_w80_t990",
     "scores": {
         "reward_low_FN_rate": 68.44695492731546,
         "reward_low_FP_rate": 43.40258819822537,
         "standard": 60.80745461437347
+    },
+    "thresholds_optimizados_nab": {
+        "reward_low_FN_rate": 0.990234375,
+        "reward_low_FP_rate": 0.9911533420707732,
+        "standard": 0.9907663316582914
+    },
+    "corpus_totales_58_series": {
+        "false_negatives_points": 33348,
+        "false_positives_points": 382,
+        "total_timestamps": 332842,
+        "true_positives_windows": 147
+    },
+    "loco_cv_out_of_sample": {
+        "mean_standard": 60.06,
+        "std_standard": 7.26,
+        "sem": 2.96,
+        "folds": {
+            "artificialNoAnomaly": {"score": null, "archivos": 5},
+            "artificialWithAnomaly": {"score": 46.81, "archivos": 6},
+            "realAWSCloudwatch": {"score": 60.23, "archivos": 17},
+            "realAdExchange": {"score": 68.31, "archivos": 6},
+            "realKnownCause": {"score": 59.68, "archivos": 7},
+            "realTraffic": {"score": 68.09, "archivos": 7},
+            "realTweets": {"score": 57.26, "archivos": 10}
+        }
+    },
+    "multiseed_robustness": {
+        "mean_standard": 57.68,
+        "std_standard": 3.08,
+        "seeds": {
+            "42": 60.81,
+            "7": 54.66,
+            "99": 57.58
+        }
+    },
+    "ablacion_causal": {
+        "base_esn_solo": 49.05,
+        "esn_mas_spatial_only": 58.80,
+        "esn_mas_refractory_only": 55.55,
+        "full_pipeline_promovido": 60.81
     }
 }

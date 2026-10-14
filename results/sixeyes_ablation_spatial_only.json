@@ -1,0 +1,8 @@
+{
+  "detector": "sixeyes_ablation_spatial_only",
+  "scores": {
+    "reward_low_FN_rate": 65.35150551836087,
+    "reward_low_FP_rate": 53.340312331903036,
+    "standard": 58.80312034650682
+  }
+}
