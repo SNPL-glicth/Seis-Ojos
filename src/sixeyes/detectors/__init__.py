@@ -9,6 +9,15 @@ from sixeyes.detectors.calibrador_percentil import PercentileCalibrator
 from sixeyes.detectors.subespacio import SubspaceResidualDetector
 from sixeyes.detectors.combinador import MaxOfDetectors, Combinado
 from sixeyes.detectors.peak_decay import StreamingPeakDecay
+from sixeyes.detectors.gram_tracker import GramSubspaceTracker
+from sixeyes.detectors.active_drift import ActiveCentroidDriftTracker
+from sixeyes.detectors.causal_multiscale_lds import (
+    CausalFeatureExtractor,
+    OnlineLDS,
+    CausalMultiscaleLDS,
+)
+from sixeyes.detectors.causal_spectral import CausalSTFTDetector
+from sixeyes.detectors.master_spectral_peak import MasterSpectralPeakDecay
 
 __all__ = [
     "Detector",
@@ -21,4 +30,11 @@ __all__ = [
     "MaxOfDetectors",
     "Combinado",
     "StreamingPeakDecay",
+    "GramSubspaceTracker",
+    "ActiveCentroidDriftTracker",
+    "CausalFeatureExtractor",
+    "OnlineLDS",
+    "CausalMultiscaleLDS",
+    "CausalSTFTDetector",
+    "MasterSpectralPeakDecay",
 ]

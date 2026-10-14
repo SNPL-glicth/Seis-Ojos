@@ -34,6 +34,7 @@ from sixeyes.detectors.biseasonal import BiSeasonalRobustZ
 from sixeyes.detectors.calibrador_percentil import PercentileCalibrator
 from sixeyes.detectors.subespacio import SubspaceResidualDetector
 from sixeyes.detectors.peak_decay import StreamingPeakDecay
+from sixeyes.detectors.master_spectral_peak import MasterSpectralPeakDecay
 from sixeyes.evaluation.nab_runner import NABRunner
 
 RUTA_DEFECTO_NAB = NAB_DIR
@@ -43,9 +44,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Evaluación de Six Eyes en NAB")
     parser.add_argument(
         "--detector",
-        choices=["peak_decay", "intermittent_gated", "seasonal_pct", "biseasonal_pct", "biseasonal", "seasonal", "zscore_pct", "subspace", "zscore", "random", "zscore_v2", "zscore_v3", "gram_tracker", "combinado", "combinado_pct", "peak_decay_rescued", "causal_multiscale_lds"],
+        choices=["peak_decay", "intermittent_gated", "seasonal_pct", "biseasonal_pct", "biseasonal", "seasonal", "zscore_pct", "subspace", "zscore", "random", "zscore_v2", "zscore_v3", "gram_tracker", "combinado", "combinado_pct", "peak_decay_rescued", "causal_multiscale_lds", "master_spectral_peak"],
         default="peak_decay",
-        help="Detector a evaluar (por defecto: 'peak_decay' = DailySeasonalRobustZ + PercentileCalibrator + PeakDecay k=160 τ=1.5, 42.54 standard NAB)",
+        help="Detector a evaluar (por defecto: 'peak_decay' = DailySeasonalRobustZ + PercentileCalibrator + PeakDecay k=160 τ=1.5, 42.54 standard NAB v0.2-nab)",
     )
     parser.add_argument(
         "--k-window",
@@ -121,6 +122,9 @@ def main() -> None:
     elif args.detector == "subspace":
         nombre_detector = "sixeyes_subspace"
         fabrica_detector = lambda: SubspaceResidualDetector()
+    elif args.detector == "master_spectral_peak":
+        nombre_detector = "sixeyes_master_spectral_peak"
+        fabrica_detector = lambda: MasterSpectralPeakDecay()
     else:
         raise ValueError(f"Detector desconocido: {args.detector}")
 
