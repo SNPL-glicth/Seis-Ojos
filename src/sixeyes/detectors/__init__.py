@@ -1,11 +1,9 @@
 """Módulo de detectores oficiales de anomalías.
 
-Pipeline oficial congelado:
-    SeasonalDualScaleRobustZ + PercentileCalibrator + StreamingPeakDecay(K=12, tau=2.0)
+Pipeline oficial vigente:
+    RefractorySuppressor + SpatialSpikeBypass + StreamingPeakDecay + PercentileCalibrator + EchoStatePredictor
 
 Solo se exportan componentes oficiales + baselines causales mínimos.
-BiSeasonal, Combinado/MaxOfDetectors, DelayEmbedding y RampGradient viven en
-``sixeyes.experimental`` (no oficiales) y no forman parte del namespace oficial.
 """
 
 from sixeyes.detectors.aleatorio import RandomDetector
@@ -17,6 +15,16 @@ from sixeyes.detectors.echo_state import EchoStatePredictor
 from sixeyes.detectors.calibrador_percentil import PercentileCalibrator
 from sixeyes.detectors.subespacio import SubspaceResidualDetector
 from sixeyes.detectors.peak_decay import StreamingPeakDecay, DEFAULT_K_WINDOW, DEFAULT_TAU
+from sixeyes.detectors.refractory_suppressor import (
+    RefractorySuppressor,
+    DEFAULT_W_REST,
+    DEFAULT_TRIGGER_THRESHOLD,
+)
+from sixeyes.detectors.spatial_spike_bypass import (
+    SpatialSpikeBypass,
+    DEFAULT_SPATIAL_TOLERANCE,
+    DEFAULT_WARMUP,
+)
 
 __all__ = [
     "Detector",
@@ -29,6 +37,12 @@ __all__ = [
     "PercentileCalibrator",
     "SubspaceResidualDetector",
     "StreamingPeakDecay",
+    "RefractorySuppressor",
+    "SpatialSpikeBypass",
     "DEFAULT_K_WINDOW",
     "DEFAULT_TAU",
+    "DEFAULT_W_REST",
+    "DEFAULT_TRIGGER_THRESHOLD",
+    "DEFAULT_SPATIAL_TOLERANCE",
+    "DEFAULT_WARMUP",
 ]

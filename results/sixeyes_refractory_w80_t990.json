@@ -1,0 +1,14 @@
+{
+    "config": {
+        "bucket_minutes": 15,
+        "cal_window": 16000,
+        "k_window": 24,
+        "tau": 2.0
+    },
+    "detector": "sixeyes_refractory_w80_t990",
+    "scores": {
+        "reward_low_FN_rate": 68.44695492731546,
+        "reward_low_FP_rate": 43.40258819822537,
+        "standard": 60.80745461437347
+    }
+}

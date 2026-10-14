@@ -31,6 +31,8 @@ from sixeyes.detectors.zscore_robusto import RollingRobustZ
 from sixeyes.detectors.seasonal import DailySeasonalRobustZ
 from sixeyes.detectors.dual_scale import SeasonalDualScaleRobustZ
 from sixeyes.detectors.echo_state import EchoStatePredictor
+from sixeyes.detectors.refractory_suppressor import RefractorySuppressor
+from sixeyes.detectors.spatial_spike_bypass import SpatialSpikeBypass
 from sixeyes.experimental.rank_ensemble import RankEnsembleESN
 # No oficiales: importación directa de módulo (no del namespace oficial).
 from sixeyes.detectors.biseasonal import BiSeasonalRobustZ
@@ -43,6 +45,7 @@ RUTA_DEFECTO_NAB = NAB_DIR
 
 # Única lista válida: coincide 1:1 con las ramas implementadas abajo.
 DETECTORES_SOPORTADOS = [
+    "refractory",
     "peak_decay",
     "dual_decay",
     "seasonal_decay",
@@ -70,6 +73,15 @@ def build_factory(detector: str, bucket_minutes: int, k_window: int, tau: float,
     tau_tag = str(tau).replace(".", "p")
     cal_tag = f"_w{cal_window}" if cal_window > 0 else "_wInf"
     max_hist = cal_window if cal_window > 0 else None
+    if detector == "refractory":
+        def factory_ref(mh=max_hist, kw=k_window, t=tau):
+            esn = EchoStatePredictor(seed=42)
+            cal = PercentileCalibrator(esn, max_history=mh)
+            decay = StreamingPeakDecay(cal, k_window=kw, tau=t)
+            spatial = SpatialSpikeBypass(decay, tolerance=0.05, warmup=100)
+            return RefractorySuppressor(spatial, w_rest=80, trigger_threshold=0.990)
+        name = "sixeyes_refractory_w80_t990"
+        return factory_ref, name
     if detector == "peak_decay":
         def factory(mh=max_hist, kw=k_window, t=tau):
             return StreamingPeakDecay(

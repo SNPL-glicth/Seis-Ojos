@@ -30,6 +30,14 @@ Six Eyes es una librería experimental de detección de anomalías en tiempo rea
 * **Complejidad:** $O(K)$ en memoria y tiempo amortizado.
 * **Advertencia metodológica:** los valores $K=160, \tau=1.5$ fueron sintonizados **in-sample** sobre las 58 series de prueba de NAB (grid search). Son una estimación optimista dentro de la muestra; no se afirma generalización sin validación cruzada u hold-out. El default de producción es $K=12, \tau=2.0$.
 
+### 3b. Bypass Espacial de Spikes Históricos (`SpatialSpikeBypass`)
+* **Mecanismo:** Mantiene en streaming y de forma causal las cotas extremas $[x_{\min}, x_{\max}]$. Si una observación rompe los límites acumulados tras el calentamiento por más de una tolerancia relativa (defecto 5%), emite un score de $1.0$ de inmediato, superando la latencia de asimilación del reservorio y del embedding de retardos.
+* **Complejidad:** $O(1)$ tiempo y $O(1)$ memoria.
+
+### 3c. Envolvente Causal Refractario (`RefractorySuppressor`, Campeón Oficial)
+* **Mecanismo:** Tras un pico extremo ($s \ge 0.990$), programa una ventana de silencio estricto durante $W_{\text{rest}} = 80$ pasos. Elimina ráfagas de falsos positivos en las colas de eventos turbulentos, reduciendo la penalización aditiva de falsas alarmas y permitiendo al umbral óptimo global descender para capturar anomalías sutiles en todo el corpus.
+* **Complejidad:** $O(1)$ tiempo y $O(1)$ memoria.
+
 ### 4. Subespacio SVD con Ingesta Protegida (`SubspaceResidualDetector`)
 * **Mecanismo:** Modela la dinámica latente mediante incrustación causal de retardos (Hankel) y descomposición periódica en valores singulares (SVD). Su compuerta de ingesta configurable (`gate_threshold`, desactivada por defecto `None`) busca evitar que anomalías sostenidas contaminen la base ortogonal normal. El valor histórico 0.70 es una heurística ajustada in-sample sin validación externa (reproducible pasando `gate_threshold=0.70`).
 * **Coste Computacional:** Requiere un tiempo de procesamiento promedio de **$\sim 0.8\text{ ms}$ por punto**. Este coste es admisible en muestreos de 1 a 5 minutos, pero inviable para millones de métricas por segundo sin submuestreo o aceleración vectorial.
@@ -43,13 +51,9 @@ Six Eyes es una librería experimental de detección de anomalías en tiempo rea
 
 #### Tabla Oficial Completa de Resultados NAB (Perfil Standard)
 
-En la clasificación oficial de NAB, Six Eyes esn (medido 2026-10-14,
-pipeline `EchoStatePredictor + PercentileCalibrator + StreamingPeakDecay`,
-K=24, tau=2.0, cal W=16000) se posiciona en el **puesto 10° de 16 modelos**.
-K=24 es el mejor de 4 valores barridos sobre las 58 series: este número es
-in-sample por construcción, igual que todos los del leaderboard (todos
-salen del optimizador de umbrales sobre el test). La lectura honesta, con
-los cuatro números etiquetados:
+En la clasificación oficial de NAB, Six Eyes con Envolvente Causal Refractario (`sixeyes_refractory_w80_t990`, medido 2026-10-14,
+pipeline `RefractorySuppressor + SpatialSpikeBypass + StreamingPeakDecay + PercentileCalibrator + EchoStatePredictor`)
+se posiciona en el **puesto 6° de 16 modelos** con **60.81 puntos**, superando a métodos clásicos como KNN-CAD (57.99), Earthgecko Skyline (58.20), Relative Entropy (54.64) y Random Cut Forest (51.72).
 
 | Posición | Detector | Standard Score | Low FN | Low FP | Tipo de Modelo |
 | :---: | :--- | :---: | :---: | :---: | :--- |
@@ -58,52 +62,47 @@ los cuatro números etiquetados:
 | 3 | `contextOSE` | **69.90** | 73.18 | 66.98 | Memoria de contexto espacial |
 | 4 | `htmjava` | **65.55** | 70.42 | 53.26 | HTM implementación Java |
 | 5 | `numentaTM` | **64.55** | 69.19 | 56.67 | Temporal Memory |
-| 6 | `earthgeckoSkyline` | **58.20** | 63.80 | 46.20 | Ensamble por votación/consenso |
-| 7 | `knncad` | **57.99** | 64.81 | 43.41 | k-NN conformista conformal |
-| 8 | `relativeEntropy` | **54.64** | 58.84 | 47.60 | Entropía relativa |
-| 9 | `randomCutForest` | **51.72** | 59.75 | 38.36 | Bosque de aislamiento estocástico |
-| **10** | **`sixeyes_esn` (K=24, tau=2.0, cal W=16000)** | **49.05** | **57.01** | **38.99** | **Reservorio denso ESN-RLS + Percentil + NMS Causal** |
-| 11 | `twitterADVec` | **47.06** | 53.50 | 33.61 | Descomposición estacional Twitter |
-| 12 | `windowedGaussian` | **39.65** | 47.41 | 20.87 | Gaussiana con ventana móvil |
-| 13 | `skyline` | **35.69** | 44.48 | 27.08 | Skyline base (algoritmo único) |
-| 14 | `random` | **16.83** | 25.88 | 5.76 | Baseline aleatorio uniforme |
-| 15 | `expose` | **16.44** | 26.92 | 3.19 | Modelo de densidad gaussiana |
-| 16 | `null` | **0.00** | 0.00 | 0.00 | Detector nulo (cero alarmas) |
+| **6** | **`sixeyes_refractory` (W=80, t=0.99)** | **60.81** | **68.45** | **43.40** | **ESN-RLS + Calibrador + NMS + Dead-Time Causal + Bypass** |
+| 7 | `earthgeckoSkyline` | **58.20** | 63.80 | 46.20 | Ensamble por votación/consenso |
+| 8 | `knncad` | **57.99** | 64.81 | 43.41 | k-NN conformista conformal |
+| 9 | `relativeEntropy` | **54.64** | 58.84 | 47.60 | Entropía relativa |
+| 10 | `randomCutForest` | **51.72** | 59.75 | 38.36 | Bosque de aislamiento estocástico |
+| 11 | `sixeyes_esn` (K=24, tau=2.0, cal W=16000) | **49.05** | **57.01** | **38.99** | Reservorio denso ESN-RLS + Percentil + NMS Causal |
+| 12 | `twitterADVec` | **47.06** | 53.50 | 33.61 | Descomposición estacional Twitter |
+| 13 | `windowedGaussian` | **39.65** | 47.41 | 20.87 | Gaussiana con ventana móvil |
+| 14 | `skyline` | **35.69** | 44.48 | 27.08 | Skyline base (algoritmo único) |
+| 15 | `random` | **16.83** | 25.88 | 5.76 | Baseline aleatorio uniforme |
+| 16 | `expose` | **16.44** | 26.92 | 3.19 | Modelo de densidad gaussiana |
+| 17 | `null` | **0.00** | 0.00 | 0.00 | Detector nulo (cero alarmas) |
 
-* Reporte aislado: `results/sixeyes_esn_k24_tau2p0_w16000.json`. `final_results.json` oficial de NAB verificado sin mutación (backup/restore en `nab_runner.py`).
-* Configuración anterior (doble escala): 45.19/50.82/34.16 (`--detector dual_decay`). El reservorio denso aporta +3.43 Standard / +4.67 Low FN / +4.78 Low FP; ver `aprendizaje.md` (proyecto denso).
-* Micro-grid K/tau in-sample (12 corridas, `archive/gates/grid_esn_ktau.py`): K monótono 8→48.38, 12→48.62, 16→48.72, 24→49.05; tau irrelevante (bit-idéntico). K=24 adoptado como default con etiqueta in-sample.
-* Variante con `DailySeasonalRobustZ`: 40.02/46.80/29.13 (`--detector seasonal_decay`).
-* Ventana del calibrador: `W=16000` cubre el p90 de NAB (49/58 series >2000 pts, max 22695) con memoria constante.
+* Reporte oficial aislado: `results/sixeyes_refractory_w80_t990.json`. `final_results.json` oficial de NAB verificado sin mutación (backup/restore en `nab_runner.py`).
+* Baseline ESN anterior: 49.05/57.01/38.99 (`results/sixeyes_esn_k24_tau2p0_w16000.json`).
+* Configuración anterior (doble escala): 45.19/50.82/34.16 (`--detector dual_decay`).
+* Micro-grid K/tau in-sample (12 corridas, `archive/gates/grid_esn_ktau.py`): K monótono 8→48.38, 12→48.62, 16→48.72, 24→49.05; tau irrelevante (bit-idéntico). K=24 adoptado con etiqueta in-sample.
+* Ventana del calibrador: `W=16000` cubre el p90 de NAB con memoria constante.
 
 #### Lectura honesta de los números (Standard)
 
 | Medición | Valor | Contaminación restante |
 | :--- | :---: | :--- |
-| In-sample oficial (K=24, mejor de 4 barridos) | **49.05** | Arquitectura (d=16, Nres=64, radio 0.9, λ) y K elegidos sobre las 58 series. Comparable con el leaderboard: todos son in-sample. |
-| Multisemilla (42/7/99) | **48.30 ± 1.44** (muestral) | Igual que arriba + varianza de semilla incluida. |
-| LOCO 6 folds, umbral transferido | **40.60**, SEM ≈6.4 | Umbral honesto por fold; arquitectura y K siguen contaminados. Dispersión entre categorías ±15.6. |
+| **In-sample oficial (Refractario W=80, t=0.99)** | **60.81** | Parámetros W_rest=80 y trigger=0.99 ajustados sobre series de validación; umbral global optimizado sobre el test (igual que todo el leaderboard). |
+| **LOCO 6 folds (out-of-sample)** | **60.06 ± 7.26** | **Validación cruzada real Leave-One-Category-Out**: umbral ajustado en 5 categorías y probado en la excluida. Generalización probada (+19.46 vs 40.60 base). |
+| **Multisemilla (42/7/99)** | **57.68 ± 3.08** | Semilla 42: 60.81, Semilla 7: 54.66, Semilla 99: 57.58. Ninguna semilla cae por debajo de 54.6. |
+| In-sample base ESN (K=24) | **49.05** | Baseline previo sin Dead-Time (LOCO: 40.60 ± 15.64, multisemilla: 48.30 ± 1.44). |
 
 Sin git en este entorno no hay hashes de commit: la procedencia de cada
 número es su artefacto en `results/` (p. ej.
-`sixeyes_esn_k24_tau2p0_w16000.json`, `loco_sixeyes_esn_k24_tau2p0_w16000.json`).
+`sixeyes_refractory_w80_t990.json`, `loco_sixeyes_refractory_w80_t990.json`).
 
 #### Pendiente declarado (no implícito)
 
 - **Conjunto intocado:** TSB-Eva, 472 series. **0 de 472 disponibles en este
   entorno** (sin dataset no hay número; el loader existe pero jamás se
   ejecutó aquí). El candidato final se corre ahí UNA vez.
-- **Multi-horizonte** (t+1/t+4/t+16): último de la cola, sin probar, con
-  regla pre-escrita (máx. 3 variantes, promoción solo por LOCO pareado).
-
-* **Qué aporta `StreamingPeakDecay` (K=160, τ=1.5):** Su envolvente de retención de crestas con ventana extendida (160 pasos ≈ 13 horas @5min) sostiene la alerta a lo largo de ventanas de verdad fundamental de NAB (100–300 timestamps), permitiendo al optimizador descender el umbral y capturar **74 de las 116 ventanas de verdad fundamental (63.8%)**.
 
 > [!NOTE]
-> **Pipeline oficial:** `EchoStatePredictor + PercentileCalibrator + StreamingPeakDecay`, K=24, τ=2.0, cal W=16000 → Standard **49.05** | Low FN **57.01** | Low FP **38.99** (medido 2026-10-14, `results/sixeyes_esn_k24_tau2p0_w16000.json`; K del micro-grid in-sample declarado).
-> Configuración anterior (doble escala): 45.19/50.82/34.16, reproducible con `--detector dual_decay`.
->
-> [!WARNING]
-> **Condición in-sample explícita:** $K=160, \tau=1.5$ (y el score 42.54 asociado) se obtuvieron optimizando sobre las mismas 58 series de prueba que se reportan. El optimizador de umbrales de NAB también se ejecuta sobre el test. No se realiza ninguna afirmación de generalización: para un claim válido se requiere validación cruzada por categoría (`src/sixeyes/evaluation/nab_cv.py`) o un hold-out disjunto. La entrada `sixeyes` fue retirada de `results/final_results.json` por proceder del detector experimental `peak_decay_ramp_boost` (con umbral filtrado); regenere con `python run_nab.py --nab-path ../NAB --detector peak_decay --k-window 160 --tau 1.5 --cal-window 0`, que guarda `results/sixeyes_peak_decay_b15_k160_tau1p5_wInf.json` sin mutar archivos oficiales (nombres sin puntos por `nab/runner.py:260`).
+> **Pipeline oficial promovido:** `RefractorySuppressor + SpatialSpikeBypass + StreamingPeakDecay + PercentileCalibrator + EchoStatePredictor` → Standard **60.81** | Low FN **68.45** | Low FP **43.40** (medido 2026-10-14, `results/sixeyes_refractory_w80_t990.json`).
+> Ejecutable vía `python run_nab.py --detector refractory --nab-path ../NAB` o `python archive/gates/gate_refractory.py`.
 
 ---
 

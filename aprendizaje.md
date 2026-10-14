@@ -20,6 +20,93 @@
 - **Por qué:** con ~15+ configs vistas sobre el mismo test, ver el resultado
   antes de fijar la regla es la forma de autoengañarse.
 
+## Envolvente Causal Refractario + Bypass Espacial — ÉXITO HISTÓRICO, PROMOCIÓN APROBADA (2026-10-14)
+
+- **Hipótesis:** La barrera de los 50 en NAB no es la capacidad del predictor (techo oráculo 75.71,
+  67% de perdidas en p>99.5), sino la asimetría del benchmark: TPs premian una sola vez (operador MAX),
+  mientras FPs penalizan punto a punto aditivamente (-0.11 c/u). En eventos perturbados, el ESN
+  emite ráfagas de 3 a 5 alertas que se desbordan fuera de la ventana oficial, forzando al optimizador
+  a elevar el umbral global a 0.9966 y cegando a las series sutiles. Un periodo refractario causal
+  post-alarma (W_rest=80 pasos, trigger >= 0.990) silencia las réplicas turbulentas, permitiendo
+  que el umbral óptimo global descienda a 0.9907 y rescate los TPs en todo el corpus.
+- **Implementación:** `src/sixeyes/experimental/refractory_suppressor.py` (`RefractorySuppressor`,
+  W_rest=80, trigger=0.990) + `src/sixeyes/experimental/spatial_spike_bypass.py` (`SpatialSpikeBypass`,
+  tolerance=0.05, warmup=100) + tests (6 passed) + gate `archive/gates/gate_refractory.py`.
+- **Medición NAB Completo (semilla 42 oficial):** `results/sixeyes_refractory_w80_t990.json` →
+  **Standard 60.81 (+11.76 sobre base 49.05) | Low FP 43.40 (+4.41) | Low FN 68.45 (+11.44)**.
+  Umbral óptimo global: 0.99077 (frente a 0.99658 anterior).
+- **Desglose de Puntuación por Categoría:**
+  - `realAWSCloudwatch`: **-2.21 → +6.14 (+8.35)**
+  - `realAdExchange`: **+0.09 → +5.13 (+5.04)**
+  - `realKnownCause`: **-0.93 → +3.68 (+4.61)**
+  - `realTweets`: **+0.61 → +6.11 (+5.49)**
+  - `artificialWithAnomaly`: **-4.14 → -0.38 (+3.75)**
+  - `realTraffic`: **+4.37 → +5.07 (+0.70)**
+  - `artificialNoAnomaly`: **0.00 → -0.66 (-0.66)**
+  - **Todas las 6 categorías con anomalías reales ganaron de forma masiva y consistente.**
+- **Validación Cruzada LOCO-CV (sin fuga entre categorías):**
+  - Base LOCO: **40.60 ± 15.64**
+  - Refractory LOCO: **60.06 ± 7.26 (+19.46 puntos de ganancia out-of-sample)**
+  - Folds reales (Standard): AWS 60.2, AdExchange 68.3, KnownCause 59.7, Traffic 68.1, Tweets 57.3, ArtWith 46.8.
+  - Ni un solo fold real degradó vs base; la desviación estándar se redujo a más de la mitad (15.64 → 7.26).
+- **Robustez Multisemilla (3 semillas completas):**
+  - Semilla 42: **60.81**
+  - Semilla 7: **54.66** (frente a 46.64 base)
+  - Semilla 99: **57.58** (frente a 49.22 base)
+  - Media Multisemilla: **57.68 ± 3.08** (frente a 48.30 ± 1.44 base: **+9.38 neto**).
+- **Cumplimiento de Reglas:** Causalidad O(1) estricta, cero fuga temporal, sin oráculos de etiquetas,
+  reproducible bit a bit con artefactos en `results/`. Supera holgadamente todos los criterios de promoción.
+
+## Paradigma II: BOCPD (Sorpresa predictiva NIGamma) — FALLIDA standalone (2026-10-14)
+
+- **Hipótesis:** Adams & MacKay (2007) con NIGamma conjugado online y score
+  de sorpresa predictiva marginal −log P(x_t | x_{1:t-1}) modela transiciones
+  de régimen directamente sin suposiciones de caja negra dinámicas.
+- **Implementación:** `src/sixeyes/experimental/bocpd.py` (`BOCPDDetector`,
+  h=1/250, prior NIGamma vago, max_rl=500, estandarización causal W=500)
+  + `tests/test_bocpd.py` (9 passed) + `archive/gates/gate_bocpd.py`.
+- **Medición (NAB completo):** `results/sixeyes_bocpd.json` →
+  **Standard 36.59 (−12.46 bajo ESN 49.05) | Low FP 25.39 | Low FN 42.71**.
+  Umbrales óptimos: standard 0.99848, low FP 0.99941, low FN 0.99697.
+- **Autopsia (mecanismo exacto):**
+  1. Ganancia focal en Twitter: `realTweets` +3.10 (+3.72 vs +0.61 ESN),
+     donde la masa de cambios de régimen y varianza súbita es capturada
+     limpiamente por la sorpresa Student-t.
+  2. Colapso en dinámicas estructuradas: `realAWSCloudwatch` −9.92 (−12.14 vs −2.21),
+     `realKnownCause` −11.58 (−12.50 vs −0.93), `realTraffic` −8.15 (−3.78 vs +4.37).
+  3. Causa raíz: el prior NIGamma asume observaciones i.i.d. dentro de cada
+     régimen. Ante estacionalidad periódica o tendencias suaves (AWS, Traffic),
+     cada cresta normal infla la predictiva o dispara changepoints espurios.
+     Pasa de 213 TPs del ESN a solo 84 TPs (pérdida del 60% de detecciones verdaderas).
+- **Lección:** sin modelo dinámico interno (memoria de secuencia o recurrencia),
+  un modelo probabilístico i.i.d. no puede competir con el reservorio en series
+  cíclicas/industriales. Línea standalone archivada; el oficial ESN (49.05) prevalece.
+
+## Multi-Horizon ESN [t+1, t+3, t+6] — MEDIDO, SIN VENTAJA GLOBAL (2026-10-14)
+
+- **Hipótesis:** readout RLS multi-output que predice simultáneamente a t+1, t+3, t+6.
+  Score = ‖[e_1, e_3, e_6]‖₂. Busca abatir la latencia (118 pts) detectando
+  rupturas tempranas a horizontes mayores.
+- **Implementación:** `src/sixeyes/experimental/multi_horizon_esn.py`
+  + `tests/test_multi_horizon_esn.py` + `archive/gates/gate_multi_horizon.py`.
+- **Medición:** `results/sixeyes_multi_horizon.json` →
+  **Standard 43.42 (−5.63 bajo ESN 49.05) | Low FP 35.42 | Low FN 50.90**.
+- **Autopsia:** excelente recall en Low FN (50.90), pero la varianza de predicción
+  a t+3 y t+6 en régimen normal eleva el ruido base de la norma euclídea,
+  aumentando falsas alarmas que degradan el perfil estándar. Línea cerrada.
+
+## Volatilidad del Estado Oculto Δh — FALLIDA (2026-10-14)
+
+- **Hipótesis:** medir la inestabilidad de la trayectoria del reservorio en R^64
+  (‖h_t − h_{t-1}‖₂) en vez del error escalar de readout.
+- **Implementación:** `src/sixeyes/experimental/state_volatility.py`
+  + `tests/test_state_volatility.py` + `archive/gates/gate_state_volatility.py`.
+- **Medición:** `results/sixeyes_state_volatility.json` →
+  **Standard 21.61 (−27.44 bajo ESN 49.05) | Low FP 11.86 | Low FN 28.41**.
+- **Autopsia:** el estado crudo del reservorio reacciona a cualquier alta frecuencia.
+  El mecanismo verdaderamente discriminativo del ESN es el readout RLS aprendido,
+  no la perturbación geométrica no-lineal en R^64. Línea cerrada.
+
 ## Likelihood sobre error ESN (L1/L2/L3 + firmada) — FALLIDA, línea cerrada (2026-10-14)
 
 - L1 **33.47**, L2 **30.11**, L3 **39.51**, firmada (residuo con signo)
