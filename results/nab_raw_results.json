@@ -60,7 +60,9 @@
         "standard": 54.64274893469828
     },
     "sixeyes": {
-        "peak_decay_b15_k160_tau1": 49.564047558785866
+        "peak_decay_ramp_boost_reward_low_FN_rate": 51.58794355781136,
+        "peak_decay_ramp_boost_reward_low_FP_rate": 28.479535167576515,
+        "peak_decay_ramp_boost_standard": 43.54492848012602
     },
     "skyline": {
         "reward_low_FN_rate": 44.4810173429885,

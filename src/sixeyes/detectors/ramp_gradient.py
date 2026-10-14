@@ -31,6 +31,9 @@ class CausalRampGradientTracker(Detector):
         w_scale: int = 1000,
         min_warmup: int = 20,
         eps: float = 1e-6,
+        min_scale_frac: float = 1e-3,
+        max_delta: float = 5.0,
+        max_abs_d: float = 50.0,
     ) -> None:
         """Inicializa el rastreador de rampa.
 
@@ -39,11 +42,18 @@ class CausalRampGradientTracker(Detector):
             w_scale: Tamaño máximo del buffer para estimar MAD global causal.
             min_warmup: Mínimo de observaciones requeridas para computar escala.
             eps: Regularización para evitar división por cero.
+            min_scale_frac: Fracción mínima de escala relativa a la mediana
+                (evita explosión cuando el MAD colapsa en tramos flatline).
+            max_delta: Cota por paso de |delta_t| (acota |D_t| <= max_delta/(1-gamma)).
+            max_abs_d: Cota dura de |D_t|.
         """
         self.gamma = gamma
         self.w_scale = w_scale
         self.min_warmup = min_warmup
         self.eps = eps
+        self.min_scale_frac = min_scale_frac
+        self.max_delta = max_delta
+        self.max_abs_d = max_abs_d
 
         self._prev_val: float | None = None
         self._d_t: float = 0.0
@@ -79,9 +89,12 @@ class CausalRampGradientTracker(Detector):
             arr = np.array(self._val_buffer)
             med = float(np.median(arr))
             mad = float(np.median(np.abs(arr - med))) * 1.4826
-            escala = max(mad, self.eps)
+            min_scale = self.min_scale_frac * max(abs(med), 1.0)
+            escala = max(mad, min_scale, self.eps)
             delta = diff / escala
+            delta = max(-self.max_delta, min(self.max_delta, delta))
             self._d_t = self.gamma * self._d_t + delta
+            self._d_t = max(-self.max_abs_d, min(self.max_abs_d, self._d_t))
         else:
             self._d_t = 0.0
 

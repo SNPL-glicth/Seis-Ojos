@@ -13,11 +13,14 @@ from sixeyes.detectors.gram_tracker import GramSubspaceTracker
 from sixeyes.detectors.active_drift import ActiveCentroidDriftTracker
 from sixeyes.detectors.causal_multiscale_lds import (
     CausalFeatureExtractor,
+    OnlineEKF,
+    OnlineUKF,
     OnlineLDS,
     CausalMultiscaleLDS,
 )
 from sixeyes.detectors.causal_spectral import CausalSTFTDetector
 from sixeyes.detectors.master_spectral_peak import MasterSpectralPeakDecay
+from sixeyes.detectors.peak_decay_ramp_boost import PeakDecayRampBoost
 
 __all__ = [
     "Detector",
@@ -33,8 +36,11 @@ __all__ = [
     "GramSubspaceTracker",
     "ActiveCentroidDriftTracker",
     "CausalFeatureExtractor",
+    "OnlineEKF",
+    "OnlineUKF",
     "OnlineLDS",
     "CausalMultiscaleLDS",
     "CausalSTFTDetector",
     "MasterSpectralPeakDecay",
+    "PeakDecayRampBoost",
 ]
