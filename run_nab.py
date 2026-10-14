@@ -30,6 +30,7 @@ from sixeyes.detectors.aleatorio import RandomDetector
 from sixeyes.detectors.zscore_robusto import RollingRobustZ
 from sixeyes.detectors.seasonal import DailySeasonalRobustZ
 from sixeyes.detectors.dual_scale import SeasonalDualScaleRobustZ
+from sixeyes.detectors.echo_state import EchoStatePredictor
 # No oficiales: importación directa de módulo (no del namespace oficial).
 from sixeyes.detectors.biseasonal import BiSeasonalRobustZ
 from sixeyes.detectors.calibrador_percentil import PercentileCalibrator
@@ -42,6 +43,7 @@ RUTA_DEFECTO_NAB = NAB_DIR
 # Única lista válida: coincide 1:1 con las ramas implementadas abajo.
 DETECTORES_SOPORTADOS = [
     "peak_decay",
+    "dual_decay",
     "seasonal_decay",
     "seasonal_pct",
     "seasonal",
@@ -67,7 +69,16 @@ def build_factory(detector: str, bucket_minutes: int, k_window: int, tau: float,
     cal_tag = f"_w{cal_window}" if cal_window > 0 else "_wInf"
     max_hist = cal_window if cal_window > 0 else None
     if detector == "peak_decay":
-        def factory(bm=bucket_minutes, kw=k_window, t=tau, mh=max_hist):
+        def factory(mh=max_hist, kw=k_window, t=tau):
+            return StreamingPeakDecay(
+                PercentileCalibrator(EchoStatePredictor(), max_history=mh),
+                k_window=kw,
+                tau=t,
+            )
+        name = f"sixeyes_esn_k{k_window}_tau{tau_tag}{cal_tag}"
+        return factory, name
+    if detector == "dual_decay":
+        def factory_dual(bm=bucket_minutes, kw=k_window, t=tau, mh=max_hist):
             return StreamingPeakDecay(
                 PercentileCalibrator(SeasonalDualScaleRobustZ(bucket_size_minutes=bm),
                                      max_history=mh),
@@ -75,7 +86,7 @@ def build_factory(detector: str, bucket_minutes: int, k_window: int, tau: float,
                 tau=t,
             )
         name = f"sixeyes_dualscale_b{bucket_minutes}_k{k_window}_tau{tau_tag}{cal_tag}"
-        return factory, name
+        return factory_dual, name
     if detector == "seasonal_decay":
         def factory_seasonal(bm=bucket_minutes, kw=k_window, t=tau, mh=max_hist):
             return StreamingPeakDecay(

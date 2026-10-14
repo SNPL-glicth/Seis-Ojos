@@ -12,7 +12,9 @@
 | **`Combinado` (Subespacio + Estacional)** | 0.3153 (TSB) | - | - | **Descartado:** No superó el umbral pactado (0.3226). Pérdida severa en SMD (0.740 $\to$ 0.298) y Exathlon (0.956 $\to$ 0.184). |
 | **`StreamingPeakDecay` ($K=8, \tau=2.0$)** | 39.78 | 46.63 | 28.93 | Supresión de réplicas en ventana de 40 min. |
 | **`StreamingPeakDecay` ($K=10, \tau=2.0$)** | 39.88 | 46.70 | 29.04 | Supresión de réplicas en ventana de 50 min. |
-| **`SeasonalDualScaleRobustZ` + Percentil + `StreamingPeakDecay` ($K=12, \tau=2.0, W=16000)** | **45.19** | **50.82** | **34.16** | **Configuración oficial:** centro estacional + escala dual `max(MAD, std_global)`. Determinista bit a bit. Debilidad: AdExchange −3.91. |
+| **`StreamingPeakDecay` ($K=12, \tau=2.0$)** | 40.02 | 46.80 | 29.13 | Supresión en 1 hora; 69/116 ventanas (in-sample). |
+| **`SeasonalDualScaleRobustZ` + Percentil + `StreamingPeakDecay` ($K=12, \tau=2.0, W=16000)** | 45.19 | 50.82 | 34.16 | Doble escala `max(MAD, std_global)`; determinista. Debilidad: AdExchange −3.91. |
+| **`EchoStatePredictor` + Percentil + `StreamingPeakDecay` ($K=12, \tau=2.0, W=16000)** | **48.62** | **55.49** | **38.94** | **Configuración oficial:** reservorio denso ESN-RLS (d=16, Nres=64). Determinista bit a bit. Debilidad: artificial −5.08. |
 
 ---
 
@@ -22,7 +24,7 @@
    Todos los valores de $K$ y $\tau$ —incluidos $K=12$ y $K=160, \tau=1.5$— se determinaron mediante barrido sobre las mismas 58 series evaluadas. Si bien la curva es suave ($K=8 \to 39.78$, $K=12 \to 40.02$, $\Delta = 0.24$), representa una estimación optimista dentro de la muestra. El optimizador de umbrales oficial de NAB también opera sobre el test. Sin validación cruzada por categoría ni hold-out disjunto no se afirma generalización.
 2. **Limpieza de resultados comprometidos (refactor):**
    La entrada `sixeyes` (43.54) fue retirada de `results/final_results.json` y `results/nab_raw_results.json` por proceder del detector experimental `peak_decay_ramp_boost` con umbral filtrado del test (`theta_star=0.9966…`). Regenere de forma honesta con `python run_nab.py --detector peak_decay --k-window 160 --tau 1.5`, que escribe `results/sixeyes_<config>.json` sin mutar archivos oficiales. `run_nab.py` ya no admite variantes fantasma (`zscore_v2/v3`, `intermittent_gated`, `peak_decay_rescued`) ni detectores experimentales.
-2. **Posición Global en el Benchmark NAB:**
-   Con 40.02 puntos Standard, Six Eyes se ubica en el puesto **11° de 16 modelos oficiales** (sin contar `null`). Supera a baselines establecidos como `skyline` (35.69) y `windowedGaussian` (39.65), pero se sitúa por debajo de modelos con aprendizaje en línea (p. ej. ART, HTM) como `ARTime` (74.85) o `numenta` (70.10), y de `twitterADVec` (47.06).
-3. **Subconjunto de Ajuste en TSB-AD y Verdad sobre Eva:**
+3. **Posición Global en el Benchmark NAB:**
+   Con 48.62 puntos Standard, Six Eyes se ubica en el puesto **10° de 16 modelos oficiales** (sin contar `null`). Supera a `twitterADVec` (47.06), `windowedGaussian` (39.65) y `skyline` (35.69), y se sitúa por debajo de `randomCutForest` (51.72) y de modelos con aprendizaje en línea (p. ej. ART, HTM) como `ARTime` (74.85) o `numenta` (70.10).
+4. **Subconjunto de Ajuste en TSB-AD y Verdad sobre Eva:**
    El puntaje de **0.3572 VUS-PR** se obtuvo estrictamente sobre el subconjunto de ajuste de 43 series de TSB-AD (Tuning Set, excluyendo NAB). La referencia de $\sim 0.42$ VUS-PR de los mejores modelos de la literatura corresponde al conjunto de evaluación *Eva* de 350 series. El conjunto extendido *Eva-Full* consta de 822 series reales (las 350 de Eva más 472 series de evaluación intocadas que no forman parte de Eva ni de Tuning). La evaluación sobre estas 472 series intocadas permanece pendiente.

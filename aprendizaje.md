@@ -1,9 +1,40 @@
 # Aprendizaje — registro vivo de experimentos Six Eyes
 
 > Todo lo intentado, medido y archivado. Cada entrada: hipótesis → medición → autopsia → lección.
-> Regla: ningún número sin artefacto en `results/`; ninguna promoción sin gate superado.
+> Regla: ningún número sin artefacto en `results/`; ninguna vigencia sin medición superada.
 
-## ACTA DE CIERRE — v0.3-final (2026-10-14)
+## Proyecto denso ESN-RLS — SUPERADO, VIGENTE (2026-10-14)
+
+- **Hipótesis:** la geometría continua preserva lo que la cuantización
+  destruye (actas markovianas): reservorio fijo + lectura RLS predicen en
+  denso y la sorpresa geométrica rescata ciegas y anticipa.
+- **Implementación:** `src/sixeyes/detectors/echo_state.py`
+  (`EchoStatePredictor`: d=16, Nres=64, radio 0.9, semilla 42, RLS λ=0.999;
+  0.07ms/pt medido) + `tests/test_echo_state.py` (5 passed).
+  `experimental/echo_state.py` es re-export.
+- **Medición:** `results/sixeyes_esn_k12_tau2p0_w16000.json` →
+  **Standard 48.62 (+3.43) | Low FN 55.49 (+4.67) | Low FP 38.94 (+4.78)**,
+  determinista bit a bit en re-ejecución. Por categoría: Traffic +5.30,
+  AdExchange +4.02, Tweets +2.29, KnownCause +2.04; artificial −5.08
+  (el reservorio aprende regularidad sintética: debilidad conocida).
+- **Estado:** vigente como base oficial (`--detector peak_decay`;
+  doble escala con `--detector dual_decay`). Puesto 10/16, por encima de
+  `twitterADVec` (47.06), debajo de `randomCutForest` (51.72).
+
+## ACTA DE CIERRE — v0.4 (2026-10-14)
+
+- **Resultado oficial:** Standard **48.62** | Low FN 55.49 | Low FP 38.94
+  (puesto 10/16 NAB, por encima de `twitterADVec`). Pipeline
+  `EchoStatePredictor + PercentileCalibrator(W=16000) + StreamingPeakDecay(K=12, τ=2.0)`.
+- **Garantías verificadas:** causalidad estricta (tests anti-fuga),
+  memoria acotada, determinismo bit a bit, `final_results.json` oficial
+  intacto (backup/restore), suite **175 passed / 4 skipped**, cero fugas.
+- **Balance:** 2 configuraciones vigentes de 15 evaluadas (doble escala
+  45.19, reservorio denso 48.62). Las vías escalares, transicionales de
+  orden 1/n sobre símbolos y todas las fusiones globales quedan falsadas
+  en `archive/`.
+
+### Registro anterior: cierre 45.19 (doble escala)
 
 - **Resultado oficial:** Standard **45.19** | Low FN 50.82 | Low FP 34.16
   (puesto 11/16 NAB, a 1.87 de `twitterADVec`). Pipeline
@@ -18,9 +49,9 @@
   secuencial densa (proyecto nuevo, no un intento más). Las vías escalares,
   transicionales de orden 1/n sobre símbolos y todas las fusiones globales
   quedan falsadas en `archive/`.
-- **Pendiente de entorno:** tag git `v0.3-final` (sin binario git en esta
+- **Pendiente de entorno:** tag git `v0.4` (sin binario git en esta
   máquina; crearlo donde exista git). `pyproject` + `sixeyes.__version__`
-  ya en 0.3.0.
+  ya en 0.4.0.
 
 ## Baseline congelado (2026-10-14)
 
@@ -29,7 +60,7 @@
 - Comando: `python run_nab.py --nab-path ../NAB` (K=12, tau=2.0, cal W=16000)
 - Detalle en `results/BASELINE.md`. `final_results.json` oficial verificado sin mutación.
 
-## FALLIDA (2026-10-14)
+## Período adaptativo — FALLIDA (2026-10-14)
 
 - **Hipótesis:** 96 buckets fijos de 15 min dejan 72 buckets muertos en las 7
   series horarias y desalinean el período en 1min/30min/10min/11min (3 series).
@@ -40,8 +71,8 @@
   `RollingRobustZ`, reset-invariante) + `tests/test_adaptive_seasonal.py`
   (7 passed). `src/sixeyes/detectors/` intacto.
 - **Medición (NAB completo, K=12, tau=2.0, W=16000):**
-  - Variante warmup 200 pts): `results/sixeyes_periodo_adaptativo_warmup200.json` → **36.08** (−3.94)
-  - Variante warmup 12 pts): `results/sixeyes_periodo_adaptativo_warmup12.json` → **39.12** (−0.90)
+  - Variante warmup 200 pts: `results/sixeyes_periodo_adaptativo_warmup200.json` → **36.08** (−3.94)
+  - Variante warmup 12 pts: `results/sixeyes_periodo_adaptativo_warmup12.json` → **39.12** (−0.90)
 - **Autopsia:**
   - v1: pérdidas en series de 5 min (realTweets −3.78), no en horarias
     (AdExchange +0.33). El fallback de 200 puntos sin estacionalidad perturbó
@@ -54,18 +85,18 @@
   cualquier warmup no estacional supera el beneficio cuando 48/58 series no
   necesitan cambio. Archivado. Detalle en `archive/periodo_adaptativo.md`.
 
-## Doble escala robusta — SUPERADA (vigente) (2026-10-14)
+## Doble escala robusta — SUPERADA (2026-10-14)
 
 - **Hipótesis:** la escala local W=20 se contamina en ráfagas (45 FPs IBM);
   una escala lenta global (std rodante W=6400, estilo `windowedGaussian`)
   como denominador conservador `max(MAD_local, std_global)` filtra mesetas
-  sin matar frentes. v2a (slot plano, sin estacionalidad) falló en gate
-  barato (+15% cola alta: la diurna sin modelar presiona); v2b compone
-  centro estacional por bucket + escala dual.
+  sin matar frentes. La variante de slot plano (sin estacionalidad) falló en
+  gate barato (+15% cola alta: la diurna sin modelar presiona); la
+  composición centro estacional + dual superó el gate NAB.
 - **Implementación:** `src/sixeyes/detectors/dual_scale.py`
-  (`SeasonalDualScaleRobustZ` oficial + `DualScaleRobustZ` fallback;
+  (`SeasonalDualScaleRobustZ` + `DualScaleRobustZ` fallback;
   `experimental/dual_scale_z.py` es re-export) + `tests/test_dual_scale_z.py`
-  (9 passed). Pipeline: `--detector peak_decay`; variante con buckets fijos
+  (9 passed). Medido con `--detector dual_decay`; variante con buckets fijos
   con `--detector seasonal_decay`.
 - **Medición (NAB completo, K=12, tau=2.0, W=16000):**
   `results/sixeyes_dualscale_b15_k12_tau2p0_w16000.json` →
@@ -74,17 +105,17 @@
   AWS +10.08, KnownCause +2.61, Traffic +2.06, Tweets +1.72;
   AdExchange −3.91 (series horarias: debilidad conocida).
 - **Lección:** la escala lenta global es el componente portable de
-  `windowedGaussian`; la estacionalidad no se negocia (v2a lo demostró).
+  `windowedGaussian`; la estacionalidad no se negocia (el slot plano lo demostró).
   Debilidad abierta: series horarias regresan — la std global sobre datos
   dispersos ensancha de más. Candidata: votante de densidad.
-- **Estado:** vigente en `src/sixeyes/detectors/` (v0.3.0). Puesto 11/16,
-  a 1.87 pts de `twitterADVec` (10°).
+- **Estado:** configuración anterior superada por el reservorio denso
+  (48.62). Puesto 11/16 con 45.19 en su momento. Medible con
+  `--detector dual_decay`.
 
 ## Pendiente
 
 - Varianza multiseedilla real (folds LOCO en `nab_cv.py`).
-- Predictor causal + anomaly likelihood (salto a ~55–60).
-- k-NN streaming sobre vectores de retardo (techo probado 57.99).
+- TSB-Eva (472 intocadas): juez de generalización.
 
 ## Backlog de puntos de vista sin revisar (2026-10-14)
 
@@ -98,8 +129,10 @@
    con contraste causal; mecánica declarada.
 5. **Reglas por propiedades observables** (`dt`, varianza, largo), nunca por
    archivo; fijadas a priori y congeladas (riesgo in-sample).
-6. **Predictor + likelihood / k-NN** (señal nueva, techo 55–60).
-7. **Generalización TSB-Eva** (472 intocadas): verificar que 45.19 no es
+6. **Predictor + likelihood / k-NN** (señal nueva): ambos evaluados y
+   archivados (predictor 38.61, k-NN 35.16; complementarios sin operador
+   de integración válido).
+7. **Generalización TSB-Eva** (472 intocadas): verificar que 48.62 no es
    in-sample disfrazado antes de seguir iterando NAB.
 - Predictor causal + anomaly likelihood (salto a ~55–60).
 - k-NN streaming sobre vectores de retardo (techo probado 57.99).

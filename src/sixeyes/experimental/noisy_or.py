@@ -1,7 +1,7 @@
 """Fusión OR-ruidoso base/predictor (experimental).
 
 Fracasos previos: `max` destruye, la media diluye bajo el umbral extremo, el
-producto (8a) amplifica los FPs del predictor (−12.09). La suma
+producto amplifica los FPs del predictor (−12.09). La suma
 probabilística es el operador para evidencias independientes:
 
     final = b + (1 - b) * lik = P(base ∪ predictor)

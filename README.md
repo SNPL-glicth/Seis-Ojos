@@ -8,8 +8,12 @@ Six Eyes es una librería experimental de detección de anomalías en tiempo rea
 
 ## Modelos Principales y Análisis de Complejidad
 
-### 1. Z-Score Estacional de Doble Escala (`SeasonalDualScaleRobustZ`, oficial)
-* **Mecanismo:** Centro estacional por bucket diario (mediana/MAD, W=20) + escala lenta global (std rodante W=16000, sumas O(1)). Score con denominador conservador `max(1.4826·MAD_bucket, std_global)`: exige rareza bajo ambas escalas. Reemplaza a `DailySeasonalRobustZ` (disponible como variante) medido +5.17 Standard sobre la variante con buckets fijos.
+### 0. Predictor Denso ESN-RLS (`EchoStatePredictor`, base oficial)
+* **Mecanismo:** Vector de retardos (d=16) → reservorio recurrente fijo (64 neuronas, radio espectral 0.9, semilla 42) → lectura lineal RLS con olvido que predice el siguiente punto. Anomalía = error cuadrático de predicción: la sorpresa geométrica sustituye a la rareza puntual.
+* **Complejidad:** $O(64^2)$ flops/punto (~0.07ms medido) + $O(16)$ embedding; memoria constante (reservorio + RLS + ventana de normalización 6400).
+
+### 1. Z-Score Estacional de Doble Escala (`SeasonalDualScaleRobustZ`, configuración anterior)
+* **Mecanismo:** Centro estacional por bucket diario (mediana/MAD, W=20) + escala lenta global (std rodante W=16000, sumas O(1)). Score con denominador conservador `max(1.4826·MAD_bucket, std_global)`: exige rareza bajo ambas escalas. Disponible vía `--detector dual_decay` (45.19/50.82/34.16).
 * **Complejidad:** $O(20)$ mediana/MAD por paso + $O(1)$ vía lenta; memoria acotada $O(16000)$ + 96 buckets × 20.
 
 ### 1b. Z-Score Robusto Estacional con buckets fijos (`DailySeasonalRobustZ`, variante con buckets fijos)
@@ -38,10 +42,10 @@ Six Eyes es una librería experimental de detección de anomalías en tiempo rea
 
 #### Tabla Oficial Completa de Resultados NAB (Perfil Standard)
 
-En la clasificación oficial de NAB, Six Eyes dualscale (medido 2026-10-14,
-pipeline `SeasonalDualScaleRobustZ + PercentileCalibrator + StreamingPeakDecay`,
-K=12, tau=2.0, cal W=16000) se posiciona en el **puesto 11° de 16 modelos**
-a 1.87 pts del 10° (medición in-sample del optimizador de umbrales):
+En la clasificación oficial de NAB, Six Eyes esn (medido 2026-10-14,
+pipeline `EchoStatePredictor + PercentileCalibrator + StreamingPeakDecay`,
+K=12, tau=2.0, cal W=16000) se posiciona en el **puesto 10° de 16 modelos**
+(medición in-sample del optimizador de umbrales):
 
 | Posición | Detector | Standard Score | Low FN | Low FP | Tipo de Modelo |
 | :---: | :--- | :---: | :---: | :---: | :--- |
@@ -54,23 +58,24 @@ a 1.87 pts del 10° (medición in-sample del optimizador de umbrales):
 | 7 | `knncad` | **57.99** | 64.81 | 43.41 | k-NN conformista conformal |
 | 8 | `relativeEntropy` | **54.64** | 58.84 | 47.60 | Entropía relativa |
 | 9 | `randomCutForest` | **51.72** | 59.75 | 38.36 | Bosque de aislamiento estocástico |
-| 10 | `twitterADVec` | **47.06** | 53.50 | 33.61 | Descomposición estacional Twitter |
-| **11** | **`sixeyes_dualscale` (K=12, tau=2.0, cal W=16000)** | **45.19** | **50.82** | **34.16** | **Estacional dual-escala + Percentil + NMS Causal** |
+| **10** | **`sixeyes_esn` (K=12, tau=2.0, cal W=16000)** | **48.62** | **55.49** | **38.94** | **Reservorio denso ESN-RLS + Percentil + NMS Causal** |
+| 11 | `twitterADVec` | **47.06** | 53.50 | 33.61 | Descomposición estacional Twitter |
 | 12 | `windowedGaussian` | **39.65** | 47.41 | 20.87 | Gaussiana con ventana móvil |
 | 13 | `skyline` | **35.69** | 44.48 | 27.08 | Skyline base (algoritmo único) |
 | 14 | `random` | **16.83** | 25.88 | 5.76 | Baseline aleatorio uniforme |
 | 15 | `expose` | **16.44** | 26.92 | 3.19 | Modelo de densidad gaussiana |
 | 16 | `null` | **0.00** | 0.00 | 0.00 | Detector nulo (cero alarmas) |
 
-* Reporte aislado: `results/sixeyes_dualscale_b15_k12_tau2p0_w16000.json`. `final_results.json` oficial de NAB verificado sin mutación (backup/restore en `nab_runner.py`).
-* Variante con `DailySeasonalRobustZ`): 40.02/46.80/29.13 (`--detector seasonal_decay`). La doble escala aporta +5.17 Standard / +4.02 Low FN / +5.03 Low FP; ver `aprendizaje.md` (doble escala).
+* Reporte aislado: `results/sixeyes_esn_k12_tau2p0_w16000.json`. `final_results.json` oficial de NAB verificado sin mutación (backup/restore en `nab_runner.py`).
+* Configuración anterior (doble escala): 45.19/50.82/34.16 (`--detector dual_decay`). El reservorio denso aporta +3.43 Standard / +4.67 Low FN / +4.78 Low FP; ver `aprendizaje.md` (proyecto denso).
+* Variante con `DailySeasonalRobustZ`: 40.02/46.80/29.13 (`--detector seasonal_decay`).
 * Ventana del calibrador: `W=16000` cubre el p90 de NAB (49/58 series >2000 pts, max 22695) con memoria constante.
 
 * **Qué aporta `StreamingPeakDecay` (K=160, τ=1.5):** Su envolvente de retención de crestas con ventana extendida (160 pasos ≈ 13 horas @5min) sostiene la alerta a lo largo de ventanas de verdad fundamental de NAB (100–300 timestamps), permitiendo al optimizador descender el umbral y capturar **74 de las 116 ventanas de verdad fundamental (63.8%)**.
 
 > [!NOTE]
-> **Pipeline oficial:** `SeasonalDualScaleRobustZ + PercentileCalibrator + StreamingPeakDecay`, K=12, τ=2.0, cal W=16000 → Standard **45.19** | Low FN **50.82** | Low FP **34.16** (medido 2026-10-14, `results/sixeyes_dualscale_b15_k12_tau2p0_w16000.json`, determinista bit a bit en re-ejecución).
-> Variante con `DailySeasonalRobustZ`): 40.02/46.80/29.13, reproducible con `--detector seasonal_decay`.
+> **Pipeline oficial:** `EchoStatePredictor + PercentileCalibrator + StreamingPeakDecay`, K=12, τ=2.0, cal W=16000 → Standard **48.62** | Low FN **55.49** | Low FP **38.94** (medido 2026-10-14, `results/sixeyes_esn_k12_tau2p0_w16000.json`, determinista bit a bit en re-ejecución).
+> Configuración anterior (doble escala): 45.19/50.82/34.16, reproducible con `--detector dual_decay`.
 >
 > [!WARNING]
 > **Condición in-sample explícita:** $K=160, \tau=1.5$ (y el score 42.54 asociado) se obtuvieron optimizando sobre las mismas 58 series de prueba que se reportan. El optimizador de umbrales de NAB también se ejecuta sobre el test. No se realiza ninguna afirmación de generalización: para un claim válido se requiere validación cruzada por categoría (`src/sixeyes/evaluation/nab_cv.py`) o un hold-out disjunto. La entrada `sixeyes` fue retirada de `results/final_results.json` por proceder del detector experimental `peak_decay_ramp_boost` (con umbral filtrado); regenere con `python run_nab.py --nab-path ../NAB --detector peak_decay --k-window 160 --tau 1.5 --cal-window 0`, que guarda `results/sixeyes_peak_decay_b15_k160_tau1p5_wInf.json` sin mutar archivos oficiales (nombres sin puntos por `nab/runner.py:260`).
