@@ -60,9 +60,9 @@
         "standard": 54.64274893469828
     },
     "sixeyes": {
-        "reward_low_FN_rate": 46.79780302770531,
-        "reward_low_FP_rate": 29.13319006017621,
-        "standard": 40.024290748454526
+        "reward_low_FN_rate": 0.0,
+        "reward_low_FP_rate": 0.0,
+        "standard": 0.0
     },
     "skyline": {
         "reward_low_FN_rate": 44.4810173429885,

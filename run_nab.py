@@ -43,9 +43,32 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Evaluación de Six Eyes en NAB")
     parser.add_argument(
         "--detector",
-        choices=["peak_decay", "seasonal_pct", "biseasonal_pct", "biseasonal", "seasonal", "zscore_pct", "subspace", "zscore", "random", "zscore_v2", "zscore_v3"],
+        choices=["peak_decay", "intermittent_gated", "seasonal_pct", "biseasonal_pct", "biseasonal", "seasonal", "zscore_pct", "subspace", "zscore", "random", "zscore_v2", "zscore_v3", "gram_tracker", "combinado", "combinado_pct", "peak_decay_rescued", "causal_multiscale_lds"],
         default="peak_decay",
-        help="Detector a evaluar (por defecto: 'peak_decay' = DailySeasonalRobustZ + PercentileCalibrator + StreamingPeakDecay, récord de 40.02)",
+        help="Detector a evaluar (por defecto: 'peak_decay' = DailySeasonalRobustZ + PercentileCalibrator + PeakDecay k=160 τ=1.5, 42.54 standard NAB)",
+    )
+    parser.add_argument(
+        "--k-window",
+        type=int,
+        default=160,
+        help="Ventana K para PeakDecay (defecto: 160, óptimo NAB 42.54)",
+    )
+    parser.add_argument(
+        "--tau",
+        type=float,
+        default=1.5,
+        help="Decaimiento tau para PeakDecay (defecto: 1.5, óptimo NAB 42.54)",
+    )
+    parser.add_argument(
+        "--bucket-minutes",
+        type=int,
+        default=15,
+        help="Tamaño de bucket estacional en minutos (defecto: 15)",
+    )
+    parser.add_argument(
+        "--biseasonal",
+        action="store_true",
+        help="Usar BiSeasonalRobustZ en lugar de DailySeasonalRobustZ",
     )
     parser.add_argument(
         "--nab-path",
@@ -59,8 +82,15 @@ def main() -> None:
     runner = NABRunner(nab_root=args.nab_path)
 
     if args.detector == "peak_decay":
-        nombre_detector = "sixeyes_peak_decay"
-        fabrica_detector = lambda: StreamingPeakDecay(PercentileCalibrator(DailySeasonalRobustZ()), k_window=12, tau=2.0)
+        nombre_detector = f"sixeyes_peak_decay_b{args.bucket_minutes}{'_bi' if args.biseasonal else ''}_k{args.k_window}_tau{args.tau}"
+        if args.biseasonal:
+            from sixeyes.detectors.biseasonal import BiSeasonalRobustZ as Seasonal
+        else:
+            from sixeyes.detectors.seasonal import DailySeasonalRobustZ as Seasonal
+        fabrica_detector = lambda: StreamingPeakDecay(
+            PercentileCalibrator(Seasonal(bucket_size_minutes=args.bucket_minutes)),
+            k_window=args.k_window, tau=args.tau
+        )
     elif args.detector == "random":
         nombre_detector = "sixeyes_random"
         fabrica_detector = lambda: RandomDetector(seed=42)
