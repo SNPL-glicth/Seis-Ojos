@@ -101,7 +101,7 @@ def main():
                 score_1_cnt += 1
                 branch_counts[branch] += 1
                 
-    print("=== REPORTE Z-SCORE V2 (DIAGNÓSTICO) ===")
+    print("=== REPORTE Z-SCORE (DIAGNÓSTICO) ===")
     print(f"Total de puntos evaluados: {total_points}")
     print(f"Puntos con score >= 0.9: {score_ge_09_cnt} ({score_ge_09_cnt/total_points*100:.2f}%)")
     print(f"Puntos con score == 1.0: {score_1_cnt} ({score_1_cnt/total_points*100:.2f}%)")

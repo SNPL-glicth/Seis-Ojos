@@ -1,0 +1,8 @@
+{
+    "detector": "fusion_media",
+    "scores": {
+        "reward_low_FN_rate": 45.0015501219249,
+        "reward_low_FP_rate": 33.12351444251168,
+        "standard": 40.54065132671878
+    }
+}

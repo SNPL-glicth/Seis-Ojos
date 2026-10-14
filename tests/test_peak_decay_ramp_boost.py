@@ -1,4 +1,4 @@
-"""Tests para PeakDecayRampBoost (Camino A, boost quirúrgico en banda dudosa)."""
+"""Tests para PeakDecayRampBoost (boost quirúrgico en banda dudosa)."""
 
 import numpy as np
 
@@ -20,7 +20,7 @@ class TestPeakDecayRampBoost:
         assert 0.0 <= s <= 1.0
 
     def test_identico_a_master_fuera_de_banda(self):
-        """Fuera de la banda dudosa, la salida replica al núcleo v0.2."""
+        """Fuera de la banda dudosa, la salida replica al núcleo de referencia (K=160, tau=1.5)."""
         from sixeyes.detectors.seasonal import DailySeasonalRobustZ
         from sixeyes.detectors.calibrador_percentil import PercentileCalibrator
         from sixeyes.detectors.peak_decay import StreamingPeakDecay

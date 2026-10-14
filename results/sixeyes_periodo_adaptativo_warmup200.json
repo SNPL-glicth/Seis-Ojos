@@ -1,0 +1,12 @@
+{
+    "config": {
+        "k_window": 12,
+        "tau": 2.0
+    },
+    "detector": "periodo_adaptativo_warmup200",
+    "scores": {
+        "reward_low_FN_rate": 44.09577733993623,
+        "reward_low_FP_rate": 25.41531761573041,
+        "standard": 36.08348876751511
+    }
+}

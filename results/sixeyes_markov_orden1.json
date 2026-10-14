@@ -1,0 +1,8 @@
+{
+    "detector": "markov_orden1",
+    "scores": {
+        "reward_low_FN_rate": 23.248272209550557,
+        "reward_low_FP_rate": 6.467318825243165,
+        "standard": 14.35851866688275
+    }
+}

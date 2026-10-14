@@ -1,0 +1,8 @@
+{
+    "detector": "periodo_adaptativo_warmup12",
+    "scores": {
+        "reward_low_FN_rate": 45.85836631937648,
+        "reward_low_FP_rate": 28.873425244111555,
+        "standard": 39.12145478031354
+    }
+}

@@ -1,14 +1,14 @@
 """
-PeakDecay v0.2 + boost quirúrgico de rampa (Camino A, Paso 2).
+PeakDecay (K=160, tau=1.5) + boost quirúrgico de rampa.
 
-Núcleo inviolable: StreamingPeakDecay(PercentileCalibrator(DailySeasonalRobustZ))
-con K=160, tau=1.5, buckets 15 min (42.54 NAB standard).
+Núcleo: StreamingPeakDecay(PercentileCalibrator(DailySeasonalRobustZ))
+con K=160, tau=1.5, buckets 15 min (42.54 NAB standard, in-sample).
 
 El boost SOLO actúa en la banda dudosa y con triple compuerta:
   s_lo <= s_master < theta_star  AND  |D_t| >= d_min  AND  rest_ratio < max_rest
   (+ cooldown de K pasos tras cada boost para no arrastrar fuera de ventana)
 
-Fuera de la banda, la salida es idéntica a peak_decay v0.2 bit a bit.
+Fuera de la banda, la salida es idéntica a peak_decay (K=160, tau=1.5) bit a bit.
 """
 
 import math
@@ -22,9 +22,9 @@ from sixeyes.detectors.ramp_gradient import CausalRampGradientTracker
 
 
 class PeakDecayRampBoost(Detector):
-    """PeakDecay v0.2 con rescate puntual de rampa en banda dudosa.
+    """PeakDecay (K=160, tau=1.5) con rescate puntual de rampa en banda dudosa.
 
-    NOTA DE INTEGRIDAD (refactor): el antiguo valor por defecto
+    NOTA DE INTEGRIDAD: el antiguo valor por defecto
     ``theta_star`` con 16 decimales era un literal optimizado in-sample
     con el optimizador de NAB sobre el set de prueba y constituía una fuga
     del benchmark al código. Se elimina. El umbral debe pasarse de forma

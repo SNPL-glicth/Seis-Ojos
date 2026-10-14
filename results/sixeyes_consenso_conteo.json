@@ -1,0 +1,8 @@
+{
+    "detector": "consenso_conteo",
+    "scores": {
+        "reward_low_FN_rate": 43.200946043324244,
+        "reward_low_FP_rate": 17.137341382556077,
+        "standard": 33.76302266474396
+    }
+}

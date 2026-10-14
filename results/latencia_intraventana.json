@@ -1,0 +1,33 @@
+{
+  "umbral": 0.99781022,
+  "oficial_K12": {
+    "ventanas": 116,
+    "detectadas": 71,
+    "perdidas": 45,
+    "tasa_deteccion": 0.612,
+    "mediana_retardo_pts": 118,
+    "media_retardo_pts": 136.1,
+    "en_primeros_10": 4,
+    "mas_de_100": 37
+  },
+  "sin_decay": {
+    "ventanas": 116,
+    "detectadas": 71,
+    "perdidas": 45,
+    "tasa_deteccion": 0.612,
+    "mediana_retardo_pts": 118,
+    "media_retardo_pts": 136.1,
+    "en_primeros_10": 4,
+    "mas_de_100": 37
+  },
+  "K160": {
+    "ventanas": 116,
+    "detectadas": 70,
+    "perdidas": 46,
+    "tasa_deteccion": 0.603,
+    "mediana_retardo_pts": 120.0,
+    "media_retardo_pts": 137.8,
+    "en_primeros_10": 4,
+    "mas_de_100": 37
+  }
+}

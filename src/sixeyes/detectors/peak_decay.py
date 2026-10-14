@@ -7,7 +7,7 @@ from typing import Optional
 from sixeyes.detectors.base import Detector
 
 
-# Defaults conservadores (curva suave pre-explosión, v0.1).
+# Defaults conservadores (curva suave pre-explosión; ver diario).
 # K=160, tau=1.5 es óptimo in-sample NAB-58; pasar explícito solo para
 # reproducir el score 42.54, sin claim de generalización.
 DEFAULT_K_WINDOW = 12

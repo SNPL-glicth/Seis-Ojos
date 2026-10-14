@@ -1,0 +1,8 @@
+{
+    "detector": "doble_escala_k12",
+    "scores": {
+        "reward_low_FN_rate": 50.815299732756856,
+        "reward_low_FP_rate": 34.16240860110809,
+        "standard": 45.1884668405146
+    }
+}

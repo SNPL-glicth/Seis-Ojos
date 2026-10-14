@@ -29,7 +29,8 @@ if str(NAB_DIR) not in sys.path:
 from sixeyes.detectors.aleatorio import RandomDetector
 from sixeyes.detectors.zscore_robusto import RollingRobustZ
 from sixeyes.detectors.seasonal import DailySeasonalRobustZ
-# Baselines legacy: importación directa de módulo (no del namespace oficial).
+from sixeyes.detectors.dual_scale import SeasonalDualScaleRobustZ
+# No oficiales: importación directa de módulo (no del namespace oficial).
 from sixeyes.detectors.biseasonal import BiSeasonalRobustZ
 from sixeyes.detectors.calibrador_percentil import PercentileCalibrator
 from sixeyes.detectors.subespacio import SubspaceResidualDetector
@@ -41,6 +42,7 @@ RUTA_DEFECTO_NAB = NAB_DIR
 # Única lista válida: coincide 1:1 con las ramas implementadas abajo.
 DETECTORES_SOPORTADOS = [
     "peak_decay",
+    "seasonal_decay",
     "seasonal_pct",
     "seasonal",
     "biseasonal_pct",
@@ -67,13 +69,23 @@ def build_factory(detector: str, bucket_minutes: int, k_window: int, tau: float,
     if detector == "peak_decay":
         def factory(bm=bucket_minutes, kw=k_window, t=tau, mh=max_hist):
             return StreamingPeakDecay(
+                PercentileCalibrator(SeasonalDualScaleRobustZ(bucket_size_minutes=bm),
+                                     max_history=mh),
+                k_window=kw,
+                tau=t,
+            )
+        name = f"sixeyes_dualscale_b{bucket_minutes}_k{k_window}_tau{tau_tag}{cal_tag}"
+        return factory, name
+    if detector == "seasonal_decay":
+        def factory_seasonal(bm=bucket_minutes, kw=k_window, t=tau, mh=max_hist):
+            return StreamingPeakDecay(
                 PercentileCalibrator(DailySeasonalRobustZ(bucket_size_minutes=bm),
                                      max_history=mh),
                 k_window=kw,
                 tau=t,
             )
         name = f"sixeyes_peak_decay_b{bucket_minutes}_k{k_window}_tau{tau_tag}{cal_tag}"
-        return factory, name
+        return factory_seasonal, name
     if detector == "random":
         return (lambda: RandomDetector(seed=42)), "sixeyes_random"
     if detector == "zscore":

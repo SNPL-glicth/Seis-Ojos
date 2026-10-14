@@ -1,0 +1,8 @@
+{
+    "detector": "suma_probabilistica",
+    "scores": {
+        "reward_low_FN_rate": 49.18989190192302,
+        "reward_low_FP_rate": 27.50048567387477,
+        "standard": 41.289565506009666
+    }
+}

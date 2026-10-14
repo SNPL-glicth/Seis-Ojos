@@ -1,0 +1,9 @@
+{
+    "detector": "enrutado_regimen",
+    "reglas": "dt>=45min\u2192predictor, resto\u2192base",
+    "scores": {
+        "reward_low_FN_rate": 51.60979405886011,
+        "reward_low_FP_rate": 32.910346562313315,
+        "standard": 45.12973817431696
+    }
+}

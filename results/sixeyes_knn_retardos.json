@@ -1,0 +1,8 @@
+{
+    "detector": "knn_retardos",
+    "scores": {
+        "reward_low_FN_rate": 42.20115330248346,
+        "reward_low_FP_rate": 26.038365139952774,
+        "standard": 35.16236723823226
+    }
+}

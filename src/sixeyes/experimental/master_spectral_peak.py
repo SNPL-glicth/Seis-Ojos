@@ -1,7 +1,7 @@
 """
-Ensemble: PeakDecay (v0.2 optimizado) + Causal Spectral Detector.
+Ensemble: PeakDecay (K=160, tau=1.5) + Causal Spectral Detector.
 
-Combina el detector peak_decay optimizado (k=160, tau=1.5) con el detector
+Combina el detector peak_decay configurado (k=160, tau=1.5) con el detector
 espectral causal independiente. La fusión es por máximo de scores calibrados:
 
     S_final = max(S_peak_decay, S_espectral)
@@ -20,7 +20,7 @@ from sixeyes.experimental.causal_spectral import CausalSTFTDetector
 
 class MasterSpectralPeakDecay(Detector):
     """
-    Ensemble causal: PeakDecay (v0.2, 42.54 NAB) + Causal Spectral Detector.
+    Ensemble causal: PeakDecay (K=160, tau=1.5; 42.54 NAB) + Causal Spectral Detector.
     
     El detector espectral cubre el punto ciego de PeakDecay en anomalías
     de fase/frecuencia (tráfico, oscilaciones), mientras que PeakDecay
@@ -32,7 +32,7 @@ class MasterSpectralPeakDecay(Detector):
 
     def __init__(
         self,
-        # PeakDecay v0.2 params
+        # PeakDecay params (K=160, tau=1.5; 42.54 NAB, in-sample)
         k_window: int = 160,
         tau: float = 1.5,
         bucket_minutes: int = 15,
@@ -48,8 +48,8 @@ class MasterSpectralPeakDecay(Detector):
         """Inicializa el ensemble.
         
         Args:
-            k_window: Ventana de memoria PeakDecay (default: 160 óptimo NAB).
-            tau: Decaimiento exponencial PeakDecay (default: 1.5 óptimo NAB).
+            k_window: Ventana de memoria PeakDecay (default: 160, configuración in-sample NAB).
+            tau: Decaimiento exponencial PeakDecay (default: 1.5, configuración in-sample NAB).
             bucket_minutes: Bucket estacional para DailySeasonalRobustZ.
             spectral_window: Ventana STFT (default 64).
             spectral_hop: Paso STFT (default 1).
@@ -58,7 +58,7 @@ class MasterSpectralPeakDecay(Detector):
             spectral_calibrator_min_history: Historial calibrador espectral.
             peak_calibrator_min_history: Historial calibrador PeakDecay.
         """
-        # === PeakDecay v0.2 (núcleo inviolable, 42.54 NAB) ===
+        # === PeakDecay (K=160, tau=1.5; 42.54 NAB, in-sample) ===
         self.peak_decay = StreamingPeakDecay(
             PercentileCalibrator(DailySeasonalRobustZ(bucket_size_minutes=bucket_minutes)),
             k_window=k_window,

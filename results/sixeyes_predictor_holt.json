@@ -1,0 +1,8 @@
+{
+    "detector": "predictor_holt",
+    "scores": {
+        "reward_low_FN_rate": 45.08704667036064,
+        "reward_low_FP_rate": 26.381686279236984,
+        "standard": 38.61496864517394
+    }
+}

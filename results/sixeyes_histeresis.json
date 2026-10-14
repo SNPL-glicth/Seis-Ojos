@@ -1,0 +1,8 @@
+{
+    "detector": "histeresis",
+    "scores": {
+        "reward_low_FN_rate": 48.53519174013291,
+        "reward_low_FP_rate": 31.369913629478564,
+        "standard": 41.76830485157868
+    }
+}

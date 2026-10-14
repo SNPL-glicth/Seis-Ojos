@@ -1,0 +1,8 @@
+{
+    "detector": "contexto_variable",
+    "scores": {
+        "reward_low_FN_rate": 29.08755838250567,
+        "reward_low_FP_rate": 5.482337724506008,
+        "standard": 18.631337573758504
+    }
+}

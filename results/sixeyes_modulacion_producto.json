@@ -1,0 +1,8 @@
+{
+    "detector": "modulacion_producto",
+    "scores": {
+        "reward_low_FN_rate": 41.27485939841577,
+        "reward_low_FP_rate": 23.637877862021117,
+        "standard": 33.09800684401264
+    }
+}
