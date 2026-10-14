@@ -7,7 +7,7 @@ import pytest
 import math
 
 from sixeyes.detectors.base import Detector
-from sixeyes.detectors.causal_spectral import CausalSTFTDetector
+from sixeyes.experimental.causal_spectral import CausalSTFTDetector
 
 
 class TestCausalSTFTDetector:

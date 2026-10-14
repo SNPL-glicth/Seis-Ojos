@@ -7,6 +7,12 @@ from typing import Optional
 from sixeyes.detectors.base import Detector
 
 
+# Defaults conservadores (curva suave pre-explosión, v0.1).
+# K=160, tau=1.5 es óptimo in-sample NAB-58; pasar explícito solo para
+# reproducir el score 42.54, sin claim de generalización.
+DEFAULT_K_WINDOW = 12
+DEFAULT_TAU = 2.0
+
 class StreamingPeakDecay(Detector):
     """Envolvente de Supresión de No-Máximos (NMS) causal para streaming.
 
@@ -26,8 +32,8 @@ class StreamingPeakDecay(Detector):
     def __init__(
         self,
         detector: Detector,
-        k_window: int = 160,
-        tau: float = 1.5,
+        k_window: int = DEFAULT_K_WINDOW,
+        tau: float = DEFAULT_TAU,
     ) -> None:
         """Inicializa el envolvente de supresión de picos.
 
@@ -80,3 +86,17 @@ class StreamingPeakDecay(Detector):
         self._history.append(raw_score)
 
         return max(0.0, min(1.0, float(score_out)))
+
+    def reset(self) -> None:
+        """Reinicia el envolvente a su estado inicial.
+
+        Limpia ``_history``, ``_t`` y ``_t_peak`` y delega en el detector
+        interno si este expone ``reset()``. Garantiza la invarianza
+        ``reset() + replay(stream) == replay(stream)``.
+        """
+        self._history.clear()
+        self._t = 0
+        self._t_peak = 0
+        inner_reset = getattr(self._detector, "reset", None)
+        if callable(inner_reset):
+            inner_reset()

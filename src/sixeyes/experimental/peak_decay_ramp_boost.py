@@ -22,7 +22,15 @@ from sixeyes.detectors.ramp_gradient import CausalRampGradientTracker
 
 
 class PeakDecayRampBoost(Detector):
-    """PeakDecay v0.2 con rescate puntual de rampa en banda dudosa."""
+    """PeakDecay v0.2 con rescate puntual de rampa en banda dudosa.
+
+    NOTA DE INTEGRIDAD (refactor): el antiguo valor por defecto
+    ``theta_star`` con 16 decimales era un literal optimizado in-sample
+    con el optimizador de NAB sobre el set de prueba y constituía una fuga
+    del benchmark al código. Se elimina. El umbral debe pasarse de forma
+    explícita como parámetro de configuración (máx. 3 decimales) o dejarse
+    en ``None`` para desactivar el boost (passthrough causal puro).
+    """
 
     def __init__(
         self,
@@ -30,7 +38,7 @@ class PeakDecayRampBoost(Detector):
         tau: float = 1.5,
         bucket_minutes: int = 15,
         s_lo: float = 0.97,
-        theta_star: float = 0.9966463414634148,
+        theta_star: float | None = None,
         boost_margin: float = 0.002,
         d_min: float = 4.0,
         max_rest_ratio: float = 0.05,
@@ -39,6 +47,8 @@ class PeakDecayRampBoost(Detector):
         w_scale_ramp: int = 1000,
         cooldown_steps: int = 160,
     ) -> None:
+        if theta_star is not None and not 0.0 < theta_star <= 1.0:
+            raise ValueError("theta_star debe estar en (0, 1] o ser None.")
         self.s_lo = s_lo
         self.theta_star = theta_star
         self.boost_margin = boost_margin
@@ -65,6 +75,8 @@ class PeakDecayRampBoost(Detector):
 
     @property
     def boost_target(self) -> float:
+        if self.theta_star is None:
+            return 1.0
         return min(1.0, self.theta_star + self.boost_margin)
 
     def update(self, value: float, timestamp: str = "") -> float:
@@ -84,6 +96,10 @@ class PeakDecayRampBoost(Detector):
 
         if self._cooldown > 0:
             self._cooldown -= 1
+            return s_master
+
+        # Sin theta_star explícito no hay boost: passthrough causal puro.
+        if self.theta_star is None:
             return s_master
 
         if (

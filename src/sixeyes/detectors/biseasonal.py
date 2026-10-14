@@ -114,3 +114,8 @@ class BiSeasonalRobustZ(Detector):
             score = 0.0
 
         return score
+
+    def reset(self) -> None:
+        """Limpia buckets diurnos y de régimen."""
+        self._diurnal_buckets.clear()
+        self._regime_buckets.clear()

@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 
 from sixeyes.detectors.base import Detector
-from sixeyes.detectors.causal_multiscale_lds import (
+from sixeyes.experimental.causal_multiscale_lds import (
     CausalFeatureExtractor,
     CausalMultiscaleLDS,
     OnlineEKF,

@@ -17,11 +17,12 @@ Six Eyes es una librería experimental de detección de anomalías en tiempo rea
 * **Limitación de Complejidad Real:** **No es $O(1)$ estricto**. Mantiene un buffer ordenado sin cota superior de memoria ($O(N)$ en espacio). La inserción vía `bisect.insort` requiere $O(\log N)$ comparaciones pero $O(N)$ en tiempo por el desplazamiento de memoria en arrays dinámicos de Python. Para despliegues con millones de observaciones continuas, requiere una política de ventana deslizante o aproximaciones tipo T-Digest.
 
 ### 3. Envolvente de Crestas y Relajación Causal (`StreamingPeakDecay`)
-* **Mecanismo:** Preserva la emisión plena en el frente de ataque del choque o nuevas crestas locales en $[t-K, t-1]$, atenuando exponencialmente las mesetas y réplicas mediante un factor $\exp(-(t - t_{\text{pico}}) / \tau)$ ($K=160, \tau=1.5$).
-* **Complejidad:** $O(K)$ en memoria y tiempo amortizado, con $K=160$ (óptimo NAB 42.54).
+* **Mecanismo:** Preserva la emisión plena en el frente de ataque del choque o nuevas crestas locales en $[t-K, t-1]$, atenuando exponencialmente las mesetas y réplicas mediante un factor $\exp(-(t - t_{\text{pico}}) / \tau)$ (por defecto $K=160, \tau=1.5$).
+* **Complejidad:** $O(K)$ en memoria y tiempo amortizado.
+* **Advertencia metodológica:** los valores $K=160, \tau=1.5$ fueron sintonizados **in-sample** sobre las 58 series de prueba de NAB (grid search). Son una estimación optimista dentro de la muestra; no se afirma generalización sin validación cruzada u hold-out.
 
 ### 4. Subespacio SVD con Ingesta Protegida (`SubspaceResidualDetector`)
-* **Mecanismo:** Modela la dinámica latente mediante incrustación causal de retardos (Hankel) y descomposición periódica en valores singulares (SVD). Su compuerta de ingesta ($s < 0.70$) busca evitar que anomalías sostenidas contaminen la base ortogonal normal.
+* **Mecanismo:** Modela la dinámica latente mediante incrustación causal de retardos (Hankel) y descomposición periódica en valores singulares (SVD). Su compuerta de ingesta configurable (`gate_threshold`, defecto 0.70) busca evitar que anomalías sostenidas contaminen la base ortogonal normal. El valor 0.70 es una heurística ajustada in-sample sin validación externa.
 * **Coste Computacional:** Requiere un tiempo de procesamiento promedio de **$\sim 0.8\text{ ms}$ por punto**. Este coste es admisible en muestreos de 1 a 5 minutos, pero inviable para millones de métricas por segundo sin submuestreo o aceleración vectorial.
 * **Vulnerabilidad Crítica del Buffer Gating:** Si una serie sufre un cambio permanente de régimen (*concept drift* estructural) y el residuo se mantiene en $s \ge 0.70$, el buffer deja de admitir observaciones, el subespacio nunca aprende la nueva normalidad y el detector queda disparando alarmas indefinidamente.
 
@@ -33,7 +34,9 @@ Six Eyes es una librería experimental de detección de anomalías en tiempo rea
 
 #### Tabla Oficial Completa de Resultados NAB (Perfil Standard)
 
-En la clasificación oficial de NAB, Six Eyes v0.2-nab se posiciona en el **puesto 10° de 16 modelos** evaluados:
+En la clasificación oficial de NAB, Six Eyes con defaults conservadores (K=12, tau=2.0,
+medido 2026-10-14 tras acotar el calibrador a ventana 2000) se posiciona en el
+**puesto 12° de 16 modelos** (medición in-sample del optimizador de umbrales, ver advertencia abajo):
 
 | Posición | Detector | Standard Score | Low FN | Low FP | Tipo de Modelo |
 | :---: | :--- | :---: | :---: | :---: | :--- |
@@ -46,19 +49,26 @@ En la clasificación oficial de NAB, Six Eyes v0.2-nab se posiciona en el **pues
 | 7 | `knncad` | **57.99** | 64.81 | 43.41 | k-NN conformista conformal |
 | 8 | `relativeEntropy` | **54.64** | 58.84 | 47.60 | Entropía relativa |
 | 9 | `randomCutForest` | **51.72** | 59.75 | 38.36 | Bosque de aislamiento estocástico |
-| **10** | **`sixeyes_peak_decay` (v0.2-nab)** | **42.54** | **49.56** | **30.66** | **Estacional + Percentil + NMS Causal (K=160, τ=1.5)** |
-| 11 | `twitterADVec` | **47.06** | 53.50 | 33.61 | Descomposición estacional Twitter |
-| 12 | `windowedGaussian` | **39.65** | 47.41 | 20.87 | Gaussiana con ventana móvil |
+| 10 | `twitterADVec` | **47.06** | 53.50 | 33.61 | Descomposición estacional Twitter |
+| 11 | `windowedGaussian` | **39.65** | 47.41 | 20.87 | Gaussiana con ventana móvil |
+| **12** | **`sixeyes_peak_decay` (K=12, tau=2.0, calibrador acotado W=2000)** | **37.21** | **44.27** | **23.83** | **Estacional + Percentil + NMS Causal** |
 | 13 | `skyline` | **35.69** | 44.48 | 27.08 | Skyline base (algoritmo único) |
 | 14 | `random` | **16.83** | 25.88 | 5.76 | Baseline aleatorio uniforme |
 | 15 | `expose` | **16.44** | 26.92 | 3.19 | Modelo de densidad gaussiana |
 | 16 | `null` | **0.00** | 0.00 | 0.00 | Detector nulo (cero alarmas) |
 
+* Reporte aislado: `results/sixeyes_peak_decay_b15_k12_tau2p0.json`. `final_results.json` oficial de NAB verificado sin mutación (backup/restore en `nab_runner.py`).
+* Delta vs histórico 40.02 (K=12, tau=2.0, calibrador no acotado): **-2.81 pts** atribuidos al acotamiento del calibrador (`max_history=2000`) que cambia la ECDF en series largas. Se reporta el número medido con el código actual, no el histórico.
+
 * **Qué aporta `StreamingPeakDecay` (K=160, τ=1.5):** Su envolvente de retención de crestas con ventana extendida (160 pasos ≈ 13 horas @5min) sostiene la alerta a lo largo de ventanas de verdad fundamental de NAB (100–300 timestamps), permitiendo al optimizador descender el umbral y capturar **74 de las 116 ventanas de verdad fundamental (63.8%)**.
 
 > [!NOTE]
-> **Versión baseline v0.1 (K=12, τ=2.0):** Standard 40.02 | Low FN 46.80 | Low FP 29.13.
-> La optimización de envolvente (grid search $K \in [8..192], \tau \in [1.2..3.0]$) produjo **+2.52 pts Standard** y **+2.76 pts Low FN** sin tocar el núcleo estadístico.
+> **Defaults conservadores v0.2 (K=12, τ=2.0, calibrador W=2000):** Standard 37.21 | Low FN 44.27 | Low FP 23.83 (medido 2026-10-14, `results/sixeyes_peak_decay_b15_k12_tau2p0.json`).
+> Histórico con calibrador no acotado: Standard 40.02 | Low FN 46.80 | Low FP 29.13 (delta -2.81 por el acotamiento).
+> La optimización de envolvente in-sample (grid search $K \in [8..192], \tau \in [1.2..3.0]$) produjo hasta 42.54 (K=160, tau=1.5) sin tocar el núcleo estadístico.
+>
+> [!WARNING]
+> **Condición in-sample explícita:** $K=160, \tau=1.5$ (y el score 42.54 asociado) se obtuvieron optimizando sobre las mismas 58 series de prueba que se reportan. El optimizador de umbrales de NAB también se ejecuta sobre el test. No se realiza ninguna afirmación de generalización: para un claim válido se requiere validación cruzada por categoría (`src/sixeyes/evaluation/nab_cv.py`) o un hold-out disjunto. La entrada `sixeyes` fue retirada de `results/final_results.json` por proceder del detector experimental `peak_decay_ramp_boost` (con umbral filtrado); regenere con `python run_nab.py --nab-path ../NAB --detector peak_decay --k-window 160 --tau 1.5 --cal-window 0`, que guarda `results/sixeyes_peak_decay_b15_k160_tau1p5_wInf.json` sin mutar archivos oficiales (nombres sin puntos por `nab/runner.py:260`).
 
 ---
 
@@ -99,13 +109,25 @@ Se evaluó un ensamble por unión simple $\max(S_{\text{estacional}}, S_{\text{s
 pip install -e .
 ```
 
-Ejecución de benchmarks con scripts dedicados:
+Comando estándar reproducible (pipeline oficial único, defaults conservadores K=12, tau=2.0):
 ```bash
-python run_nab.py                           # Evaluación en NAB (sixeyes_peak_decay)
-python run_subspace_benchmark.py             # Evaluación en subconjunto de ajuste TSB-AD (43 series)
+python run_nab.py --nab-path ../NAB
+python run_subspace_benchmark.py   # Tuning-43 TSB-AD, normalización causal
+```
+Regeneración del número histórico 42.54 (calibrador no acotado, coste O(N), sin claim de generalización):
+```bash
+python run_nab.py --nab-path ../NAB --detector peak_decay --k-window 160 --tau 1.5 --cal-window 0
+```
+Verificado 2026-10-14: reproduce bit a bit Standard 42.54 | Low FN 49.56 | Low FP 30.66 (`results/sixeyes_peak_decay_b15_k160_tau1p5_wInf.json`). Esto confirma que la caída a 39.15 con `--cal-window 2000` proviene solo del acotamiento del calibrador.
+
+Cada ejecución NAB guarda `results/sixeyes_<config>.json` aislado; `final_results.json` oficial nunca se modifica.
+
+Pruebas de invarianza y causalidad:
+```bash
+pytest tests/test_fuga_seasonal.py tests/test_peak_decay.py tests/test_peak_decay_reset.py tests/test_peak_decay_ramp_boost.py -v
 ```
 
-Los resultados consolidados y los datos crudos originales de NAB se almacenan en `results/`.
+Los resultados consolidados y los datos crudos originales de NAB se almacenan en `results/`. Los detectores experimentales viven en `src/sixeyes/experimental/` y están excluidos del pipeline oficial.
 
 ---
 

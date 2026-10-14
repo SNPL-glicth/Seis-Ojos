@@ -3,7 +3,7 @@
 import numpy as np
 
 from sixeyes.detectors.base import Detector
-from sixeyes.detectors.peak_decay_ramp_boost import PeakDecayRampBoost
+from sixeyes.experimental.peak_decay_ramp_boost import PeakDecayRampBoost
 
 
 def _warm(det, val=50.0, n=700):

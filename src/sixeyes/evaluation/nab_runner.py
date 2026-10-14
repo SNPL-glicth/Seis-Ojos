@@ -119,7 +119,13 @@ class NABRunner:
         return archivos_generados
 
     def ejecutar_scorer_oficial(self, detector_name: str) -> dict[str, float]:
-        """Invoca el optimizador y scorer oficial de NAB (Runner)."""
+        """Invoca el optimizador y scorer oficial de NAB (Runner).
+
+        Blindaje: hace backup de ``final_results.json`` y lo restaura al salir,
+        porque ``Runner.normalize()`` lo reescribe en disco. Los scores se
+        leen de los ``*_scores.csv`` propios (nombres con perfiles oficiales),
+        no del JSON global — inmune al colapso de claves por puntos.
+        """
         nab_str = str(self.nab_root)
         if nab_str not in sys.path:
             sys.path.insert(0, nab_str)
@@ -151,6 +157,11 @@ class NABRunner:
 
         labeler.CorpusLabel.getLabels = _compat_getLabels
 
+        final_results_file = self.results_dir / "final_results.json"
+        backup: str | None = None
+        if final_results_file.is_file():
+            backup = final_results_file.read_text(encoding="utf-8")
+
         try:
             print(f"Inicializando Runner oficial de NAB para '{detector_name}'...")
             runner = Runner(
@@ -174,29 +185,31 @@ class NABRunner:
         finally:
             labeler.CorpusLabel.getLabels = orig_getLabels
 
-        # Cargar resultados finales normalizados
-        final_results_file = self.results_dir / "final_results.json"
-        if not final_results_file.is_file():
-            raise FileNotFoundError(f"No se encontró el archivo de resultados finales: {final_results_file}")
+        # Leer scores normalizados de nuestros CSVs propios (inmune al
+        # colapso de claves de final_results.json por puntos/guiones).
+        import pandas as pd
 
-        with open(final_results_file, "r", encoding="utf-8") as f:
-            todos_los_resultados: dict[str, dict[str, float]] = json.load(f)
+        perfiles = ["standard", "reward_low_FP_rate", "reward_low_FN_rate"]
+        puntajes: dict[str, float] = {}
+        det_dir = self.results_dir / detector_name
+        with open(self.nab_root / "config" / "profiles.json", "r", encoding="utf-8") as f:
+            profiles = json.load(f)
+        with open(self.labels_file, "r", encoding="utf-8") as f:
+            tp_count = sum(len(v) for v in json.load(f).values())
+        null_dir = self.results_dir / "null"
+        for perfil in perfiles:
+            csv_path = det_dir / f"{detector_name}_{perfil}_scores.csv"
+            null_csv = null_dir / f"null_{perfil}_scores.csv"
+            df = pd.read_csv(csv_path)
+            base = float(pd.read_csv(null_csv)["Score"].iloc[-1])
+            perfect = tp_count * profiles[perfil]["CostMatrix"]["tpWeight"]
+            puntajes[perfil] = float(100 * (float(df["Score"].iloc[-1]) - base) / (perfect - base))
 
-        if detector_name in todos_los_resultados:
-            return todos_los_resultados[detector_name]
+        # Restaurar el final_results.json oficial: Runner.normalize() lo reescribe.
+        if backup is not None:
+            final_results_file.write_text(backup, encoding="utf-8")
 
-        # Si el nombre contiene prefijo compuesto (e.g. sixeyes_random),
-        # Runner.normalize separa el detector por el primer guión bajo
-        prefijo = detector_name.split("_")[0]
-        sufijo = detector_name[len(prefijo) + 1 :]
-        if prefijo in todos_los_resultados:
-            return {
-                k.replace(sufijo + "_", ""): v
-                for k, v in todos_los_resultados[prefijo].items()
-                if sufijo in k
-            }
-
-        raise KeyError(f"No se encontraron resultados para '{detector_name}' en {final_results_file}")
+        return puntajes
 
     def evaluar(
         self,

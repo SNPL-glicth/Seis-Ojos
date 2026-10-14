@@ -28,12 +28,13 @@ class CausalRampGradientTracker(Detector):
     def __init__(
         self,
         gamma: float = 0.8,
-        w_scale: int = 1000,
+        w_scale: int = 200,
         min_warmup: int = 20,
         eps: float = 1e-6,
         min_scale_frac: float = 1e-3,
         max_delta: float = 5.0,
         max_abs_d: float = 50.0,
+        scale_recompute_every: int = 10,
     ) -> None:
         """Inicializa el rastreador de rampa.
 
@@ -54,10 +55,13 @@ class CausalRampGradientTracker(Detector):
         self.min_scale_frac = min_scale_frac
         self.max_delta = max_delta
         self.max_abs_d = max_abs_d
+        self.scale_recompute_every = scale_recompute_every
 
         self._prev_val: float | None = None
         self._d_t: float = 0.0
         self._val_buffer: deque[float] = deque(maxlen=w_scale)
+        self._cached_scale: float = eps
+        self._steps_since_scale: int = 0
 
     @property
     def d_t(self) -> float:
@@ -86,12 +90,17 @@ class CausalRampGradientTracker(Detector):
 
         if self._prev_val is not None and len(self._val_buffer) >= self.min_warmup:
             diff = value - self._prev_val
-            arr = np.array(self._val_buffer)
-            med = float(np.median(arr))
-            mad = float(np.median(np.abs(arr - med))) * 1.4826
-            min_scale = self.min_scale_frac * max(abs(med), 1.0)
-            escala = max(mad, min_scale, self.eps)
-            delta = diff / escala
+            # Escala cacheada: mediana O(W) solo cada N pasos, no por paso.
+            if self._steps_since_scale <= 0 or len(self._val_buffer) < self.w_scale:
+                arr = np.array(self._val_buffer)
+                med = float(np.median(arr))
+                mad = float(np.median(np.abs(arr - med))) * 1.4826
+                min_scale = self.min_scale_frac * max(abs(med), 1.0)
+                self._cached_scale = max(mad, min_scale, self.eps)
+                self._steps_since_scale = self.scale_recompute_every
+            else:
+                self._steps_since_scale -= 1
+            delta = diff / self._cached_scale
             delta = max(-self.max_delta, min(self.max_delta, delta))
             self._d_t = self.gamma * self._d_t + delta
             self._d_t = max(-self.max_abs_d, min(self.max_abs_d, self._d_t))
@@ -106,3 +115,5 @@ class CausalRampGradientTracker(Detector):
         self._prev_val = None
         self._d_t = 0.0
         self._val_buffer.clear()
+        self._cached_scale = self.eps
+        self._steps_since_scale = 0

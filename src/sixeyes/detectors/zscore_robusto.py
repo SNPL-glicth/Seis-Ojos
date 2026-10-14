@@ -102,3 +102,9 @@ class RollingRobustZ:
                 else:
                     self._resolucion_observada = min(self._resolucion_observada, diff)
         self._prev_val = value
+
+    def reset(self) -> None:
+        """Reinicia ventana, resolución observada y valor previo."""
+        self._window.clear()
+        self._prev_val = None
+        self._resolucion_observada = None

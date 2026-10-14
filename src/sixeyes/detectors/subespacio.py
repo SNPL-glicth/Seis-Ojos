@@ -1,29 +1,46 @@
-import numpy as np 
+import numpy as np
 import math
 from collections import deque
 from sixeyes.detectors.base import Detector
-#ajustamos los valores predeterminados segun el articulo 
-VENTANA = 32
+
+# Canonical English names (production). Spanish aliases kept for compat.
+WINDOW = 32
 BUFFER_MAX = 1000
-MIN_VENTANAS = 100
-REAJUSTE_CADA = 50
-VARIANZA_OBJETIVO = 0.90
+MIN_WINDOWS = 100
+REFIT_EVERY = 50
+TARGET_VARIANCE = 0.90
 K_MAX = 8
+# Aliases históricos (no usar en código nuevo).
+VENTANA = WINDOW
+MIN_VENTANAS = MIN_WINDOWS
+REAJUSTE_CADA = REFIT_EVERY
+VARIANZA_OBJETIVO = TARGET_VARIANCE
 
 class SubspaceResidualDetector(Detector):
-    def __init__(self, 
-                 ventana=VENTANA, 
-                 buffer_max=BUFFER_MAX, 
-                 min_ventanas=MIN_VENTANAS, 
-                 reajuste_cada=REAJUSTE_CADA, 
-                 varianza_objetivo=VARIANZA_OBJETIVO, 
-                 k_max=K_MAX):
+    """Detector de residuo de subespacio con compuerta causal de ingesta.
+
+    NOTA DE INTEGRIDAD: el umbral histórico ``s < 0.70`` era un valor mágico
+    ajustado in-sample sobre el Tuning-43 de TSB-AD sin validación externa.
+    Por defecto el gating está DESACTIVADO (``gate_threshold=None`` = ingesta
+    total). Pasar ``0.70`` explícito solo reproduce el experimento histórico.
+    """
+
+    def __init__(
+                 self,
+                 ventana=WINDOW,
+                 buffer_max=BUFFER_MAX,
+                 min_ventanas=MIN_WINDOWS,
+                 reajuste_cada=REFIT_EVERY,
+                 varianza_objetivo=TARGET_VARIANCE,
+                 k_max=K_MAX,
+                 gate_threshold: float | None = None):
         self.ventana = ventana
         self.buffer_max = buffer_max
         self.min_ventanas = min_ventanas
         self.reajuste_cada = reajuste_cada
         self.varianza_objetivo = varianza_objetivo
         self.k_max = k_max
+        self.gate_threshold = gate_threshold
 
         self.history_raw = deque(maxlen=self.ventana)
         self.buffer = deque(maxlen=self.buffer_max)
@@ -62,8 +79,10 @@ class SubspaceResidualDetector(Detector):
             m = np.median(pos_res)
             s = float(r / (r + m))
 
-        # Buffer Gating (s < 0.70): no contaminar buffer de SVD ni residuos con anomalias
-        if s < 0.70:
+        # Buffer Gating causal (opt-in): None = ingesta total, sin bloqueo.
+        # 0.70 es heurística in-sample histórica, ver docstring.
+        admit = True if self.gate_threshold is None else (s < self.gate_threshold)
+        if admit:
             self.buffer.append(x)
             if r > 0:
                 self.residuals.append(r)
@@ -89,3 +108,11 @@ class SubspaceResidualDetector(Detector):
                 self.model["components"] = np.zeros((0, X.shape[1]))
 
         return s
+
+    def reset(self) -> None:
+        """Reinicia buffers, residuos y modelo SVD."""
+        self.history_raw.clear()
+        self.buffer.clear()
+        self.residuals.clear()
+        self.steps = 0
+        self.model = {"mean": None, "components": None}

@@ -1,14 +1,20 @@
-"""Script principal para ejecutar la evaluación de Six Eyes en el benchmark oficial NAB."""
+"""Script principal para ejecutar la evaluación de Six Eyes en el benchmark oficial NAB.
+
+Pipeline oficial congelado:
+    DailySeasonalRobustZ(15min) + PercentileCalibrator + StreamingPeakDecay
+
+Uso estándar reproducible:
+    python run_nab.py --detector peak_decay --k-window 160 --tau 1.5
+
+Cada ejecución guarda su reporte aislado en ``results/sixeyes_<config>.json``.
+Nunca se muta ni sobrescribe el ``final_results.json`` oficial de NAB.
+"""
 
 import argparse
 import json
-import logging
-import os
-from pathlib import Path
-import shutil
 import sys
+from pathlib import Path
 
-# Configurar sys.path y PYTHONPATH para compatibilidad con multiprocessing en Windows
 ROOT_DIR = Path(__file__).resolve().parent
 SRC_DIR = ROOT_DIR / "src"
 NAB_DIR = ROOT_DIR / "benchmarks" / "nab"
@@ -20,121 +26,98 @@ if str(SRC_DIR) not in sys.path:
 if str(NAB_DIR) not in sys.path:
     sys.path.insert(0, str(NAB_DIR))
 
-# Garantizar que los procesos hijos generados por multiprocessing hereden estas rutas
-existing_pp = os.environ.get("PYTHONPATH", "")
-extra_paths = [str(SRC_DIR), str(NAB_DIR)]
-if existing_pp:
-    extra_paths.append(existing_pp)
-os.environ["PYTHONPATH"] = os.pathsep.join(extra_paths)
-
 from sixeyes.detectors.aleatorio import RandomDetector
 from sixeyes.detectors.zscore_robusto import RollingRobustZ
 from sixeyes.detectors.seasonal import DailySeasonalRobustZ
+# Baselines legacy: importación directa de módulo (no del namespace oficial).
 from sixeyes.detectors.biseasonal import BiSeasonalRobustZ
 from sixeyes.detectors.calibrador_percentil import PercentileCalibrator
 from sixeyes.detectors.subespacio import SubspaceResidualDetector
-from sixeyes.detectors.peak_decay import StreamingPeakDecay
-from sixeyes.detectors.master_spectral_peak import MasterSpectralPeakDecay
-from sixeyes.detectors.causal_multiscale_lds import CausalMultiscaleLDS
-from sixeyes.detectors.peak_decay_ramp_boost import PeakDecayRampBoost
+from sixeyes.detectors.peak_decay import StreamingPeakDecay, DEFAULT_K_WINDOW, DEFAULT_TAU
 from sixeyes.evaluation.nab_runner import NABRunner
 
 RUTA_DEFECTO_NAB = NAB_DIR
+
+# Única lista válida: coincide 1:1 con las ramas implementadas abajo.
+DETECTORES_SOPORTADOS = [
+    "peak_decay",
+    "seasonal_pct",
+    "seasonal",
+    "biseasonal_pct",
+    "biseasonal",
+    "zscore_pct",
+    "zscore",
+    "subspace",
+    "random",
+]
+
+
+def build_factory(detector: str, bucket_minutes: int, k_window: int, tau: float,
+                  cal_window: int = 2000):
+    """Fábrica única del pipeline oficial y baselines. Sin variantes fantasma.
+
+    NOTA: el nombre del detector nunca contiene puntos (NAB parsea
+    ``split('.')[0]`` y los puntos colapsan los 3 perfiles en una sola clave).
+    ``tau=2.0`` se serializa como ``tau2p0``.
+    ``cal_window<=0`` = calibrador no acotado (solo reproducción histórica).
+    """
+    tau_tag = str(tau).replace(".", "p")
+    cal_tag = f"_w{cal_window}" if cal_window > 0 else "_wInf"
+    max_hist = cal_window if cal_window > 0 else None
+    if detector == "peak_decay":
+        def factory(bm=bucket_minutes, kw=k_window, t=tau, mh=max_hist):
+            return StreamingPeakDecay(
+                PercentileCalibrator(DailySeasonalRobustZ(bucket_size_minutes=bm),
+                                     max_history=mh),
+                k_window=kw,
+                tau=t,
+            )
+        name = f"sixeyes_peak_decay_b{bucket_minutes}_k{k_window}_tau{tau_tag}{cal_tag}"
+        return factory, name
+    if detector == "random":
+        return (lambda: RandomDetector(seed=42)), "sixeyes_random"
+    if detector == "zscore":
+        return (lambda: RollingRobustZ()), "sixeyes_zscore"
+    if detector == "zscore_pct":
+        return (lambda: PercentileCalibrator(RollingRobustZ())), "sixeyes_zscore_pct"
+    if detector == "biseasonal_pct":
+        return (lambda: PercentileCalibrator(BiSeasonalRobustZ())), "sixeyes_biseasonal_pct"
+    if detector == "biseasonal":
+        return (lambda: BiSeasonalRobustZ()), "sixeyes_biseasonal"
+    if detector == "seasonal_pct":
+        return (lambda: PercentileCalibrator(DailySeasonalRobustZ())), "sixeyes_seasonal_pct"
+    if detector == "seasonal":
+        return (lambda: DailySeasonalRobustZ()), "sixeyes_seasonal"
+    if detector == "subspace":
+        return (lambda: SubspaceResidualDetector()), "sixeyes_subspace"
+    raise ValueError(f"Detector desconocido: {detector}")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Evaluación de Six Eyes en NAB")
     parser.add_argument(
         "--detector",
-        choices=["peak_decay", "intermittent_gated", "seasonal_pct", "biseasonal_pct", "biseasonal", "seasonal", "zscore_pct", "subspace", "zscore", "random", "zscore_v2", "zscore_v3", "gram_tracker", "combinado", "combinado_pct", "peak_decay_rescued", "causal_multiscale_lds", "master_spectral_peak", "peak_decay_ramp_boost"],
+        choices=DETECTORES_SOPORTADOS,
         default="peak_decay",
-        help="Detector a evaluar (por defecto: 'peak_decay' = DailySeasonalRobustZ + PercentileCalibrator + PeakDecay k=160 τ=1.5, 42.54 standard NAB v0.2-nab)",
+        help="Detector a evaluar (por defecto: 'peak_decay' oficial).",
     )
+    parser.add_argument("--k-window", type=int, default=DEFAULT_K_WINDOW)
+    parser.add_argument("--tau", type=float, default=DEFAULT_TAU)
+    parser.add_argument("--bucket-minutes", type=int, default=15)
+    parser.add_argument("--cal-window", type=int, default=2000,
+                        help="Ventana ECDF del calibrador. <=0 = no acotado "
+                             "(solo reproducción histórica, coste O(N)).")
     parser.add_argument(
-        "--k-window",
-        type=int,
-        default=160,
-        help="Ventana K para PeakDecay (defecto: 160, óptimo NAB 42.54)",
+        "--nab-path", type=Path, default=RUTA_DEFECTO_NAB,
+        help="Ruta al repositorio local de NAB.",
     )
-    parser.add_argument(
-        "--tau",
-        type=float,
-        default=1.5,
-        help="Decaimiento tau para PeakDecay (defecto: 1.5, óptimo NAB 42.54)",
-    )
-    parser.add_argument(
-        "--bucket-minutes",
-        type=int,
-        default=15,
-        help="Tamaño de bucket estacional en minutos (defecto: 15)",
-    )
-    parser.add_argument(
-        "--biseasonal",
-        action="store_true",
-        help="Usar BiSeasonalRobustZ en lugar de DailySeasonalRobustZ",
-    )
-    parser.add_argument(
-        "--nab-path",
-        type=Path,
-        default=RUTA_DEFECTO_NAB,
-        help="Ruta al repositorio local de NAB (por defecto: benchmarks/nab)",
-    )
-
     args = parser.parse_args()
 
     runner = NABRunner(nab_root=args.nab_path)
-
-    if args.detector == "peak_decay":
-        nombre_detector = f"sixeyes_peak_decay_b{args.bucket_minutes}{'_bi' if args.biseasonal else ''}_k{args.k_window}_tau{args.tau}"
-        if args.biseasonal:
-            from sixeyes.detectors.biseasonal import BiSeasonalRobustZ as Seasonal
-        else:
-            from sixeyes.detectors.seasonal import DailySeasonalRobustZ as Seasonal
-        fabrica_detector = lambda: StreamingPeakDecay(
-            PercentileCalibrator(Seasonal(bucket_size_minutes=args.bucket_minutes)),
-            k_window=args.k_window, tau=args.tau
-        )
-    elif args.detector == "random":
-        nombre_detector = "sixeyes_random"
-        fabrica_detector = lambda: RandomDetector(seed=42)
-    elif args.detector == "zscore":
-        nombre_detector = "sixeyes_zscore"
-        fabrica_detector = lambda: RollingRobustZ()
-    elif args.detector == "zscore_v2":
-        nombre_detector = "sixeyes_zscore_v2"
-        fabrica_detector = lambda: RollingRobustZ()
-    elif args.detector == "zscore_pct":
-        nombre_detector = "sixeyes_zscore_pct"
-        fabrica_detector = lambda: PercentileCalibrator(RollingRobustZ())
-    elif args.detector == "zscore_v3":
-        nombre_detector = "sixeyes_zscore_v3"
-        fabrica_detector = lambda: RollingRobustZ()
-    elif args.detector == "biseasonal_pct":
-        nombre_detector = "sixeyes_biseasonal_pct"
-        fabrica_detector = lambda: PercentileCalibrator(BiSeasonalRobustZ())
-    elif args.detector == "biseasonal":
-        nombre_detector = "sixeyes_biseasonal"
-        fabrica_detector = lambda: BiSeasonalRobustZ()
-    elif args.detector == "seasonal_pct":
-        nombre_detector = "sixeyes_seasonal_pct"
-        fabrica_detector = lambda: PercentileCalibrator(DailySeasonalRobustZ())
-    elif args.detector == "seasonal":
-        nombre_detector = "sixeyes_seasonal"
-        fabrica_detector = lambda: DailySeasonalRobustZ()
-    elif args.detector == "subspace":
-        nombre_detector = "sixeyes_subspace"
-        fabrica_detector = lambda: SubspaceResidualDetector()
-    elif args.detector == "master_spectral_peak":
-        nombre_detector = "sixeyes_master_spectral_peak"
-        fabrica_detector = lambda: MasterSpectralPeakDecay()
-    elif args.detector == "causal_multiscale_lds":
-        nombre_detector = "sixeyes_causal_multiscale_lds"
-        fabrica_detector = lambda: CausalMultiscaleLDS()
-    elif args.detector == "peak_decay_ramp_boost":
-        nombre_detector = "sixeyes_peak_decay_ramp_boost"
-        fabrica_detector = lambda: PeakDecayRampBoost()
-    else:
-        raise ValueError(f"Detector desconocido: {args.detector}")
+    fabrica_detector, nombre_detector = build_factory(
+        args.detector, args.bucket_minutes, args.k_window, args.tau,
+        args.cal_window
+    )
 
     print("=" * 60)
     print(f"Iniciando evaluación de '{nombre_detector}' en NAB...")
@@ -152,37 +135,20 @@ def main() -> None:
         print(f"  * {perfil:28s}: {score:6.2f}")
     print("=" * 60)
 
-    orig_final = runner.results_dir / "final_results.json"
-    if orig_final.is_file():
-        dest_results = ROOT_DIR / "results"
-        dest_results.mkdir(parents=True, exist_ok=True)
-
-        # 1. Preservar copia cruda sin mutar generada por NAB
-        raw_target = dest_results / "nab_raw_results.json"
-        shutil.copy2(orig_final, raw_target)
-        print(f"Resultado crudo original de NAB preservado en: {raw_target}")
-
-        # 2. Generar consolidado limpio con manejo explícito de errores
-        try:
-            with open(orig_final, "r", encoding="utf-8") as f:
-                data = json.load(f)
-
-            if "sixeyes" in data:
-                data["sixeyes"] = {
-                    "reward_low_FN_rate": puntajes.get("reward_low_FN_rate", 0.0),
-                    "reward_low_FP_rate": puntajes.get("reward_low_FP_rate", 0.0),
-                    "standard": puntajes.get("standard", 0.0),
-                }
-
-            consolidado_path = dest_results / "final_results.json"
-            with open(consolidado_path, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=4, sort_keys=True)
-
-            print(f"Resultados consolidados guardados en: {consolidado_path}")
-
-        except (IOError, json.JSONDecodeError) as e:
-            logging.error(f"Error al procesar y normalizar final_results.json: {e}")
-            raise
+    # Reporte aislado: jamás mutar el final_results.json oficial de NAB.
+    dest_results = ROOT_DIR / "results"
+    dest_results.mkdir(parents=True, exist_ok=True)
+    isolated = dest_results / f"{nombre_detector}.json"
+    with open(isolated, "w", encoding="utf-8") as f:
+        json.dump(
+            {"detector": nombre_detector, "scores": puntajes,
+             "config": {"k_window": args.k_window, "tau": args.tau,
+                        "bucket_minutes": args.bucket_minutes,
+                        "cal_window": args.cal_window}},
+            f, indent=4, sort_keys=True,
+        )
+    print(f"Reporte aislado guardado en: {isolated}")
+    print("NOTA: final_results.json oficial de NAB no fue modificado.")
 
 
 if __name__ == "__main__":

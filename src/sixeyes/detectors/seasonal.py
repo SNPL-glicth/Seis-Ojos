@@ -69,3 +69,8 @@ class DailySeasonalRobustZ:
             )
 
         return self._buckets[bucket_idx].update(detrended_val, timestamp)
+
+    def reset(self) -> None:
+        """Limpia buckets diurnos y buffer de tendencia."""
+        self._buckets.clear()
+        self._trend_buffer.clear()

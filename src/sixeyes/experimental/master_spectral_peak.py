@@ -15,7 +15,7 @@ from sixeyes.detectors.base import Detector
 from sixeyes.detectors.peak_decay import StreamingPeakDecay
 from sixeyes.detectors.calibrador_percentil import PercentileCalibrator
 from sixeyes.detectors.seasonal import DailySeasonalRobustZ
-from sixeyes.detectors.causal_spectral import CausalSTFTDetector
+from sixeyes.experimental.causal_spectral import CausalSTFTDetector
 
 
 class MasterSpectralPeakDecay(Detector):

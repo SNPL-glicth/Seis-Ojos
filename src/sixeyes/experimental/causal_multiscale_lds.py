@@ -20,9 +20,9 @@ import numpy as np
 
 from sixeyes.detectors.base import Detector
 from sixeyes.detectors.seasonal import DailySeasonalRobustZ
-from sixeyes.detectors.gram_tracker import GramSubspaceTracker
+from sixeyes.experimental.gram_tracker import GramSubspaceTracker
 from sixeyes.detectors.ramp_gradient import CausalRampGradientTracker
-from sixeyes.detectors.active_drift import ActiveCentroidDriftTracker
+from sixeyes.experimental.active_drift import ActiveCentroidDriftTracker
 from sixeyes.detectors.calibrador_percentil import PercentileCalibrator
 
 

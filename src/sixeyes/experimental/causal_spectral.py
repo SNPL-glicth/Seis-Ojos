@@ -178,6 +178,3 @@ class CausalSTFTDetector(Detector):
         self._spectral_history.clear()
         self._residual_history.clear()
         self._raw_history.clear()
-
-
-import math
