@@ -41,7 +41,8 @@ SEED = 42
 
 
 class EchoStatePredictor(Detector):
-    """Error cuadrático de predicción ESN-RLS (score crudo ≥0)."""
+    """Error de predicción ESN-RLS (cuadrático ≥0 por defecto; con signo si
+    ``signed_output=True``, para alimentar likelihoods gaussianas)."""
 
     def __init__(
         self,
@@ -49,11 +50,21 @@ class EchoStatePredictor(Detector):
         reservoir_size: int = RESERVOIR_SIZE,
         spectral_radius: float = SPECTRAL_RADIUS,
         seed: int = SEED,
+        signed_output: bool = False,
+        time_features: bool = False,
     ) -> None:
+        """Args:
+            signed_output: False (defecto, compatible) = error cuadrático;
+                True = residuo con signo, para likelihoods gaussianas.
+            time_features: False (defecto, compatible) = solo retardos;
+                True = añade seno/coseno de hora y día semanal (d+4).
+        """
         self._n = reservoir_size
         self._embed = DelayCoordinateEmbedding(dimension=embed_dim, stride=1)
+        self._time_features = time_features
+        in_dim = embed_dim + 4 if time_features else embed_dim
         rng = np.random.RandomState(seed)
-        self._win = rng.uniform(-1.0, 1.0, size=(reservoir_size, embed_dim)) * INPUT_SCALE
+        self._win = rng.uniform(-1.0, 1.0, size=(reservoir_size, in_dim)) * INPUT_SCALE
         w = rng.uniform(-1.0, 1.0, size=(reservoir_size, reservoir_size))
         radius = max(abs(np.linalg.eigvals(w)).max(), 1e-9)
         self._wres = w * (spectral_radius / radius)
@@ -61,6 +72,7 @@ class EchoStatePredictor(Detector):
         self._wout = np.zeros(reservoir_size)
         self._P = np.eye(reservoir_size) * RLS_DELTA
         self._lam = RLS_FORGET
+        self._signed_output = signed_output
         self._norm: deque[float] = deque(maxlen=NORM_WINDOW)
         self._nsum = 0.0
         self._nsumsq = 0.0
@@ -85,6 +97,24 @@ class EchoStatePredictor(Detector):
         self._nsum += value
         self._nsumsq += value * value
 
+    @staticmethod
+    def _time_vector(timestamp: str) -> np.ndarray:
+        """[sin_h, cos_h, sin_dow, cos_dow]; ceros si no parseable."""
+        import math as _m
+        from datetime import datetime as _dt
+        try:
+            d = _dt.fromisoformat(timestamp.replace(" ", "T"))
+        except ValueError:
+            try:
+                from dateutil import parser as _p
+                d = _p.parse(timestamp)
+            except Exception:
+                return np.zeros(4)
+        h = (d.hour * 60 + d.minute) / 1440.0
+        w = d.weekday() / 7.0
+        return np.array([_m.sin(2 * _m.pi * h), _m.cos(2 * _m.pi * h),
+                         _m.sin(2 * _m.pi * w), _m.cos(2 * _m.pi * w)])
+
     def update(self, value: float, timestamp: str = "") -> float:
         if math.isnan(value) or math.isinf(value):
             return 0.0
@@ -93,9 +123,12 @@ class EchoStatePredictor(Detector):
         if not ready or vec is None:
             self._ingest_norm(value)
             return 0.0
+        if self._time_features:
+            vec = np.concatenate([vec, self._time_vector(timestamp)])
         h_new = np.tanh(self._win @ vec + self._wres @ self._h)
         pred_z = float(self._wout @ h_new)
-        err = (z - pred_z) ** 2
+        resid = z - pred_z
+        err = resid if self._signed_output else resid ** 2
         # RLS DESPUÉS de puntuar (causalidad).
         h = h_new.reshape(-1, 1)
         Ph = self._P @ h
@@ -105,6 +138,8 @@ class EchoStatePredictor(Detector):
         self._P = (self._P - (K @ h.T) @ self._P) / self._lam
         self._h = h_new
         self._ingest_norm(value)
+        if self._signed_output:
+            return float(err)
         return max(float(err), 0.0)
 
     def reset(self) -> None:

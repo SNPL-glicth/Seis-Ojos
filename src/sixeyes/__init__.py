@@ -12,7 +12,7 @@ from sixeyes.detectors.peak_decay import StreamingPeakDecay, DEFAULT_K_WINDOW, D
 from sixeyes.evaluation.nab_runner import NABRunner
 from sixeyes.evaluation.tsb_runner import run_single_series, get_tuning_files
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 
 __all__ = [
     "Detector",

@@ -1,10 +1,10 @@
 """Script principal para ejecutar la evaluación de Six Eyes en el benchmark oficial NAB.
 
-Pipeline oficial congelado:
-    DailySeasonalRobustZ(15min) + PercentileCalibrator + StreamingPeakDecay
+Pipeline oficial:
+    EchoStatePredictor + PercentileCalibrator + StreamingPeakDecay(K=24, tau=2.0)
 
 Uso estándar reproducible:
-    python run_nab.py --detector peak_decay --k-window 160 --tau 1.5
+    python run_nab.py --nab-path ../NAB
 
 Cada ejecución guarda su reporte aislado en ``results/sixeyes_<config>.json``.
 Nunca se muta ni sobrescribe el ``final_results.json`` oficial de NAB.
@@ -31,6 +31,7 @@ from sixeyes.detectors.zscore_robusto import RollingRobustZ
 from sixeyes.detectors.seasonal import DailySeasonalRobustZ
 from sixeyes.detectors.dual_scale import SeasonalDualScaleRobustZ
 from sixeyes.detectors.echo_state import EchoStatePredictor
+from sixeyes.experimental.rank_ensemble import RankEnsembleESN
 # No oficiales: importación directa de módulo (no del namespace oficial).
 from sixeyes.detectors.biseasonal import BiSeasonalRobustZ
 from sixeyes.detectors.calibrador_percentil import PercentileCalibrator
@@ -45,6 +46,7 @@ DETECTORES_SOPORTADOS = [
     "peak_decay",
     "dual_decay",
     "seasonal_decay",
+    "ensemble_rangos",
     "seasonal_pct",
     "seasonal",
     "biseasonal_pct",
@@ -97,6 +99,15 @@ def build_factory(detector: str, bucket_minutes: int, k_window: int, tau: float,
             )
         name = f"sixeyes_peak_decay_b{bucket_minutes}_k{k_window}_tau{tau_tag}{cal_tag}"
         return factory_seasonal, name
+    if detector == "ensemble_rangos":
+        def factory_ens(mh=max_hist, kw=k_window, t=tau):
+            return StreamingPeakDecay(
+                PercentileCalibrator(RankEnsembleESN(), max_history=mh),
+                k_window=kw,
+                tau=t,
+            )
+        name = f"sixeyes_ensemble_rangos_k{k_window}_tau{tau_tag}{cal_tag}"
+        return factory_ens, name
     if detector == "random":
         return (lambda: RandomDetector(seed=42)), "sixeyes_random"
     if detector == "zscore":

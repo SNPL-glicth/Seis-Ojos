@@ -14,7 +14,7 @@
 | **`StreamingPeakDecay` ($K=10, \tau=2.0$)** | 39.88 | 46.70 | 29.04 | Supresión de réplicas en ventana de 50 min. |
 | **`StreamingPeakDecay` ($K=12, \tau=2.0$)** | 40.02 | 46.80 | 29.13 | Supresión en 1 hora; 69/116 ventanas (in-sample). |
 | **`SeasonalDualScaleRobustZ` + Percentil + `StreamingPeakDecay` ($K=12, \tau=2.0, W=16000)** | 45.19 | 50.82 | 34.16 | Doble escala `max(MAD, std_global)`; determinista. Debilidad: AdExchange −3.91. |
-| **`EchoStatePredictor` + Percentil + `StreamingPeakDecay` ($K=12, \tau=2.0, W=16000)** | **48.62** | **55.49** | **38.94** | **Configuración oficial:** reservorio denso ESN-RLS (d=16, Nres=64). Determinista bit a bit. Debilidad: artificial −5.08. |
+| **`EchoStatePredictor` + Percentil + `StreamingPeakDecay` ($K=24, \tau=2.0, W=16000)** | **49.05** | **57.01** | **38.99** | **Configuración oficial:** reservorio denso ESN-RLS (d=16, Nres=64); K del micro-grid in-sample. Debilidad: artificial −5.08. |
 
 ---
 

@@ -1,0 +1,9 @@
+{
+  "detector": "sixeyes_nabinformada_minmax",
+  "nab_informada": true,
+  "scores": {
+    "reward_low_FN_rate": 58.50749821765593,
+    "reward_low_FP_rate": 37.3057811917662,
+    "standard": 48.96814387820802
+  }
+}

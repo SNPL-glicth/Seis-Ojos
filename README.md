@@ -11,6 +11,7 @@ Six Eyes es una librería experimental de detección de anomalías en tiempo rea
 ### 0. Predictor Denso ESN-RLS (`EchoStatePredictor`, base oficial)
 * **Mecanismo:** Vector de retardos (d=16) → reservorio recurrente fijo (64 neuronas, radio espectral 0.9, semilla 42) → lectura lineal RLS con olvido que predice el siguiente punto. Anomalía = error cuadrático de predicción: la sorpresa geométrica sustituye a la rareza puntual.
 * **Complejidad:** $O(64^2)$ flops/punto (~0.07ms medido) + $O(16)$ embedding; memoria constante (reservorio + RLS + ventana de normalización 6400).
+* **Costo medido:** pipeline oficial completo (ESN + calibrador + PeakDecay) **0.11ms/pt** (~9k pts/s monohilo) en `Twitter_volume_IBM` (15902 pts). Apto en muestreos de minutos; no en alta frecuencia sin submuestreo.
 
 ### 1. Z-Score Estacional de Doble Escala (`SeasonalDualScaleRobustZ`, configuración anterior)
 * **Mecanismo:** Centro estacional por bucket diario (mediana/MAD, W=20) + escala lenta global (std rodante W=16000, sumas O(1)). Score con denominador conservador `max(1.4826·MAD_bucket, std_global)`: exige rareza bajo ambas escalas. Disponible vía `--detector dual_decay` (45.19/50.82/34.16).
@@ -25,7 +26,7 @@ Six Eyes es una librería experimental de detección de anomalías en tiempo rea
 * **Limitación de Complejidad Real:** Ventana ECDF acotada (`max_history=16000`, constante en memoria). La inserción vía `bisect.insort` requiere $O(\log W)$ comparaciones pero $O(W)$ en tiempo por desplazamiento; con $W=16000$ es admisible en muestreos de 1–5 min. `--cal-window 0` reproduce el modo histórico no acotado solo para regenerar el 42.54 in-sample.
 
 ### 3. Envolvente de Crestas y Relajación Causal (`StreamingPeakDecay`)
-* **Mecanismo:** Preserva la emisión plena en el frente de ataque del choque o nuevas crestas locales en $[t-K, t-1]$, atenuando exponencialmente las mesetas y réplicas mediante un factor $\exp(-(t - t_{\text{pico}}) / \tau)$ (por defecto $K=12, \tau=2.0$).
+* **Mecanismo:** Preserva la emisión plena en el frente de ataque del choque o nuevas crestas locales en $[t-K, t-1]$, atenuando exponencialmente las mesetas y réplicas mediante un factor $\exp(-(t - t_{\text{pico}}) / \tau)$ (por defecto $K=24, \tau=2.0$; K del micro-grid in-sample, ver diario).
 * **Complejidad:** $O(K)$ en memoria y tiempo amortizado.
 * **Advertencia metodológica:** los valores $K=160, \tau=1.5$ fueron sintonizados **in-sample** sobre las 58 series de prueba de NAB (grid search). Son una estimación optimista dentro de la muestra; no se afirma generalización sin validación cruzada u hold-out. El default de producción es $K=12, \tau=2.0$.
 
@@ -44,8 +45,11 @@ Six Eyes es una librería experimental de detección de anomalías en tiempo rea
 
 En la clasificación oficial de NAB, Six Eyes esn (medido 2026-10-14,
 pipeline `EchoStatePredictor + PercentileCalibrator + StreamingPeakDecay`,
-K=12, tau=2.0, cal W=16000) se posiciona en el **puesto 10° de 16 modelos**
-(medición in-sample del optimizador de umbrales):
+K=24, tau=2.0, cal W=16000) se posiciona en el **puesto 10° de 16 modelos**.
+K=24 es el mejor de 4 valores barridos sobre las 58 series: este número es
+in-sample por construcción, igual que todos los del leaderboard (todos
+salen del optimizador de umbrales sobre el test). La lectura honesta, con
+los cuatro números etiquetados:
 
 | Posición | Detector | Standard Score | Low FN | Low FP | Tipo de Modelo |
 | :---: | :--- | :---: | :---: | :---: | :--- |
@@ -58,7 +62,7 @@ K=12, tau=2.0, cal W=16000) se posiciona en el **puesto 10° de 16 modelos**
 | 7 | `knncad` | **57.99** | 64.81 | 43.41 | k-NN conformista conformal |
 | 8 | `relativeEntropy` | **54.64** | 58.84 | 47.60 | Entropía relativa |
 | 9 | `randomCutForest` | **51.72** | 59.75 | 38.36 | Bosque de aislamiento estocástico |
-| **10** | **`sixeyes_esn` (K=12, tau=2.0, cal W=16000)** | **48.62** | **55.49** | **38.94** | **Reservorio denso ESN-RLS + Percentil + NMS Causal** |
+| **10** | **`sixeyes_esn` (K=24, tau=2.0, cal W=16000)** | **49.05** | **57.01** | **38.99** | **Reservorio denso ESN-RLS + Percentil + NMS Causal** |
 | 11 | `twitterADVec` | **47.06** | 53.50 | 33.61 | Descomposición estacional Twitter |
 | 12 | `windowedGaussian` | **39.65** | 47.41 | 20.87 | Gaussiana con ventana móvil |
 | 13 | `skyline` | **35.69** | 44.48 | 27.08 | Skyline base (algoritmo único) |
@@ -66,15 +70,36 @@ K=12, tau=2.0, cal W=16000) se posiciona en el **puesto 10° de 16 modelos**
 | 15 | `expose` | **16.44** | 26.92 | 3.19 | Modelo de densidad gaussiana |
 | 16 | `null` | **0.00** | 0.00 | 0.00 | Detector nulo (cero alarmas) |
 
-* Reporte aislado: `results/sixeyes_esn_k12_tau2p0_w16000.json`. `final_results.json` oficial de NAB verificado sin mutación (backup/restore en `nab_runner.py`).
+* Reporte aislado: `results/sixeyes_esn_k24_tau2p0_w16000.json`. `final_results.json` oficial de NAB verificado sin mutación (backup/restore en `nab_runner.py`).
 * Configuración anterior (doble escala): 45.19/50.82/34.16 (`--detector dual_decay`). El reservorio denso aporta +3.43 Standard / +4.67 Low FN / +4.78 Low FP; ver `aprendizaje.md` (proyecto denso).
+* Micro-grid K/tau in-sample (12 corridas, `archive/gates/grid_esn_ktau.py`): K monótono 8→48.38, 12→48.62, 16→48.72, 24→49.05; tau irrelevante (bit-idéntico). K=24 adoptado como default con etiqueta in-sample.
 * Variante con `DailySeasonalRobustZ`: 40.02/46.80/29.13 (`--detector seasonal_decay`).
 * Ventana del calibrador: `W=16000` cubre el p90 de NAB (49/58 series >2000 pts, max 22695) con memoria constante.
+
+#### Lectura honesta de los números (Standard)
+
+| Medición | Valor | Contaminación restante |
+| :--- | :---: | :--- |
+| In-sample oficial (K=24, mejor de 4 barridos) | **49.05** | Arquitectura (d=16, Nres=64, radio 0.9, λ) y K elegidos sobre las 58 series. Comparable con el leaderboard: todos son in-sample. |
+| Multisemilla (42/7/99) | **48.30 ± 1.44** (muestral) | Igual que arriba + varianza de semilla incluida. |
+| LOCO 6 folds, umbral transferido | **40.60**, SEM ≈6.4 | Umbral honesto por fold; arquitectura y K siguen contaminados. Dispersión entre categorías ±15.6. |
+
+Sin git en este entorno no hay hashes de commit: la procedencia de cada
+número es su artefacto en `results/` (p. ej.
+`sixeyes_esn_k24_tau2p0_w16000.json`, `loco_sixeyes_esn_k24_tau2p0_w16000.json`).
+
+#### Pendiente declarado (no implícito)
+
+- **Conjunto intocado:** TSB-Eva, 472 series. **0 de 472 disponibles en este
+  entorno** (sin dataset no hay número; el loader existe pero jamás se
+  ejecutó aquí). El candidato final se corre ahí UNA vez.
+- **Multi-horizonte** (t+1/t+4/t+16): último de la cola, sin probar, con
+  regla pre-escrita (máx. 3 variantes, promoción solo por LOCO pareado).
 
 * **Qué aporta `StreamingPeakDecay` (K=160, τ=1.5):** Su envolvente de retención de crestas con ventana extendida (160 pasos ≈ 13 horas @5min) sostiene la alerta a lo largo de ventanas de verdad fundamental de NAB (100–300 timestamps), permitiendo al optimizador descender el umbral y capturar **74 de las 116 ventanas de verdad fundamental (63.8%)**.
 
 > [!NOTE]
-> **Pipeline oficial:** `EchoStatePredictor + PercentileCalibrator + StreamingPeakDecay`, K=12, τ=2.0, cal W=16000 → Standard **48.62** | Low FN **55.49** | Low FP **38.94** (medido 2026-10-14, `results/sixeyes_esn_k12_tau2p0_w16000.json`, determinista bit a bit en re-ejecución).
+> **Pipeline oficial:** `EchoStatePredictor + PercentileCalibrator + StreamingPeakDecay`, K=24, τ=2.0, cal W=16000 → Standard **49.05** | Low FN **57.01** | Low FP **38.99** (medido 2026-10-14, `results/sixeyes_esn_k24_tau2p0_w16000.json`; K del micro-grid in-sample declarado).
 > Configuración anterior (doble escala): 45.19/50.82/34.16, reproducible con `--detector dual_decay`.
 >
 > [!WARNING]

@@ -1,0 +1,8 @@
+{
+  "detector": "ensemble_rangos",
+  "scores": {
+    "reward_low_FN_rate": 52.07342374517174,
+    "reward_low_FP_rate": 29.71426113426301,
+    "standard": 44.48944596258519
+  }
+}

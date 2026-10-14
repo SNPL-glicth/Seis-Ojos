@@ -1,0 +1,8 @@
+{
+  "scores": {
+    "reward_low_FN_rate": 54.57986481857336,
+    "reward_low_FP_rate": 36.601214039997075,
+    "standard": 46.636871339419
+  },
+  "seed": 7
+}

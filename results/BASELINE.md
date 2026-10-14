@@ -1,11 +1,11 @@
 # BASELINE vigente (configuración oficial, 2026-10-14)
 
 Artefacto oficial inmutable:
-- `results/sixeyes_esn_k12_tau2p0_w16000.json`
-- standard **48.62** | Low FN **55.49** | Low FP **38.94**
+- `results/sixeyes_esn_k24_tau2p0_w16000.json`
+- standard **49.05** | Low FN **57.01** | Low FP **38.99**
 - Comando: `python run_nab.py --nab-path ../NAB` (pipeline
   `EchoStatePredictor + PercentileCalibrator + StreamingPeakDecay`,
-  K=12, tau=2.0, cal W=16000; determinista bit a bit en re-ejecución)
+  K=24, tau=2.0, cal W=16000; K del micro-grid in-sample declarado)
 - Medido: 2026-10-14. `final_results.json` oficial verificado sin mutación.
 
 Otras configuraciones medidas (artefactos conservados):

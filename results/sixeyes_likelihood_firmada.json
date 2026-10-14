@@ -1,0 +1,8 @@
+{
+  "detector": "likelihood_firmada",
+  "scores": {
+    "reward_low_FN_rate": 37.85793334520506,
+    "reward_low_FP_rate": 24.32188174170543,
+    "standard": 32.894344751376295
+  }
+}

@@ -1,10 +1,10 @@
-# Archive (cuarentena de deuda técnica)
+# Archive — índice
 
-Movido aquí el 2026-10-14 durante la refactorización de producción.
-No forma parte del pipeline oficial ni del CI.
+Cuarentena de investigación: nada de aquí forma parte del pipeline oficial
+ni del CI. No importar desde `src/`, `run_nab.py` ni tests oficiales.
 
-- `diagnostics/` — scripts ad-hoc de diagnóstico NAB.
-- `scratch/` — grid-searches in-sample (K/tau), autopsias IBM, tests de concepto.
-- `scratch_diag.py`, `scratch_read_csv.py` — utilidades dispersas de `scripts/`.
-
-No importar desde aquí en `src/`, `run_nab.py` ni tests oficiales.
+- `actas/` — registros de experimentos y auditorías (12 actas + autopsias).
+- `gates/` — scripts de evaluación reutilizables (NAB/diffs/latencia/grid).
+  Ojo Windows: todo script con multiprocessing lleva guard `__main__`.
+- `diagnostics/` — scripts ad-hoc de diagnóstico NAB (históricos).
+- `scratch/` — grid-searches in-sample, autopsias IBM, pruebas de concepto.

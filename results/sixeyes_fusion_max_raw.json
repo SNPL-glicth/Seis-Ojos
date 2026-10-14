@@ -1,0 +1,8 @@
+{
+  "detector": "sixeyes_fusion_max_raw",
+  "scores": {
+    "reward_low_FN_rate": 56.482295807553655,
+    "reward_low_FP_rate": 39.606504805763485,
+    "standard": 48.78559787220401
+  }
+}

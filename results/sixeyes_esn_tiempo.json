@@ -1,0 +1,8 @@
+{
+  "detector": "esn_tiempo",
+  "scores": {
+    "reward_low_FN_rate": 53.711044861121415,
+    "reward_low_FP_rate": 36.193711867045835,
+    "standard": 47.43045423851806
+  }
+}

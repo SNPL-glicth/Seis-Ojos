@@ -1,0 +1,8 @@
+{
+  "detector": "ensemble_mediana",
+  "scores": {
+    "reward_low_FN_rate": 52.59640569989461,
+    "reward_low_FP_rate": 27.903998575053635,
+    "standard": 45.273918894669514
+  }
+}

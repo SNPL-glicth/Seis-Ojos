@@ -28,6 +28,9 @@ from sixeyes.experimental.knn_detector import StreamingKNNDetector
 from sixeyes.experimental.volatility_boost import VolatilityBoost
 from sixeyes.experimental.hysteresis import HysteresisLatch
 from sixeyes.experimental.regime_router import RegimeRouter
+from sixeyes.experimental.rank_ensemble import RankEnsembleESN
+from sixeyes.experimental.hybrid_orthogonal import OrthogonalHybrid
+from sixeyes.experimental.global_norm_esn import GlobalNormESN
 from sixeyes.detectors.echo_state import EchoStatePredictor
 from sixeyes.experimental.markov_transition import MarkovTransitionSurprise, quantize
 from sixeyes.experimental.context_predictor import VariableOrderPredictor
@@ -58,6 +61,9 @@ __all__ = [
     "VolatilityBoost",
     "HysteresisLatch",
     "RegimeRouter",
+    "RankEnsembleESN",
+    "OrthogonalHybrid",
+    "GlobalNormESN",
     "EchoStatePredictor",
     "MarkovTransitionSurprise",
     "quantize",

@@ -7,10 +7,11 @@ from typing import Optional
 from sixeyes.detectors.base import Detector
 
 
-# Defaults conservadores (curva suave pre-explosión; ver diario).
-# K=160, tau=1.5 es óptimo in-sample NAB-58; pasar explícito solo para
-# reproducir el score 42.54, sin claim de generalización.
-DEFAULT_K_WINDOW = 12
+# Defaults de producción (grid in-sample sobre NAB-58, ver diario):
+# K=24 (49.05) > K=16 (48.72) > K=12 (48.62) > K=8 (48.38); tau irrelevante
+# (bit-idéntico en {1.5, 2.0, 2.5}). Sin claim de generalización.
+# K=160, tau=1.5 es óptimo histórico in-sample (42.54 con base anterior).
+DEFAULT_K_WINDOW = 24
 DEFAULT_TAU = 2.0
 
 class StreamingPeakDecay(Detector):

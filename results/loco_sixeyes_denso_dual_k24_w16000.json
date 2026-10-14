@@ -1,0 +1,169 @@
+{
+  "detector": "sixeyes_denso_dual_k24_w16000",
+  "folds": {
+    "artificialWithAnomaly": {
+      "standard": {
+        "score": 43.436784663828256,
+        "threshold_transferido": 0.9968439472532966,
+        "archivos": 6
+      },
+      "reward_low_FP_rate": {
+        "score": 31.202865000828947,
+        "threshold_transferido": 0.9994062871070558,
+        "archivos": 6
+      },
+      "reward_low_FN_rate": {
+        "score": 45.624523109218835,
+        "threshold_transferido": 0.9968439472532966,
+        "archivos": 6
+      }
+    },
+    "artificialNoAnomaly": {
+      "standard": {
+        "score": null,
+        "threshold_transferido": 0.9968439472532966,
+        "archivos": 5,
+        "excluido_media": "sin ventanas"
+      },
+      "reward_low_FP_rate": {
+        "score": null,
+        "threshold_transferido": 0.997531404287232,
+        "archivos": 5,
+        "excluido_media": "sin ventanas"
+      },
+      "reward_low_FN_rate": {
+        "score": null,
+        "threshold_transferido": 0.9968439472532966,
+        "archivos": 5,
+        "excluido_media": "sin ventanas"
+      }
+    },
+    "realAWSCloudwatch": {
+      "standard": {
+        "score": 47.27372562717876,
+        "threshold_transferido": 0.9968439472532966,
+        "archivos": 17
+      },
+      "reward_low_FP_rate": {
+        "score": 37.16718305115694,
+        "threshold_transferido": 0.9972723457826268,
+        "archivos": 17
+      },
+      "reward_low_FN_rate": {
+        "score": 51.515817084785844,
+        "threshold_transferido": 0.9968439472532966,
+        "archivos": 17
+      }
+    },
+    "realAdExchange": {
+      "standard": {
+        "score": 50.64862845895771,
+        "threshold_transferido": 0.9968439472532966,
+        "archivos": 6
+      },
+      "reward_low_FP_rate": {
+        "score": 25.40905575637908,
+        "threshold_transferido": 0.9994062871070558,
+        "archivos": 6
+      },
+      "reward_low_FN_rate": {
+        "score": 52.81337135359085,
+        "threshold_transferido": 0.9968439472532966,
+        "archivos": 6
+      }
+    },
+    "realKnownCause": {
+      "standard": {
+        "score": 21.346719203733347,
+        "threshold_transferido": 0.996860611134366,
+        "archivos": 7
+      },
+      "reward_low_FP_rate": {
+        "score": -2.3901229015298067,
+        "threshold_transferido": 0.996860611134366,
+        "archivos": 7
+      },
+      "reward_low_FN_rate": {
+        "score": 25.00504434872737,
+        "threshold_transferido": 0.993211792086889,
+        "archivos": 7
+      }
+    },
+    "realTraffic": {
+      "standard": {
+        "score": 43.28958770260797,
+        "threshold_transferido": 0.997531404287232,
+        "archivos": 7
+      },
+      "reward_low_FP_rate": {
+        "score": 22.997738677830473,
+        "threshold_transferido": 0.9994629430719656,
+        "archivos": 7
+      },
+      "reward_low_FN_rate": {
+        "score": 45.52639180173865,
+        "threshold_transferido": 0.997531404287232,
+        "archivos": 7
+      }
+    },
+    "realTweets": {
+      "standard": {
+        "score": 54.84263310288096,
+        "threshold_transferido": 0.9968381112984824,
+        "archivos": 10
+      },
+      "reward_low_FP_rate": {
+        "score": 37.914818199664694,
+        "threshold_transferido": 0.9968381112984824,
+        "archivos": 10
+      },
+      "reward_low_FN_rate": {
+        "score": 57.177661891409485,
+        "threshold_transferido": 0.9953846153846154,
+        "archivos": 10
+      }
+    }
+  },
+  "standard": {
+    "media": 43.473013126531164,
+    "std": 10.683405897807411,
+    "folds": [
+      43.436784663828256,
+      null,
+      47.27372562717876,
+      50.64862845895771,
+      21.346719203733347,
+      43.28958770260797,
+      54.84263310288096
+    ],
+    "nota": "folds nulos (sin ventanas) excluidos de media/std"
+  },
+  "reward_low_FP_rate": {
+    "media": 25.383589630721723,
+    "std": 13.581978073262297,
+    "folds": [
+      31.202865000828947,
+      null,
+      37.16718305115694,
+      25.40905575637908,
+      -2.3901229015298067,
+      22.997738677830473,
+      37.914818199664694
+    ],
+    "nota": "folds nulos (sin ventanas) excluidos de media/std"
+  },
+  "reward_low_FN_rate": {
+    "media": 46.27713493157851,
+    "std": 10.34793876795024,
+    "folds": [
+      45.624523109218835,
+      null,
+      51.515817084785844,
+      52.81337135359085,
+      25.00504434872737,
+      45.52639180173865,
+      57.177661891409485
+    ],
+    "nota": "folds nulos (sin ventanas) excluidos de media/std"
+  }
+}

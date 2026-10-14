@@ -1,0 +1,142 @@
+{
+  "detector": "sixeyes_esn_k24_tau2p0_w16000",
+  "folds": {
+    "artificialWithAnomaly": {
+      "standard": {
+        "score": 15.520137501582374,
+        "threshold_transferido": 0.996580547112462,
+        "archivos": 6
+      },
+      "reward_low_FP_rate": {
+        "score": 15.520137501582374,
+        "threshold_transferido": 0.9980190174326464,
+        "archivos": 6
+      },
+      "reward_low_FN_rate": {
+        "score": 47.79460996690605,
+        "threshold_transferido": 0.991740715424926,
+        "archivos": 6
+      }
+    },
+    "artificialNoAnomaly": {
+      "standard": {
+        "score": null,
+        "threshold_transferido": 0.996580547112462,
+        "archivos": 5,
+        "excluido_media": "sin ventanas"
+      },
+      "reward_low_FP_rate": {
+        "score": null,
+        "threshold_transferido": 0.9980190174326464,
+        "archivos": 5,
+        "excluido_media": "sin ventanas"
+      },
+      "reward_low_FN_rate": {
+        "score": null,
+        "threshold_transferido": 0.9917398945518452,
+        "archivos": 5,
+        "excluido_media": "sin ventanas"
+      }
+    },
+    "realAWSCloudwatch": {
+      "standard": {
+        "score": 44.66437615241518,
+        "threshold_transferido": 0.996301277740417,
+        "archivos": 17
+      },
+      "reward_low_FP_rate": {
+        "score": 40.196994400755415,
+        "threshold_transferido": 0.9980190174326464,
+        "archivos": 17
+      },
+      "reward_low_FN_rate": {
+        "score": 52.733436836326966,
+        "threshold_transferido": 0.9917398945518452,
+        "archivos": 17
+      }
+    },
+    "realAdExchange": {
+      "standard": {
+        "score": 50.32035341977528,
+        "threshold_transferido": 0.996580547112462,
+        "archivos": 6
+      },
+      "reward_low_FP_rate": {
+        "score": 10.532325133626598,
+        "threshold_transferido": 0.9990694789081884,
+        "archivos": 6
+      },
+      "reward_low_FN_rate": {
+        "score": 63.023377895706595,
+        "threshold_transferido": 0.9917398945518452,
+        "archivos": 6
+      }
+    },
+    "realKnownCause": {
+      "standard": {
+        "score": 35.657247114029374,
+        "threshold_transferido": 0.9970568999345978,
+        "archivos": 7
+      },
+      "reward_low_FP_rate": {
+        "score": 21.19653421952228,
+        "threshold_transferido": 0.9983091996878524,
+        "archivos": 7
+      },
+      "reward_low_FN_rate": {
+        "score": 56.80842759415289,
+        "threshold_transferido": 0.9917398945518452,
+        "archivos": 7
+      }
+    },
+    "realTraffic": {
+      "standard": {
+        "score": 65.6101432917029,
+        "threshold_transferido": 0.996580547112462,
+        "archivos": 7
+      },
+      "reward_low_FP_rate": {
+        "score": 52.84355981064038,
+        "threshold_transferido": 0.9980190174326464,
+        "archivos": 7
+      },
+      "reward_low_FN_rate": {
+        "score": 74.7890582747862,
+        "threshold_transferido": 0.9917398945518452,
+        "archivos": 7
+      }
+    },
+    "realTweets": {
+      "standard": {
+        "score": 31.829020483282573,
+        "threshold_transferido": 0.9921107994389902,
+        "archivos": 10
+      },
+      "reward_low_FP_rate": {
+        "score": 24.58598661317405,
+        "threshold_transferido": 0.9969875959834612,
+        "archivos": 10
+      },
+      "reward_low_FN_rate": {
+        "score": 51.52237729188535,
+        "threshold_transferido": 0.9921107994389902,
+        "archivos": 10
+      }
+    }
+  },
+  "standard": {
+    "media": 40.6,
+    "std": 15.64,
+    "nota": "recalculado excluyendo artificialNoAnomaly (sin ventanas)"
+  },
+  "reward_low_FP_rate": {
+    "media": 27.48,
+    "std": 14.62,
+    "nota": "recalculado excluyendo artificialNoAnomaly (sin ventanas)"
+  },
+  "reward_low_FN_rate": {
+    "media": 57.78,
+    "std": 8.96,
+    "nota": "recalculado excluyendo artificialNoAnomaly (sin ventanas)"
+  }
+}
