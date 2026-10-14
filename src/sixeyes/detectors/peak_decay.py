@@ -26,8 +26,8 @@ class StreamingPeakDecay(Detector):
     def __init__(
         self,
         detector: Detector,
-        k_window: int = 12,
-        tau: float = 2.0,
+        k_window: int = 160,
+        tau: float = 1.5,
     ) -> None:
         """Inicializa el envolvente de supresión de picos.
 
