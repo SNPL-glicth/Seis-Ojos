@@ -1,0 +1,10 @@
+{
+  "detector": "sixeyes_abl_refractory_s7",
+  "scores": {
+    "reward_low_FN_rate": 58.62051160659893,
+    "reward_low_FP_rate": 34.31461428954238,
+    "standard": 49.44898698169772
+  },
+  "seed": "s7",
+  "variant": "refractory"
+}

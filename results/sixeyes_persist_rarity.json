@@ -1,0 +1,8 @@
+{
+  "detector": "sixeyes_persist_rarity",
+  "scores": {
+    "reward_low_FN_rate": 64.22316527265757,
+    "reward_low_FP_rate": 26.385696078532995,
+    "standard": 53.055617256244105
+  }
+}

@@ -2,195 +2,113 @@
 
 **Streaming Anomaly Detection for Infrastructure & Time Series Telemetry**
 
-Six Eyes es una librería experimental de detección de anomalías en tiempo real diseñada para el análisis de flujos continuos de telemetría (métricas de infraestructura, servidores y señales de sensores). Implementa estimadores estadísticos y subespacios dinámicos diseñados para procesamiento streaming punto a punto sin fuga de datos del futuro.
+Six Eyes es una librería experimental de detección de anomalías en tiempo real para telemetría (métricas de infraestructura, servidores, sensores). Procesamiento streaming punto a punto, sin fuga del futuro, memoria acotada.
 
 ---
 
-## Modelos Principales y Análisis de Complejidad
+## Pipeline Oficial
 
-### 0. Predictor Denso ESN-RLS (`EchoStatePredictor`, base oficial)
-* **Mecanismo:** Vector de retardos (d=16) → reservorio recurrente fijo (64 neuronas, radio espectral 0.9, semilla 42) → lectura lineal RLS con olvido que predice el siguiente punto. Anomalía = error cuadrático de predicción: la sorpresa geométrica sustituye a la rareza puntual.
-* **Complejidad:** $O(64^2)$ flops/punto (~0.07ms medido) + $O(16)$ embedding; memoria constante (reservorio + RLS + ventana de normalización 6400).
-* **Costo medido:** pipeline oficial completo (ESN + calibrador + PeakDecay) **0.11ms/pt** (~9k pts/s monohilo) en `Twitter_volume_IBM` (15902 pts). Apto en muestreos de minutos; no en alta frecuencia sin submuestreo.
+```
+EchoStatePredictor (ESN-RLS, d=16, Nres=64, ρ=0.9, λ=0.999)
+  → PercentileCalibrator (ECDF W=16000)
+    → StreamingPeakDecay (K=24, τ=2.0, NMS causal)
+      → SpatialSpikeBypass (tol=5%, warmup=100) — score 1.0 si rompe el rango histórico
+        → RefractorySuppressor (W=80, trigger=0.990) — silencio causal post-pico
+```
 
-### 1. Z-Score Estacional de Doble Escala (`SeasonalDualScaleRobustZ`, configuración anterior)
-* **Mecanismo:** Centro estacional por bucket diario (mediana/MAD, W=20) + escala lenta global (std rodante W=16000, sumas O(1)). Score con denominador conservador `max(1.4826·MAD_bucket, std_global)`: exige rareza bajo ambas escalas. Disponible vía `--detector dual_decay` (45.19/50.82/34.16).
-* **Complejidad:** $O(20)$ mediana/MAD por paso + $O(1)$ vía lenta; memoria acotada $O(16000)$ + 96 buckets × 20.
+**Coste:** ~0.11 ms/punto (~9k pts/s monohilo). Apto en muestreos de minutos.
 
-### 1b. Z-Score Robusto Estacional con buckets fijos (`DailySeasonalRobustZ`, variante con buckets fijos)
-* **Mecanismo:** Desacopla la oscilación circadiana diaria particionando el tiempo en 96 canastas diurnas de 15 minutos, manteniendo estimadores no paramétricos de mediana y MAD independientes por canasta.
-* **Complejidad:** $O(W)$ por paso para la mediana y MAD dentro de la ventana deslizante local (típicamente $W=20$), con memoria acotada.
-
-### 2. Calibrador Percentil Empírico (`PercentileCalibrator`)
-* **Mecanismo:** Mapea scores locales no acotados a una distribución uniforme empírica $[0, 1]$ mediante la ECDF histórica.
-* **Limitación de Complejidad Real:** Ventana ECDF acotada (`max_history=16000`, constante en memoria). La inserción vía `bisect.insort` requiere $O(\log W)$ comparaciones pero $O(W)$ en tiempo por desplazamiento; con $W=16000$ es admisible en muestreos de 1–5 min. `--cal-window 0` reproduce el modo histórico no acotado solo para regenerar el 42.54 in-sample.
-
-### 3. Envolvente de Crestas y Relajación Causal (`StreamingPeakDecay`)
-* **Mecanismo:** Preserva la emisión plena en el frente de ataque del choque o nuevas crestas locales en $[t-K, t-1]$, atenuando exponencialmente las mesetas y réplicas mediante un factor $\exp(-(t - t_{\text{pico}}) / \tau)$ (por defecto $K=24, \tau=2.0$; K del micro-grid in-sample, ver diario).
-* **Complejidad:** $O(K)$ en memoria y tiempo amortizado.
-* **Advertencia metodológica:** los valores $K=160, \tau=1.5$ fueron sintonizados **in-sample** sobre las 58 series de prueba de NAB (grid search). Son una estimación optimista dentro de la muestra; no se afirma generalización sin validación cruzada u hold-out. El default de producción es $K=12, \tau=2.0$.
-
-### 3b. Bypass Espacial de Spikes Históricos (`SpatialSpikeBypass`)
-* **Mecanismo:** Mantiene en streaming y de forma causal las cotas extremas $[x_{\min}, x_{\max}]$. Si una observación rompe los límites acumulados tras el calentamiento por más de una tolerancia relativa (defecto 5%), emite un score de $1.0$ de inmediato, superando la latencia de asimilación del reservorio y del embedding de retardos.
-* **Complejidad:** $O(1)$ tiempo y $O(1)$ memoria.
-
-### 3c. Envolvente Causal Refractario (`RefractorySuppressor`, Campeón Oficial)
-* **Mecanismo:** Tras un pico extremo ($s \ge 0.990$), programa una ventana de silencio estricto durante $W_{\text{rest}} = 80$ pasos. Elimina ráfagas de falsos positivos en las colas de eventos turbulentos, reduciendo la penalización aditiva de falsas alarmas y permitiendo al umbral óptimo global descender para capturar anomalías sutiles en todo el corpus.
-* **Complejidad:** $O(1)$ tiempo y $O(1)$ memoria.
-
-### 4. Subespacio SVD con Ingesta Protegida (`SubspaceResidualDetector`)
-* **Mecanismo:** Modela la dinámica latente mediante incrustación causal de retardos (Hankel) y descomposición periódica en valores singulares (SVD). Su compuerta de ingesta configurable (`gate_threshold`, desactivada por defecto `None`) busca evitar que anomalías sostenidas contaminen la base ortogonal normal. El valor histórico 0.70 es una heurística ajustada in-sample sin validación externa (reproducible pasando `gate_threshold=0.70`).
-* **Coste Computacional:** Requiere un tiempo de procesamiento promedio de **$\sim 0.8\text{ ms}$ por punto**. Este coste es admisible en muestreos de 1 a 5 minutos, pero inviable para millones de métricas por segundo sin submuestreo o aceleración vectorial.
-* **Vulnerabilidad Crítica del Buffer Gating:** Si una serie sufre un cambio permanente de régimen (*concept drift* estructural) y el residuo se mantiene en $s \ge 0.70$, el buffer deja de admitir observaciones, el subespacio nunca aprende la nueva normalidad y el detector queda disparando alarmas indefinidamente.
+Componentes causales O(1) cada uno. El bypass cubre rupturas de rango; el refractario silencia réplicas y permite al umbral global descender a 0.99077.
 
 ---
 
-## Resultados en Benchmarks Oficiales
+## Resultados NAB (58 series)
 
-### 1. Numenta Anomaly Benchmark (NAB) — 58 Series
+| Medición | Valor |
+| :--- | :---: |
+| Histórico mejor semilla (seed 42) | 60.81 |
+| **Media 3 semillas (in-sample)** | **57.68 ± 3.08** |
+| **LOCO 6 folds (out-of-sample)** | **55.72 ± 10.52** |
+| **Ensemble determinista + LOCO (verídico)** | **54.45 ± 13.37** |
+| Base ESN sin capas | 48.30 ± 1.44 |
 
-#### Tabla Oficial Completa de Resultados NAB (Perfil Standard)
+**Puntaje verídico: 54.45.** Es el único número determinista (sin lotería de semilla) medido fuera de muestra. El 60.81 se conserva como histórico pero es la mejor de 3 semillas in-sample. Con la media (57.68), empate con Earthgecko Skyline (58.20) y KNN-CAD (57.99) dentro del ruido ±3.08.
 
-En la clasificación oficial de NAB, Six Eyes con Envolvente Causal Refractario (`sixeyes_refractory_w80_t990`, medido 2026-10-14,
-pipeline `RefractorySuppressor + SpatialSpikeBypass + StreamingPeakDecay + PercentileCalibrator + EchoStatePredictor`)
-se posiciona en el **puesto 6° de 16 modelos** con **60.81 puntos**, superando a métodos clásicos como KNN-CAD (57.99), Earthgecko Skyline (58.20), Relative Entropy (54.64) y Random Cut Forest (51.72).
+### Descomposición del 60.81 (seed 42)
 
-| Posición | Detector | Standard Score | Low FN | Low FP | Tipo de Modelo |
-| :---: | :--- | :---: | :---: | :---: | :--- |
-| 1 | `ARTime` | **74.85** | 80.36 | 65.15 | Aprendizaje en línea (red ART) |
-| 2 | `numenta` | **70.10** | 74.32 | 63.12 | Red Jerárquica Temporal (HTM) |
-| 3 | `contextOSE` | **69.90** | 73.18 | 66.98 | Memoria de contexto espacial |
-| 4 | `htmjava` | **65.55** | 70.42 | 53.26 | HTM implementación Java |
-| 5 | `numentaTM` | **64.55** | 69.19 | 56.67 | Temporal Memory |
-| **6** | **`sixeyes_refractory` (W=80, t=0.99)** | **60.81** | **68.45** | **43.40** | **ESN-RLS + Calibrador + NMS + Dead-Time Causal + Bypass** |
-| 7 | `earthgeckoSkyline` | **58.20** | 63.80 | 46.20 | Ensamble por votación/consenso |
-| 8 | `knncad` | **57.99** | 64.81 | 43.41 | k-NN conformista conformal |
-| 9 | `relativeEntropy` | **54.64** | 58.84 | 47.60 | Entropía relativa |
-| 10 | `randomCutForest` | **51.72** | 59.75 | 38.36 | Bosque de aislamiento estocástico |
-| 11 | `sixeyes_esn` (K=24, tau=2.0, cal W=16000) | **49.05** | **57.01** | **38.99** | Reservorio denso ESN-RLS + Percentil + NMS Causal |
-| 12 | `twitterADVec` | **47.06** | 53.50 | 33.61 | Descomposición estacional Twitter |
-| 13 | `windowedGaussian` | **39.65** | 47.41 | 20.87 | Gaussiana con ventana móvil |
-| 14 | `skyline` | **35.69** | 44.48 | 27.08 | Skyline base (algoritmo único) |
-| 15 | `random` | **16.83** | 25.88 | 5.76 | Baseline aleatorio uniforme |
-| 16 | `expose` | **16.44** | 26.92 | 3.19 | Modelo de densidad gaussiana |
-| 17 | `null` | **0.00** | 0.00 | 0.00 | Detector nulo (cero alarmas) |
+| Pieza | Puntos |
+| :--- | :---: |
+| Regla de rango sola (trivial + bypass) | 50.83 |
+| Cualquier predictor encima | +7.5 |
+| Suerte de semilla 42 | +0.30 |
+| Refractario | +2.01 (solo seed 42) |
+| **Total** | **60.81** |
 
-#### Ablación Causal de Componentes en NAB Completo (58 Series)
+La regla trivial "rompió el rango" **le gana al ESN entero** (50.83 vs 49.05). NAB lo mueven las rupturas de rango, no el predictor. Dado el bypass, el ESN aporta +0.28 sobre doble escala — **cuál predictor elijas casi no importa**.
 
-Para demostrar científicamente la contribución de cada componente sin cajas negras, se midieron exhaustivamente las ablaciones individuales:
+### LOCO pareado por semilla (full vs spatial-solo)
 
-| Configuración Evaluada | Standard Score | Low FN | Low FP | Delta Standard vs Base | Umbral Óptimo | Artefacto en `results/` |
-| :--- | :---: | :---: | :---: | :---: | :---: | :--- |
-| **1. Base ESN solo** (K=24, tau=2.0, W=16000) | **49.05** | 57.01 | 38.99 | *Base* | 0.99658 | `sixeyes_esn_k24_tau2p0_w16000.json` |
-| **2. ESN + RefractorySuppressor solo** ($W_{\text{rest}}=80, t=0.990$) | **55.55** | 62.93 | 38.49 | **+6.50** | 0.99077 | `sixeyes_ablation_refractory_only.json` |
-| **3. ESN + SpatialSpikeBypass solo** ($\text{tol}=0.05$) | **58.80** | 65.35 | 53.34 | **+9.75** | 0.99658 | `sixeyes_ablation_spatial_only.json` |
-| **4. Pipeline Completo Promovido** (ESN + Spatial + Refractory) | **60.81** | **68.45** | **43.40** | **+11.76** | 0.99077 | `sixeyes_refractory_w80_t990.json` |
+| Semilla | Full | Spatial-solo | Δ |
+| :---: | :---: | :---: | :---: |
+| 42 | 60.06 | 48.87 | +11.19 |
+| 7 | 50.33 | 50.78 | −0.45 |
+| 99 | 56.76 | 51.16 | +5.60 |
+| **Media** | **55.72** | **50.27** | **+5.45 ± 3.36** |
 
-* **Mecanismo revelado por la ablación:**
-  - El **SpatialSpikeBypass** elimina la latencia temporal del reservorio frente a anomalías espaciales bruscas, aportando +9.75 puntos y disparando el perfil Low FP a 53.34.
-  - El **RefractorySuppressor** silencia las réplicas turbulentas tras cada impacto, permitiendo al optimizador descender el umbral global de 0.99658 a 0.99077 y rescatar ventanas sutiles.
-  - La combinación sinérgica de ambos supera a cualquiera de los dos componentes aislados (**60.81**, 147 True Positives y 382 False Positives en 332,842 timestamps).
-
-#### Lectura honesta de los números (Standard)
-
-| Medición | Valor | Parámetros y Procedencia |
-| :--- | :---: | :--- |
-| **In-sample oficial (Refractario W=80, t=0.99)** | **60.81** | $W_{\text{rest}}=80$, $t=0.990$, $\text{tolerance}=0.05$, $\text{warmup}=100$, $K=24$, $\tau=2.0$, $W=16000$, seed=42. Reporte: `results/sixeyes_refractory_w80_t990.json`. |
-| **Desglose de las 58 series (punto a punto)** | **147 TP, 382 FP** | Archivo CSV completo con TP/FP/FN/Score por serie: `results/sixeyes_refractory_w80_t990_standard_scores.csv`. |
-| **LOCO 6 folds (out-of-sample)** | **60.06 ± 7.26** | **Validación cruzada real Leave-One-Category-Out**: umbral ajustado en 5 categorías y transferido a la excluida. Artefacto: `results/loco_sixeyes_refractory_w80_t990.json`. |
-| **Multisemilla (42/7/99)** | **57.68 ± 3.08** | Semilla 42: 60.81, Semilla 7: 54.66 (`results/sixeyes_refractory_seed7_w80_t990.json`), Semilla 99: 57.58 (`results/sixeyes_refractory_seed99_w80_t990.json`). |
-| In-sample base ESN (K=24) | **49.05** | Baseline previo sin Dead-Time (LOCO: 40.60 ± 15.64, multisemilla: 48.30 ± 1.44). |
-
-#### Ubicación de Pruebas Unitarias y Reproducibilidad
-
-1. **Pruebas Unitarias Automatizadas (pytest)**:
-   - `tests/test_refractory.py`: Supresión exacta de $W_{\text{rest}}$ pasos causales, invariancia ante `reset()`, validación de rangos.
-   - `tests/test_spatial_spike_bypass.py`: Cero latencia en picos extremos fuera de rango histórico, respeto al warmup.
-   - `tests/test_repo_guards.py`: Verificación de que NAB `final_results.json` jamás se muta y no existen literales de hiperprecisión in-sample.
-   - `tests/test_no_nab_names.py`: Garantía de cero mención de datasets o fuga de nombres en el código fuente.
-   - Comando:
-     ```bash
-     python -m pytest tests/ -q --tb=no
-     # 237 passed, 4 skipped en ~16s
-     ```
-
-2. **Reproducción de la Evaluación NAB Completa**:
-   ```bash
-   python run_nab.py --detector refractory --nab-path ../NAB
-   # Ejecuta las 58 series, corre optimizador y genera results/sixeyes_refractory_w80_t990.json
-   ```
-
-#### Pendiente declarado (no implícito)
-
-- **Conjunto intocado:** TSB-Eva, 472 series. **0 de 472 disponibles en este
-  entorno** (sin dataset no hay número; el loader existe pero jamás se
-  ejecutó aquí). El candidato final se corre ahí UNA vez.
-
-> [!NOTE]
-> **Pipeline oficial promovido:** `RefractorySuppressor + SpatialSpikeBypass + StreamingPeakDecay + PercentileCalibrator + EchoStatePredictor` → Standard **60.81** | Low FN **68.45** | Low FP **43.40** (medido 2026-10-14, `results/sixeyes_refractory_w80_t990.json`).
-> Ejecutable vía `python run_nab.py --detector refractory --nab-path ../NAB` o `python archive/gates/gate_refractory.py`.
+El refractario baja la media in-sample (57.68 vs 58.50) pero **sube la transferencia** (+5.45 pareado, 2/3 positivo, p≈0.25). Su valor está en el umbral transferido, no en el score. Evidencia razonable, no demostración.
 
 ---
 
-### 2. TSB-AD — Subconjunto de Ajuste (43 Series)
+## Brecha Real vs ARTime
 
-> [!IMPORTANT]
-> **Subconjunto de Ajuste vs. Evaluación Completa:** La métrica de **0.3572 VUS-PR** fue obtenida exclusivamente sobre el **subconjunto de ajuste de 43 series** (Tuning Set, excluyendo NAB). **No es comparable** con la tabla de referencia de evaluación (donde los mejores modelos de la literatura alcanzan $\sim 0.42$ sobre el conjunto oficial *Eva* de 350 series). El testbed extendido *Eva-Full* consta de 822 series reales (las 350 de Eva más 472 series de evaluación intocadas que no forman parte de Eva ni de Tuning). La evaluación sobre estas 472 series intocadas permanece pendiente.
+| | Ventanas |
+| :--- | :---: |
+| Ambas detectan | 89 |
+| Solo ARTime | **17** |
+| Solo spatial | 2 |
+| Ninguna | 8 |
 
-#### Trade-offs Reales del Buffer Gating en `SubspaceResidualDetector`
-
-El análisis comparativo por familia en el conjunto de ajuste muestra que la ingesta protegida ($s < 0.70$) es un **intercambio estadístico con compromisos severos**, y no una victoria uniforme:
-
-| Familia de Datos | Muestras ($n$) | Subespacio Estándar | Subespacio con Gating ($s < 0.70$) | Variación Neta |
-| :--- | :---: | :---: | :---: | :---: |
-| **Exathlon** | 2 | 0.2673 | **0.9561** | **+0.6888** 🟢 |
-| **SMD** | 5 | 0.7398 | 0.7398 | 0.0000 ➖ |
-| **Yahoo** | 5 | 0.3693 | 0.3402 | **-0.0291** 🔴 |
-| **MSL** | 2 | 0.5833 | 0.2378 | **-0.3455** 🔴 |
-| **NEK** | 1 | 0.5076 | 0.4542 | **-0.0534** 🔴 |
-| **Promedio por Serie** | 43 | 0.3535 | **0.3572** | **+0.0037** |
-
-* **Advertencia estadística sobre tamaños muestrales ($n \le 2$):** Los tamaños de muestra reales por familia en el Tuning Set son reducidos (Yahoo $n=5$, SMD $n=5$, MSL $n=2$, Exathlon $n=2$, NEK $n=1$). Con $n \le 2$ no se puede inferir generalización estadística: diferencias como el $+0.6888$ en Exathlon o el $-0.3455$ en MSL son puramente anecdóticas y responden a varianza muestral extrema de series aisladas.
-* **Origen de la columna «Subespacio Estándar» y discrepancia en SMD:** Durante la experimentación, el script `run_subspace_benchmark.py` sobrescribió el archivo original `Subspace_tsb_results.csv` al correr con gating habilitado. Los valores de la columna estándar provienen de registros de corridas previas, donde el valor de SMD estándar figuró inicialmente como 0.7267 (frente al 0.7398 reflejado en la tabla consolidada).
-* **Riesgo crítico de congelación del buffer ante cambios de régimen (*Concept Drift*):** Si una serie experimenta un cambio permanente de dinámica o nivel de base y el residuo se mantiene en $s \ge 0.70$, la compuerta bloquea indefinidamente la admisión de nuevas muestras normales al buffer Hankel. Como consecuencia, el subespacio nunca aprende la nueva normalidad y el detector queda disparando alarmas de manera permanente.
-
-#### Autopsia del Ensamble Combinado: ¿Por qué se descartó?
-Se evaluó un ensamble por unión simple $\max(S_{\text{estacional}}, S_{\text{subespacio}})$ bajo dos criterios de aceptación prefijados:
-1. Promedio por dataset $\ge 0.3226$.
-2. Mejoría simultánea en dominios complementarios.
-
-* **Resultado:** Obtuvo un promedio por dataset de **0.3153** (incumpliendo el umbral). Aunque mejoró Yahoo ($0.340 \to 0.676$), destruyó el rendimiento en SMD ($0.740 \to 0.298$) y Exathlon ($0.956 \to 0.184$) al sumar falsas alarmas ortogonales ($1 - q^2$). **El combinador queda descartado como modelo oficial**, manteniéndose cada detector como una herramienta especializada independiente.
+Las 17 son subidas moderadas **dentro** del rango (nyc_taxi, grok, TravelTime, machine_temperature). Score 0.92–0.99, bajo el umbral 0.99658. El bypass no puede verlas por construcción. Ni el ESN ni doble escala las cubren — **es un problema de señal, no de predictor**.
 
 ---
 
-## Instalación y Ejecución
+## Por Qué No Sube el Puntaje (medido, no opinado)
+
+El techo no es falta de ideas — es estructural. Seis intentos archivados lo demuestran:
+
+| Intento | Resultado | Por qué falla |
+| :--- | :--- | :--- |
+| LevelRarity (14/17 ventanas) | 55.50 (−2.18) | 418 FPs aislados cuestan más (~−13) que las ventanas (~+11) |
+| PersistenceFilter (M=2) | 53.06 (−4.62) | Los FPs no son persistencia; el filtro deja pasar más ruido (726 FPs) |
+| Refractario asimétrico | 59.32 (−1.49) | Los wakeups fragmentan el silencio; el optimizador sube el umbral a 0.99649 |
+| time_features en full | 56.55 (−4.26) | Pesos fijos + entradas periódicas = ruido estructurado |
+| Cura burn-in ECDF | 49.19 (+0.14) | Rescata jumpsup pero paga FPs en series limpias |
+| Ensemble (59.35 in-sample) | 54.45 LOCO | El max preserva picos que no transfieren entre categorías |
+
+**El mecanismo del techo:** NAB usa UN umbral global sobre 58 series heterogéneas. El optimizador ya encuentra el mejor tradeoff TP/FP. Cualquier señal nueva que dispare en cualquier serie suma FPs a −0.11/−0.20 cada uno. Para ganar neto, debe aportar TPs que valgan más que sus FPs — y nada de lo probado lo logra:
+- Las 17 ventanas valen ~+11 pero cuestan ~+13 en FPs para capturarlas
+- Bajar el umbral rescata ventanas pero admite ruido en las 58 series a la vez
+- El refractario estático funciona PRECISEMENTE porque no perdona: su rigidez permite el umbral bajo 0.99077
+
+**La única vía real:** TSB-Eva (472 series intocadas). Si el sistema generaliza fuera de NAB, es señal real; si no, el 54.45 es el techo honesto.
+
+---
+
+
+## Reproducción
 
 ```bash
 pip install -e .
+python run_nab.py --detector refractory --nab-path ../NAB
+python -m pytest tests/ -q --tb=no   # 240 passed, 1 skipped (PYTHONPATH=src)
 ```
 
-Comando estándar reproducible (pipeline oficial único, defaults conservadores K=12, tau=2.0):
-```bash
-python run_nab.py --nab-path ../NAB
-python run_subspace_benchmark.py   # Tuning-43 TSB-AD, normalización causal
-```
-Regeneración del número histórico 42.54 (calibrador no acotado, coste O(N), sin claim de generalización):
-```bash
-python run_nab.py --nab-path ../NAB --detector peak_decay --k-window 160 --tau 1.5 --cal-window 0
-```
-Verificado 2026-10-14: reproduce bit a bit Standard 42.54 | Low FN 49.56 | Low FP 30.66 (`results/sixeyes_peak_decay_b15_k160_tau1p5_wInf.json`). Esto confirma que la caída a 39.15 con `--cal-window 2000` proviene solo del acotamiento del calibrador.
+Cada corrida NAB guarda `results/sixeyes_<config>.json` aislado. `final_results.json` oficial nunca se modifica.
 
-Cada ejecución NAB guarda `results/sixeyes_<config>.json` aislado; `final_results.json` oficial nunca se modifica.
-
-Pruebas de invarianza y causalidad:
-```bash
-pytest tests/test_fuga_seasonal.py tests/test_peak_decay.py tests/test_peak_decay_reset.py tests/test_peak_decay_ramp_boost.py -v
-```
-
-Los resultados consolidados y los datos crudos originales de NAB se almacenan en `results/`. Los detectores experimentales viven en `src/sixeyes/experimental/` y están excluidos del pipeline oficial.
+Registro completo de experimentos: `aprendizaje.md`. Detectores experimentales: `src/sixeyes/experimental/`.
 
 ---
 
 ## Licencia
 
-Este proyecto está bajo la [Licencia MIT](LICENSE).
+[MIT](LICENSE)

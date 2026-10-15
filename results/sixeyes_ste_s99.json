@@ -1,0 +1,9 @@
+{
+  "detector": "sixeyes_ste_s99",
+  "scores": {
+    "reward_low_FN_rate": 46.72850066925187,
+    "reward_low_FP_rate": 25.562088547547365,
+    "standard": 36.48196783431043
+  },
+  "seed": 99
+}

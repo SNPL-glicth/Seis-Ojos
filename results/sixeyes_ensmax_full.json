@@ -1,0 +1,10 @@
+{
+  "detector": "sixeyes_ensmax_full",
+  "scores": {
+    "reward_low_FN_rate": 66.28990604476971,
+    "reward_low_FP_rate": 45.29539048615854,
+    "standard": 59.34865217060283
+  },
+  "seed": null,
+  "variant": "ensmax_full"
+}

@@ -12,9 +12,21 @@ def test_runner_descarta_nab_y_calcula_metricas(tmp_path):
     files = get_tuning_files(str(list_csv))
     assert files == ["002_WSD_test.csv", "004_SMD_test.csv"]
 
+def _tsb_evaluable() -> bool:
+    """El dataset TSB-AD existe pero las metricas (TSB_AD) requieren statsmodels."""
+    dataset = os.path.exists(
+        r"..\benchmarks\tsb_ad\TSB-AD\Datasets\TSB-AD-U\001_NAB_id_1_Facility_tr_1007_1st_2014.csv")
+    try:
+        import statsmodels  # noqa: F401
+        return dataset
+    except ImportError:
+        return False
+
+
 @pytest.mark.skipif(
-    not os.path.exists(r"..\benchmarks\tsb_ad\TSB-AD\Datasets\TSB-AD-U\001_NAB_id_1_Facility_tr_1007_1st_2014.csv"),
-    reason="Datos no encontrados"
+    not _tsb_evaluable(),
+    reason="TSB-AD no evaluable en este entorno: falta statsmodels (dependencia de "
+           "TSB_AD.utils metricas) o el dataset. Pendiente declarado: TSB-Eva 0/472."
 )
 def test_cordura_metricas():
     file_path = r"..\benchmarks\tsb_ad\TSB-AD\Datasets\TSB-AD-U\001_NAB_id_1_Facility_tr_1007_1st_2014.csv"

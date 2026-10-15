@@ -1,0 +1,11 @@
+{
+  "detector": "sixeyes_cl_s99",
+  "seed": 99,
+  "short_window": 10,
+  "long_window": 1000,
+  "scores": {
+    "standard": 59.038484215278295,
+    "reward_low_FP_rate": 51.33857140961653,
+    "reward_low_FN_rate": 63.49692051133495
+  }
+}

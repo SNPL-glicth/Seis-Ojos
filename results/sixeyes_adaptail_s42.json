@@ -1,0 +1,9 @@
+{
+  "detector": "sixeyes_adaptail_s42",
+  "scores": {
+    "reward_low_FN_rate": 1.5171850941348812,
+    "reward_low_FP_rate": 1.189470619593303,
+    "standard": 1.413708675685068
+  },
+  "seed": 42
+}

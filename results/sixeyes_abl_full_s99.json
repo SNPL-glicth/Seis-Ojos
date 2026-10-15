@@ -1,0 +1,10 @@
+{
+  "detector": "sixeyes_abl_full_s99",
+  "scores": {
+    "reward_low_FN_rate": 66.2613884686451,
+    "reward_low_FP_rate": 42.16622327732874,
+    "standard": 57.58173787538144
+  },
+  "seed": "s99",
+  "variant": "full"
+}

@@ -20,6 +20,218 @@
 - **Por qué:** con ~15+ configs vistas sobre el mismo test, ver el resultado
   antes de fijar la regla es la forma de autoengañarse.
 
+## Contextual Anomaly Likelihood sobre ESN crudo — MEDIDO, ARCHIVADO (2026-10-15)
+
+- **Hipótesis:** Siguiendo la formulación matemática de Numenta y ContextOSE, modelar la distribución local de errores de predicción del ESN mediante medias y varianzas rodantes adaptativas (EMA $O(1)$) y calcular la probabilidad de cola gaussiana ($1 - Q(z)$) permitiría rescatar las ventanas sutiles de cambio de régimen (`nyc_taxi`, `grok`, `flatmiddle`) que quedan bajo el umbral global estático de la ECDF.
+- **Implementación:** `src/sixeyes/experimental/contextual_likelihood.py` (`ContextualLikelihood`, $W'=10, W=1000$) + suite de pruebas `tests/test_contextual_likelihood.py` (5 passed) + gate oficial `archive/gates/gate_contextual_likelihood.py`.
+- **Medición NAB Oficial (3 semillas pareadas sobre `raw_esn`):**
+  - Semilla 42: **57.79** (vs baseline 60.81, **−3.02**) | Low FP 49.79 (+6.39) | Low FN 62.09 (−6.36).
+  - Semilla 7: **57.23** (vs baseline 54.66, **+2.57**) | Low FP 49.28 (+5.88) | Low FN 61.61 (−6.84).
+  - Semilla 99: **59.04** (vs baseline 57.58, **+1.46**) | Low FP 51.34 (+7.94) | Low FN 63.50 (−4.95).
+  - **Media oficial pareada (n=3):** **58.02 ± 0.94** (frente a 57.68 ± 3.08 del titular base: **+0.34 neto**, muy lejos del criterio $+3.0 \ge 60.68$).
+- **Autopsia & Diagnóstico Profundo (La Paradoja de Adaptación Local):**
+  1. **Enorme reducción de falsos positivos en series estables:** En `artificialNoAnomaly`, los FPs cayeron de 9 a solo 3 (en `art_noisy` bajó de 6 a 1). En el perfil `Low FP Rate`, el score subió masivamente de 43.40 a **49.79–51.34 (+7 pts)**. En `realTweets`, la ganancia fue explosiva (+5.58 pts).
+  2. **Colapso de TPs en series con regímenes mixtos (`realKnownCause` y `realTraffic`):**
+     - En `realKnownCause`, el score cayó de +3.68 a **−2.90 (−6.57 pts)**. En `realTraffic`, de +5.07 a **+0.14 (−4.92 pts)**.
+     - **Mecanismo del fallo:** En series largas como `machine_temperature` o `nyc_taxi`, cuando el ESN experimenta un error moderado sostenido, la ventana adaptativa de largo plazo ($W=1000$) absorbe el nuevo nivel de error, inflando $\sigma_e$ y desplazando $\mu_e$. Como consecuencia, las anomalías posteriores dentro de la misma serie son normalizadas como "comportamiento esperado", silenciando los TPs (los TPs totales del corpus cayeron de 147 a 98).
+  3. **Criterio pre-registrado:** Requiere media $\ge 60.68$ y ninguna semilla peor. Con media 58.02 y semilla 42 cayendo −3.02, **no califica para promoción y queda archivado con su evidencia.**
+
+
+
+## Filtro de Persistencia (M=2) sobre LevelRarity — FALSADO, ARCHIVADO (2026-10-15)
+
+- **Hipótesis:** Si los FPs de LevelRarity son picos aislados de un paso, exigir persistencia temporal (M=2 pasos consecutivos en zona de anomalía) eliminaría el ruido sin sacrificar los TPs de las 14 ventanas recuperadas.
+- **Medición NAB (semilla 42):** **Standard 53.06 (−4.62 vs full 57.68, −2.44 vs LevelRarity 55.50)**.
+  - Falsos Positivos: **suben de 418 a 726 FPs**.
+  - Ventanas rescatadas: se mantienen las mismas 14/17, pero el score colapsa por la explosión de penalizaciones fuera de ventana.
+- **Autopsia & Falsación:**
+  - Los FPs de LevelRarity **no eran impulsos aislados de un solo paso**; son rachas de dispersión y fluctuación en colas de densidad que el filtro de persistencia no atenúa y que, al alterar la dinámica temporal del refractario y del umbral, multiplican los falsos cruces efectivos.
+  - Queda documentado con números: el filtro de persistencia M=2 queda **archivado**.
+- **Diagnóstico Definitivo (Transición vs. Rareza / El Techo de NAB):**
+  - **Nosotros:** $P(\text{anomalía} \mid x_t)$ — rareza puntual/estática respecto a la distribución acumulada de valores o fuera de envolvente. Cada punto se juzga por su magnitud relativa al histórico.
+  - **Los Top-4 (ARTime 74.85, Numenta 70.10, ContextOSE 69.90, HTMJava 65.55):** $P(\text{anomalía} \mid x_t, x_{t-1}, \dots, x_{t-k})$ — ruptura de la ley de transición secuencial del sistema.
+  - **La brecha de las 17 ventanas (nyc_taxi, grok, TravelTime, machine_temp, etc.):** son transiciones de régimen o saltos sutiles dentro del rango conocido (scores 0.92–0.99 frente a umbral 0.99077/0.99658). Para rareza estática son invisibles; para una dinámica temporal aprendida son rupturas de predicción de transición.
+  - **El ESN y el camino:** El ESN de 64 neuronas posee memoria recurrente latente, pero el readout actual (RLS) fue optimizado para adivinar el escalar $x_{t+1}$ en vez de medir la fractura de la trayectoria en el espacio latente del reservorio ($||\mathbf{h}_t - \hat{\mathbf{h}}_t||$ o divergencia en dinámica).
+  - El sistema actual basado en bypass + ESN puntual se encuentra en su techo empírico (~57.68 in-sample, 55.72 LOCO). Para escalar al grupo >65-70 en NAB de forma honesta y transferible (LOCO-verificable) se requiere abordar la transición de estado.
+
+## LevelRarity (soft bypass, p-valor de cola) — MEDIDO, ARCHIVADO (2026-10-15)
+
+- **Hipotesis:** el bypass solo ve "salio del rango"; la brecha son subidas moderadas DENTRO del rango
+  (17 ventanas, score 0.92-0.99 < umbral 0.99658). Un histograma de niveles decaido con score =
+  p-valor de cola (1 - masa de bins igual o mas raros / total) cubriria justo esa brecha.
+- **Diseno a priori (un solo intento):** K=80 bins sobre rango warmup(100) + 5% margen + 2 overflow;
+  semivida 2000 (un solo valor); max con bypass, antes del refractario;_score = p-valor de cola
+  calculado ANTES de insertar el punto actual (si no, el bin actual siempre es "el mas comun"
+  y score=0 — error de implementacion corregido en tests).
+- **Tests:** 7 passed (no-saturacion ~uniforme, overflow→1.0, nivel raro > normal, causalidad,
+  reset, decaimiento por bin, params invalidos). Artifactos: `results/sixeyes_level_rarity.json`.
+- **Medicion NAB (semilla 42):** **Standard 55.50 (−2.18 bajo 57.68)** | Low FP 38.40 | Low FN 62.90.
+  Umbral 0.99077 (mismo que full: el refractario lo vuelve a bajar).
+- **Analisis post:** **14/17 ventanas recuperadas** (load_balancer 0.9917, 24ae8d 0.9973, fe7f93
+  0.9953, grok 0.9991, exchange-3_cpc 0.9943, exchange-4_cpc 0.9988, machine_temp ×2 0.9985/0.9927,
+  nyc_taxi ×2 0.9972/0.9914, TravelTime ×2 1.0/0.9923, GOOG 0.9976, UPS 0.9987). El mecanismo
+  funciona. Pero **418 FPs nuevos** (score>=thr fuera de ventana) — la señal es real pero no
+  limpia: el nivel raro no discrimina anomalia de rareza benigna.
+- **Criterio pre-registrado:** media >= 60.68? **NO (55.50)**. Ninguna semilla peor? pendiente
+  (s42 unica corrida). **Archivado con su numero.** El p-valor de cola generaliza bien el bypass
+  (14/17) pero el coste en FPs destruye el neto: −2.18 a pesar de recuperar 14 ventanas.
+- **Diagnostico de FPs (sin corrida nueva, `archive/gates/diag_rarity_fps.py`):** los 418 FPs son
+  **418 episodios de 1 punto, 0% permanencia**. No son "quedarse en zona rara" — son cruces aislados
+  del umbral con score >= 0.99077. El refractario (80 pasos) ya silencia toda permanencia; no hay
+  dimension de entrada-vs-permanencia que aplicar. Por la regla de un intento: **aislados y dispersos
+  → archivar definitivamente**. El score del p-valor es ruidoso alrededor del umbral, no se sienta
+  encima. Cerrado como ultimo intento sobre NAB.
+- **Cuenta del revisor confirmada:** 14 ventanas ~+11, 418 FPs ~−13, neto ~−2. Para +3 harian falta
+  ~250 FPs (−40%) conservando aciertos, pero al ser aislados no hay mecanismo de recorte que no
+  lleve TPs. El acta final lo dice: NAB lo mueven las rupturas de rango (trivial 50.83 > ESN 49.05),
+  y las dos trampas de implementacion (score antes de insertar, poblar histograma con warmup).
+
+# Objetivo: mayor puntaje NAB (2026-10-15)
+
+> No somos una libreria. El objetivo es el mayor puntaje, cueste lo que cueste
+> en pensamiento, medicion e investigacion. Se levanta el cierre sobre NAB:
+> nuevos intentos permitidos con criterio pre-registrado por intento.
+
+## State Transition Engine (sorpresa P(S_t|S_{t-1}) sobre estados densos) — FALLIDA, archivada (2026-10-15)
+
+- **Hipotesis:** Markov-orden-1 fallo sobre simbolos escalares pobres (14.36) y Delta-h descarto el
+  readout (21.61). Esta vez: estados densos del reservorio (R^64, mismas constantes que el ESN) +
+  cuantizador online K=32 (lr=0.02, init determinista primeros K estados) + Markov primer orden con
+  Laplace eps=1.0 + score -log P. Todo a priori, sin barrido. En slot base, mismo downstream.
+- **Tests:** 8 passed (determinismo, prefijo invariante, asignacion/adaptacion, Laplace, sorpresa
+  no-vista > vista, reset-replay, finitud, params invalidos).
+- **Medicion (3 semillas, NAB completo c/u):** **media 37.04** (42=39.43, 7=35.22, 99=36.48).
+  Las 3 peores que su full (60.81/54.66/57.58). Criterio >=60.68: NO. Sin LOCO.
+- **Mecanismo:** 37.04 supera a Markov-escalar (14.36) y Delta-h (21.61) — la representacion densa
+  SI ayuda — pero pierde contra error-de-prediccion ESN (48.30). La sorpresa de transicion es alta
+  en regimenes volatiles normales igual que en anomalias: sin separacion bajo umbral global.
+  Leccion: la referencia aprendida del readout ("que es normal") discrimina mas que la estructura
+  de transicion. Tercera falsacion de la familia transicional (markov, ppm, ste).
+- **Cierre de la familia:** 3/3 intentos de modelar transiciones falsados (14.36, 18.63, 37.04).
+  La via transicional queda cerrada salvo modelo de transicion de segundo orden o jerarquico,
+  que seria otro proyecto. Artefactos: `results/sixeyes_ste_s{42,7,99}.json`.
+
+## Comparacion gratuita vs relativeEntropy: 17/17, familia en ~55 (2026-10-15)
+
+- **Pregunta:** cuantas de las 17 ventanas cubre la familia histograma-divergencia ya ajustada
+  (relativeEntropy 54.64: 5 bins, ventana 52, salida binaria, rango global no-causal)?
+- **Respuesta (`archive/gates/ventanas_vs_relent.py`, sin corrida nueva):** **17/17** con max=1.0
+  en todas, y **373 FPs** propios. El concepto llena la brecha completa.
+- **Pero la familia queda en ~55:** relativeEntropy (no-causal, binaria, ajustada) = 54.64;
+  nuestro LevelRarity causal = 55.50 con 418 FPs. Ya estamos en el techo de la familia.
+  relativeEntropy cubre 3 mas que nosotros (17 vs 14) con menos FPs (373 vs 418): bins gruesos
+  + salida binaria son mas estables que p-valores graduados finos. Pero ninguna variante rompe
+  ~55 porque el coste FP es estructural a "zona rara = anomalia".
+- **Veredicto:** no se construye otra variante. La comparacion valida el diagnostico (el concepto
+  funciona) y confirma el techo (la familia no pasa de ~55). NAB cerrado.
+
+## Cola adaptativa por serie (Numenta-style) — FALLIDA, archivada (2026-10-15)
+
+- **Hipotesis:** el umbral global bloquea eventos 0.92-0.99 significativos en su serie. Normalizar
+  por serie online (gaussiana rodante W=500, cola superior) haria los scores comparables.
+- **Medicion (3 semillas, replay de CSVs full):** **media 1.45** (42=1.41, 7=1.46, 99=1.46).
+  El optimizador se rinde (umbral 1.0, scores brutos negativos).
+- **Mecanismo del fallo (error de signo):** la cola superior P(X>=s) es PEQUENA para anomalias.
+  NAB premia scores ALTOS = anomalia; le dimos scores BAJOS = anomalia. Senal invertida.
+  La version corregida (1-cola) es conceptualmente identica a LevelRarity (rareza de cola),
+  ya medida en 55.50 con 418 FPs. Sin rerun: converge a idea archivada.
+- **Leccion:** la normalizacion por serie no es el problema — el problema es que la rareza
+  (histograma o gaussiana) no discrimina anomalia de rareza benigna.
+
+## Ruta >68: los tres caminos medidos y archivados (2026-10-15)
+
+- **Refractario asimetrico (wake on acceleration, 1 intento):** s42 **59.32 (−1.49)** → ARCHIVADO.
+  El optimizador subio el umbral a 0.99649: los wakeups fragmentan el silencio y dejan pasar FPs
+  (Low FP 51.71 vs 43.40). Confirma que la rigidez del estatico ES la feature — el umbral bajo
+  0.99077 solo funciona con silencio estricto. Artefacto: `results/sixeyes_asymrefr_s42.json`.
+- **time_features=True en full (1 intento):** s42 **56.55 (−4.26)** → ARCHIVADO. El mecanismo de B1
+  (pesos fijos + entradas periodicas = ruido estructurado) se mantiene con bypass+refractario.
+  Low FP colapsa a 37.43. Artefacto: `results/sixeyes_time_full_s42.json`.
+- **Veredicto:** los tres caminos a >68 medidos y falsados. NAB cerrado de verdad: titular 57.68,
+  LOCO 55.72, techo documentado. Solo TSB-Eva puede validar generalizacion.
+
+## Ruta >68: tres refutaciones contra la complacencia (2026-10-15)
+
+Verificado con scorer oficial (TP/FP por puntos):
+- Six Eyes full s42: TP=147, FP=382 (60.81)
+- ARTime: TP=168 (+21), FP=217 (−165) (74.85)
+- Numenta: TP=240 (+93), FP=153 (−229) (70.10)
+- contextOSE: TP=96 (−51), FP=64 (−318) (69.90)
+
+**Refutacion 1 (aritmetica):** contextOSE gana con MENOS TPs (96<147). El problema son los 382 FPs,
+no las 17 ventanas. Recortar a ~180 FPs subiria a ~67-68 sin ganar ni una ventana.
+
+**Refutacion 2 (sordera):** 16-19/116 ventanas empiezan en silencio refractario. Un refractario
+asimetrico (despertar ante aceleracion) recuperaria 8-12 sin FPs extra.
+
+**Refutacion 3 (tiempo apagado):** `time_features=False` en el ESN. Numenta usa timeOfDay/dayOfWeek;
+nyc_taxi es imposible sin saber la hora. B1 (47.43) midio time_features en base ESN sola;
+falta medirlo en el full (bypass cubre picos, refractario contiene FPs).
+
+## Corrección LOCO pareado: el full SÍ transfiere mejor (2026-10-15)
+
+- **Mi claim "spatial-solo no transfiere" estaba mal medida:** comparé el LOCO del spatial en seed 42
+  (48.87) contra el full medido solo en su mejor semilla (60.06). Pareado por semilla en las 3:
+
+| Semilla | Full | Spatial-solo | Δ |
+| :---: | :---: | :---: | :---: |
+| 42 | 60.06 | 48.87 | +11.19 |
+| 7 | 50.33 | 50.78 | −0.45 |
+| 99 | 56.76 | 51.16 | +5.60 |
+| **Media** | **55.72** | **50.27** | **+5.45 ± 3.36** |
+
+- **Lectura correcta:** el refractario **baja** la media in-sample (57.68 vs 58.50) pero **sube** la
+  transferencia out-of-sample (+5.45 pareado, 2/3 positivo). Su valor está en el umbral transferido
+  (0.99077 vs 0.99658), no en el score in-sample. El candidato intocado por regla sigue siendo el full,
+  ahora con respaldo pareado. Esto refuta la lectura "el refractario estorba" en su versión fuerte:
+  estorba in-sample, ayuda out-of-sample.
+- Corrección registrada en README. Artefactos: `loco_sixeyes_abl_full_s{7,99}.json`,
+  `loco_sixeyes_abl_spatial_s{7,99}.json`.
+
+## LOCO spatial-solo + matriz base×capa + brecha vs ARTime (2026-10-15)
+
+- **LOCO spatial-solo (seed 42): 48.87 ± 18.25** (`results/loco_sixeyes_abl_spatial_s42.json`).
+  Folds reales: 31.0 / 58.7 / 27.9 / 71.1 / 34.6. **No transfiere** (vs full 60.06 ± 7.26): la simplicidad
+  in-sample no garantiza generalización. Candidato intocado por regla: **full**; spatial-solo descartado
+  por LOCO a pesar de su ±0.62.
+- **Matriz base×capa** (2 corridas deterministas + replay): trivial+bypass **50.83** > ESN base 49.05;
+  doble-escala+bypass **58.22** ≈ ESN+bypass **58.50 ± 0.62**. Dado el bypass, el ESN aporta **+0.28**
+  sobre la doble escala. El NAB lo mueve la capa de rango, no el predictor. El ESN queda como modelo de
+  residuo para anomalías dentro del rango (la brecha), no como motor de score.
+- **Brecha real vs ARTime** (`archive/gates/ventanas_vs_top.py`): 89 ambas, **17 solo ARTime**, 2 solo
+  spatial, 8 ninguna. Las 17 son subidas moderadas dentro del rango (nyc_taxi ×2, grok, TravelTime ×2,
+  machine_temperature ×2, exchange-3/4_cpc, ec2_cpu_24ae8d, fe7f93, rds_cc0c53, GOOG, UPS, flatmiddle,
+  jumpsdown, load_balancer) con max score spatial 0.92–0.99 < umbral 0.99658. El bypass no puede verlas
+  por construcción: es la brecha que el ESN debe cubrir con residuo.
+- **test_tsb_runner → skip con motivo:** la causa real del fallo era `ModuleNotFoundError: statsmodels`
+  (dependencia de métricas TSB-AD), no el dataset. Skipif actualizado a `_tsb_evaluable()`.
+
+## Rectificación 60.81 + ablación pareada + cura burn-in + ensemble con bypass (2026-10-15)
+
+- **Rectificación:** el JSON da 60.8075 → **60.81** (no 60.82); la centésima no significa nada con ±3.08.
+  Titular oficial pasa a la **media 57.68 ± 3.08 (n=3)**, 60.81 etiquetado mejor-de-tres, veredicto
+  **empatado** con Skyline (58.20) y KNN-CAD (57.99). Criterio pre-registrado antes de medir: cuenta como
+  mejora solo con **media ≥60.68 (+3 sobre 57.68) en 3 semillas pareadas, sin ninguna semilla peor** y sin
+  regreso en LOCO. Contaminación declarada: W=80, t=0.99, tol=0.05, warmup=100 mirando NAB (**≥24** combos
+  W×t + grid K×τ de 12 + tol/warmup a priori = **≥37 configs** sobre las mismas 58 series).
+- **Ablación pareada 3 semillas** (replay offline bit a bit ~1e-16, `archive/gates/exp_replay_pareado.py`
+  sobre `results/raw_esn/` + scorer oficial; 4 NABs nuevos: spatial s7 **57.79**, spatial s99 **58.92**,
+  refractory s7 **49.45**, refractory s99 **52.25**):
+  spatial−base pareado **+10.20** (3/3 positivo, ±0.62: el componente robusto);
+  refractory−base **+4.11** (3/3 positivo); **full−spatial −0.82** (2/3 negativo: el +2.01 de seed 42 no
+  existe en media). El full oficial NO se degrada a spatial-solo a posteriori (cherry-picking del operador):
+  titular = media full 57.68, spatial-solo 58.50±0.62 declarado variante más estable (su LOCO pendiente).
+- **Sordera refractaria contada** (`archive/gates/silence_audit.py`, `results/silence_audit_full.json`):
+  full dispara 649/647/663 silencios (214 bypass-hits independientes de semilla); **16/19/18 de 116
+  ventanas empiezan en silencio**, ~11k/33.5k puntos de ventana cubiertos. Neto positivo pero con coste
+  contado. Estrés bypass: salto permanente con span>0 = 1 disparo y re-anclaje; span=0 jamás dispara.
+- **Cura burn-in (excisión t=600/N=300, 1 config a priori) — ARCHIVADA:** aislada s42 **49.19 (+0.14)**,
+  rescata jumpsup TP 0→2 pero paga FPs (art_noisy 0→8); en full s42 **58.49 (−2.32)**. Regla +3 no cumplida.
+- **Ensemble con bypass — MEDIDO, NO PROMUEVE:** max+full **59.35** (+1.67, determinista), mediana+full
+  **58.80** (+1.12). Bajo el +3: queda experimental como número sin lotería de semilla (in-sample).
+- **Integridad:** `final_results.json` oficial intacto (16 claves, sin fugas); suite 240 passed, 1 failed
+  (`test_tsb_runner` por dataset TSB ausente: pendiente declarado, no regresión).
+
 ## Envolvente Causal Refractario + Bypass Espacial — ÉXITO HISTÓRICO, PROMOCIÓN APROBADA (2026-10-14)
 
 - **Hipótesis:** La barrera de los 50 en NAB no es la capacidad del predictor (techo oráculo 75.71,

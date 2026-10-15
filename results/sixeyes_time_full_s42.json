@@ -1,0 +1,10 @@
+{
+  "detector": "sixeyes_time_full_s42",
+  "scores": {
+    "reward_low_FN_rate": 64.99957969823629,
+    "reward_low_FP_rate": 37.42802165732201,
+    "standard": 56.55109368528548
+  },
+  "seed": 42,
+  "time_features": true
+}

@@ -1,0 +1,944 @@
+{
+ "detector": "sixeyes_ensmax_full",
+ "series": {
+  "artificialNoAnomaly/art_daily_no_noise.csv": {
+   "bypass_hits": 1,
+   "excised_n": 0,
+   "n": 4032,
+   "n_triggers": 1,
+   "triggers_head": [
+    120
+   ]
+  },
+  "artificialNoAnomaly/art_daily_perfect_square_wave.csv": {
+   "bypass_hits": 0,
+   "excised_n": 0,
+   "n": 4032,
+   "n_triggers": 0,
+   "triggers_head": []
+  },
+  "artificialNoAnomaly/art_daily_small_noise.csv": {
+   "bypass_hits": 3,
+   "excised_n": 0,
+   "n": 4032,
+   "n_triggers": 1,
+   "triggers_head": [
+    108
+   ]
+  },
+  "artificialNoAnomaly/art_flatline.csv": {
+   "bypass_hits": 0,
+   "excised_n": 0,
+   "n": 4032,
+   "n_triggers": 0,
+   "triggers_head": []
+  },
+  "artificialNoAnomaly/art_noisy.csv": {
+   "bypass_hits": 0,
+   "excised_n": 0,
+   "n": 4032,
+   "n_triggers": 6,
+   "triggers_head": [
+    1698,
+    1966,
+    2525,
+    2767,
+    3361,
+    3930
+   ]
+  },
+  "artificialWithAnomaly/art_daily_flatmiddle.csv": {
+   "bypass_hits": 4,
+   "excised_n": 0,
+   "n": 4032,
+   "n_triggers": 1,
+   "triggers_head": [
+    108
+   ]
+  },
+  "artificialWithAnomaly/art_daily_jumpsdown.csv": {
+   "bypass_hits": 2,
+   "excised_n": 0,
+   "n": 4032,
+   "n_triggers": 1,
+   "triggers_head": [
+    108
+   ]
+  },
+  "artificialWithAnomaly/art_daily_jumpsup.csv": {
+   "bypass_hits": 6,
+   "excised_n": 0,
+   "n": 4032,
+   "n_triggers": 2,
+   "triggers_head": [
+    108,
+    2988
+   ]
+  },
+  "artificialWithAnomaly/art_daily_nojump.csv": {
+   "bypass_hits": 3,
+   "excised_n": 0,
+   "n": 4032,
+   "n_triggers": 1,
+   "triggers_head": [
+    108
+   ]
+  },
+  "artificialWithAnomaly/art_increase_spike_density.csv": {
+   "bypass_hits": 0,
+   "excised_n": 0,
+   "n": 4032,
+   "n_triggers": 1,
+   "triggers_head": [
+    2005
+   ]
+  },
+  "artificialWithAnomaly/art_load_balancer_spikes.csv": {
+   "bypass_hits": 2,
+   "excised_n": 0,
+   "n": 4032,
+   "n_triggers": 2,
+   "triggers_head": [
+    180,
+    546
+   ]
+  },
+  "realAWSCloudwatch/ec2_cpu_utilization_24ae8d.csv": {
+   "bypass_hits": 2,
+   "excised_n": 0,
+   "n": 4032,
+   "n_triggers": 12,
+   "triggers_head": [
+    151,
+    1018,
+    1309,
+    1597,
+    1883,
+    2172,
+    2461,
+    2748,
+    3032,
+    3321,
+    3547,
+    3898
+   ]
+  },
+  "realAWSCloudwatch/ec2_cpu_utilization_53ea38.csv": {
+   "bypass_hits": 3,
+   "excised_n": 0,
+   "n": 4032,
+   "n_triggers": 14,
+   "triggers_head": [
+    156,
+    446,
+    735,
+    1307,
+    1514,
+    1883,
+    2168,
+    2456,
+    2667,
+    2750,
+    3038,
+    3321,
+    3609,
+    3901
+   ]
+  },
+  "realAWSCloudwatch/ec2_cpu_utilization_5f5533.csv": {
+   "bypass_hits": 6,
+   "excised_n": 0,
+   "n": 4032,
+   "n_triggers": 6,
+   "triggers_head": [
+    284,
+    432,
+    1133,
+    1270,
+    2625,
+    2929
+   ]
+  },
+  "realAWSCloudwatch/ec2_cpu_utilization_77c1ca.csv": {
+   "bypass_hits": 0,
+   "excised_n": 0,
+   "n": 4032,
+   "n_triggers": 8,
+   "triggers_head": [
+    970,
+    1496,
+    1821,
+    2102,
+    2304,
+    2645,
+    3797,
+    3902
+   ]
+  },
+  "realAWSCloudwatch/ec2_cpu_utilization_825cc2.csv": {
+   "bypass_hits": 8,
+   "excised_n": 0,
+   "n": 4032,
+   "n_triggers": 6,
+   "triggers_head": [
+    116,
+    216,
+    861,
+    983,
+    1612,
+    1767
+   ]
+  },
+  "realAWSCloudwatch/ec2_cpu_utilization_ac20cd.csv": {
+   "bypass_hits": 10,
+   "excised_n": 0,
+   "n": 4032,
+   "n_triggers": 5,
+   "triggers_head": [
+    176,
+    309,
+    400,
+    592,
+    3575
+   ]
+  },
+  "realAWSCloudwatch/ec2_cpu_utilization_c6585a.csv": {
+   "bypass_hits": 1,
+   "excised_n": 0,
+   "n": 4032,
+   "n_triggers": 12,
+   "triggers_head": [
+    152,
+    1023,
+    1305,
+    1596,
+    1886,
+    2173,
+    2461,
+    2743,
+    3044,
+    3322,
+    3610,
+    3898
+   ]
+  },
+  "realAWSCloudwatch/ec2_cpu_utilization_fe7f93.csv": {
+   "bypass_hits": 1,
+   "excised_n": 0,
+   "n": 4032,
+   "n_triggers": 3,
+   "triggers_head": [
+    367,
+    760,
+    2131
+   ]
+  },
+  "realAWSCloudwatch/ec2_disk_write_bytes_1ef3de.csv": {
+   "bypass_hits": 6,
+   "excised_n": 0,
+   "n": 4730,
+   "n_triggers": 4,
+   "triggers_head": [
+    572,
+    929,
+    2635,
+    4502
+   ]
+  },
+  "realAWSCloudwatch/ec2_disk_write_bytes_c0d644.csv": {
+   "bypass_hits": 4,
+   "excised_n": 0,
+   "n": 4032,
+   "n_triggers": 12,
+   "triggers_head": [
+    639,
+    969,
+    1317,
+    1770,
+    1861,
+    2042,
+    2200,
+    2286,
+    2383,
+    2573,
+    3800,
+    3904
+   ]
+  },
+  "realAWSCloudwatch/ec2_network_in_257a54.csv": {
+   "bypass_hits": 4,
+   "excised_n": 0,
+   "n": 4032,
+   "n_triggers": 3,
+   "triggers_head": [
+    129,
+    1481,
+    1638
+   ]
+  },
+  "realAWSCloudwatch/ec2_network_in_5abac7.csv": {
+   "bypass_hits": 7,
+   "excised_n": 0,
+   "n": 4730,
+   "n_triggers": 7,
+   "triggers_head": [
+    288,
+    461,
+    572,
+    859,
+    1222,
+    2608,
+    3209
+   ]
+  },
+  "realAWSCloudwatch/elb_request_count_8c0756.csv": {
+   "bypass_hits": 4,
+   "excised_n": 0,
+   "n": 4032,
+   "n_triggers": 11,
+   "triggers_head": [
+    142,
+    453,
+    572,
+    785,
+    1371,
+    1583,
+    1684,
+    1933,
+    3419,
+    3656,
+    3759
+   ]
+  },
+  "realAWSCloudwatch/grok_asg_anomaly.csv": {
+   "bypass_hits": 4,
+   "excised_n": 0,
+   "n": 4621,
+   "n_triggers": 5,
+   "triggers_head": [
+    224,
+    309,
+    772,
+    1569,
+    3753
+   ]
+  },
+  "realAWSCloudwatch/iio_us-east-1_i-a2eb1cd9_NetworkIn.csv": {
+   "bypass_hits": 0,
+   "excised_n": 0,
+   "n": 1243,
+   "n_triggers": 0,
+   "triggers_head": []
+  },
+  "realAWSCloudwatch/rds_cpu_utilization_cc0c53.csv": {
+   "bypass_hits": 4,
+   "excised_n": 0,
+   "n": 4032,
+   "n_triggers": 9,
+   "triggers_head": [
+    100,
+    213,
+    718,
+    1006,
+    2426,
+    2663,
+    2996,
+    3080,
+    3200
+   ]
+  },
+  "realAWSCloudwatch/rds_cpu_utilization_e47b3b.csv": {
+   "bypass_hits": 2,
+   "excised_n": 0,
+   "n": 4032,
+   "n_triggers": 5,
+   "triggers_head": [
+    168,
+    671,
+    946,
+    2585,
+    3607
+   ]
+  },
+  "realAdExchange/exchange-2_cpc_results.csv": {
+   "bypass_hits": 0,
+   "excised_n": 0,
+   "n": 1624,
+   "n_triggers": 6,
+   "triggers_head": [
+    325,
+    823,
+    991,
+    1106,
+    1301,
+    1491
+   ]
+  },
+  "realAdExchange/exchange-2_cpm_results.csv": {
+   "bypass_hits": 4,
+   "excised_n": 0,
+   "n": 1624,
+   "n_triggers": 4,
+   "triggers_head": [
+    355,
+    605,
+    875,
+    974
+   ]
+  },
+  "realAdExchange/exchange-3_cpc_results.csv": {
+   "bypass_hits": 2,
+   "excised_n": 0,
+   "n": 1538,
+   "n_triggers": 4,
+   "triggers_head": [
+    296,
+    438,
+    976,
+    1121
+   ]
+  },
+  "realAdExchange/exchange-3_cpm_results.csv": {
+   "bypass_hits": 1,
+   "excised_n": 0,
+   "n": 1538,
+   "n_triggers": 3,
+   "triggers_head": [
+    979,
+    1121,
+    1443
+   ]
+  },
+  "realAdExchange/exchange-4_cpc_results.csv": {
+   "bypass_hits": 3,
+   "excised_n": 0,
+   "n": 1643,
+   "n_triggers": 5,
+   "triggers_head": [
+    102,
+    367,
+    514,
+    1276,
+    1375
+   ]
+  },
+  "realAdExchange/exchange-4_cpm_results.csv": {
+   "bypass_hits": 7,
+   "excised_n": 0,
+   "n": 1643,
+   "n_triggers": 6,
+   "triggers_head": [
+    102,
+    199,
+    367,
+    518,
+    1276,
+    1375
+   ]
+  },
+  "realKnownCause/ambient_temperature_system_failure.csv": {
+   "bypass_hits": 6,
+   "excised_n": 0,
+   "n": 7267,
+   "n_triggers": 8,
+   "triggers_head": [
+    208,
+    330,
+    1800,
+    3697,
+    5541,
+    5883,
+    6131,
+    7050
+   ]
+  },
+  "realKnownCause/cpu_utilization_asg_misconfiguration.csv": {
+   "bypass_hits": 2,
+   "excised_n": 0,
+   "n": 18050,
+   "n_triggers": 30,
+   "triggers_head": [
+    483,
+    816,
+    1716,
+    2829,
+    2917,
+    4593,
+    5949,
+    6802,
+    8007,
+    8229,
+    8311,
+    8949,
+    9158,
+    10135,
+    10875,
+    11343,
+    11734,
+    12579,
+    13871,
+    14023
+   ]
+  },
+  "realKnownCause/ec2_request_latency_system_failure.csv": {
+   "bypass_hits": 10,
+   "excised_n": 0,
+   "n": 4032,
+   "n_triggers": 15,
+   "triggers_head": [
+    338,
+    522,
+    833,
+    934,
+    1093,
+    1296,
+    1596,
+    1787,
+    2081,
+    2244,
+    2608,
+    3258,
+    3391,
+    3479,
+    4023
+   ]
+  },
+  "realKnownCause/machine_temperature_system_failure.csv": {
+   "bypass_hits": 3,
+   "excised_n": 0,
+   "n": 22695,
+   "n_triggers": 20,
+   "triggers_head": [
+    312,
+    3966,
+    9708,
+    11665,
+    11978,
+    12089,
+    12828,
+    13455,
+    14041,
+    14577,
+    15127,
+    16098,
+    16222,
+    16338,
+    16492,
+    17901,
+    18044,
+    18548,
+    19772,
+    21069
+   ]
+  },
+  "realKnownCause/nyc_taxi.csv": {
+   "bypass_hits": 2,
+   "excised_n": 0,
+   "n": 10320,
+   "n_triggers": 12,
+   "triggers_head": [
+    134,
+    3215,
+    3550,
+    3975,
+    4070,
+    5941,
+    7619,
+    7956,
+    8479,
+    8833,
+    9015,
+    10078
+   ]
+  },
+  "realKnownCause/rogue_agent_key_hold.csv": {
+   "bypass_hits": 2,
+   "excised_n": 0,
+   "n": 1882,
+   "n_triggers": 5,
+   "triggers_head": [
+    152,
+    432,
+    1329,
+    1569,
+    1657
+   ]
+  },
+  "realKnownCause/rogue_agent_key_updown.csv": {
+   "bypass_hits": 5,
+   "excised_n": 0,
+   "n": 5315,
+   "n_triggers": 8,
+   "triggers_head": [
+    245,
+    575,
+    1148,
+    1380,
+    2285,
+    2466,
+    4425,
+    5146
+   ]
+  },
+  "realTraffic/TravelTime_387.csv": {
+   "bypass_hits": 4,
+   "excised_n": 0,
+   "n": 2500,
+   "n_triggers": 6,
+   "triggers_head": [
+    151,
+    269,
+    989,
+    1543,
+    2039,
+    2132
+   ]
+  },
+  "realTraffic/TravelTime_451.csv": {
+   "bypass_hits": 0,
+   "excised_n": 0,
+   "n": 2162,
+   "n_triggers": 1,
+   "triggers_head": [
+    595
+   ]
+  },
+  "realTraffic/occupancy_6005.csv": {
+   "bypass_hits": 2,
+   "excised_n": 0,
+   "n": 2380,
+   "n_triggers": 5,
+   "triggers_head": [
+    261,
+    1535,
+    1759,
+    2000,
+    2259
+   ]
+  },
+  "realTraffic/occupancy_t4013.csv": {
+   "bypass_hits": 3,
+   "excised_n": 0,
+   "n": 2500,
+   "n_triggers": 3,
+   "triggers_head": [
+    1688,
+    2147,
+    2397
+   ]
+  },
+  "realTraffic/speed_6005.csv": {
+   "bypass_hits": 3,
+   "excised_n": 0,
+   "n": 2500,
+   "n_triggers": 6,
+   "triggers_head": [
+    752,
+    913,
+    1265,
+    1825,
+    2073,
+    2317
+   ]
+  },
+  "realTraffic/speed_7578.csv": {
+   "bypass_hits": 8,
+   "excised_n": 0,
+   "n": 1127,
+   "n_triggers": 5,
+   "triggers_head": [
+    112,
+    276,
+    624,
+    751,
+    919
+   ]
+  },
+  "realTraffic/speed_t4013.csv": {
+   "bypass_hits": 5,
+   "excised_n": 0,
+   "n": 2495,
+   "n_triggers": 3,
+   "triggers_head": [
+    100,
+    2096,
+    2391
+   ]
+  },
+  "realTweets/Twitter_volume_AAPL.csv": {
+   "bypass_hits": 7,
+   "excised_n": 0,
+   "n": 15902,
+   "n_triggers": 28,
+   "triggers_head": [
+    234,
+    1078,
+    1240,
+    1344,
+    1431,
+    1697,
+    2280,
+    3099,
+    4367,
+    4454,
+    4830,
+    4936,
+    5255,
+    5442,
+    9171,
+    9281,
+    9448,
+    9584,
+    9785,
+    10047
+   ]
+  },
+  "realTweets/Twitter_volume_AMZN.csv": {
+   "bypass_hits": 8,
+   "excised_n": 0,
+   "n": 15831,
+   "n_triggers": 26,
+   "triggers_head": [
+    113,
+    215,
+    720,
+    1131,
+    1384,
+    1725,
+    1976,
+    3158,
+    3735,
+    4269,
+    6367,
+    6657,
+    7527,
+    8021,
+    9184,
+    9729,
+    10873,
+    11070,
+    11176,
+    11546
+   ]
+  },
+  "realTweets/Twitter_volume_CRM.csv": {
+   "bypass_hits": 6,
+   "excised_n": 0,
+   "n": 15902,
+   "n_triggers": 19,
+   "triggers_head": [
+    212,
+    1062,
+    1383,
+    1672,
+    1962,
+    3093,
+    3220,
+    5128,
+    5676,
+    6022,
+    6183,
+    6264,
+    6601,
+    7144,
+    7746,
+    7995,
+    11428,
+    12011,
+    15764
+   ]
+  },
+  "realTweets/Twitter_volume_CVS.csv": {
+   "bypass_hits": 6,
+   "excised_n": 0,
+   "n": 15853,
+   "n_triggers": 27,
+   "triggers_head": [
+    231,
+    391,
+    821,
+    1364,
+    1445,
+    1640,
+    1995,
+    2215,
+    4350,
+    5378,
+    6087,
+    6231,
+    6327,
+    7166,
+    7457,
+    7959,
+    8453,
+    8587,
+    9251,
+    10109
+   ]
+  },
+  "realTweets/Twitter_volume_FB.csv": {
+   "bypass_hits": 4,
+   "excised_n": 0,
+   "n": 15833,
+   "n_triggers": 26,
+   "triggers_head": [
+    250,
+    3966,
+    4581,
+    4945,
+    5162,
+    5693,
+    6056,
+    6679,
+    7096,
+    7421,
+    7712,
+    7986,
+    8352,
+    10320,
+    10466,
+    10566,
+    10659,
+    10760,
+    11109,
+    11260
+   ]
+  },
+  "realTweets/Twitter_volume_GOOG.csv": {
+   "bypass_hits": 2,
+   "excised_n": 0,
+   "n": 15842,
+   "n_triggers": 15,
+   "triggers_head": [
+    1640,
+    2291,
+    2825,
+    3645,
+    4299,
+    4544,
+    7237,
+    7754,
+    8435,
+    9579,
+    9762,
+    10874,
+    14245,
+    15519,
+    15725
+   ]
+  },
+  "realTweets/Twitter_volume_IBM.csv": {
+   "bypass_hits": 4,
+   "excised_n": 0,
+   "n": 15893,
+   "n_triggers": 40,
+   "triggers_head": [
+    1059,
+    1494,
+    1671,
+    1947,
+    3121,
+    3242,
+    3399,
+    3679,
+    4251,
+    4809,
+    5124,
+    5313,
+    5404,
+    6321,
+    7209,
+    7700,
+    9376,
+    9459,
+    9736,
+    9965
+   ]
+  },
+  "realTweets/Twitter_volume_KO.csv": {
+   "bypass_hits": 4,
+   "excised_n": 0,
+   "n": 15851,
+   "n_triggers": 36,
+   "triggers_head": [
+    514,
+    617,
+    3114,
+    3383,
+    3783,
+    4180,
+    4270,
+    4856,
+    4964,
+    5100,
+    5223,
+    5463,
+    5792,
+    6216,
+    7162,
+    7437,
+    7791,
+    8348,
+    9447,
+    9556
+   ]
+  },
+  "realTweets/Twitter_volume_PFE.csv": {
+   "bypass_hits": 0,
+   "excised_n": 0,
+   "n": 15858,
+   "n_triggers": 40,
+   "triggers_head": [
+    357,
+    516,
+    1000,
+    1081,
+    1176,
+    1359,
+    1594,
+    3106,
+    3389,
+    3964,
+    4217,
+    4299,
+    5374,
+    6004,
+    6279,
+    7102,
+    7395,
+    7672,
+    8980,
+    9402
+   ]
+  },
+  "realTweets/Twitter_volume_UPS.csv": {
+   "bypass_hits": 14,
+   "excised_n": 0,
+   "n": 15866,
+   "n_triggers": 27,
+   "triggers_head": [
+    175,
+    303,
+    1111,
+    1235,
+    1439,
+    1600,
+    1725,
+    1940,
+    3318,
+    7447,
+    7914,
+    8058,
+    9785,
+    9982,
+    10188,
+    10380,
+    10502,
+    11147,
+    11715,
+    11956
+   ]
+  }
+ },
+ "variant": "ensmax_full"
+}

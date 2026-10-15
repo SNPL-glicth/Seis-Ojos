@@ -1,0 +1,10 @@
+{
+  "detector": "sixeyes_abl_spatial_s42",
+  "scores": {
+    "reward_low_FN_rate": 65.35150551836087,
+    "reward_low_FP_rate": 53.340312331903036,
+    "standard": 58.80312034650682
+  },
+  "seed": "s42",
+  "variant": "spatial"
+}

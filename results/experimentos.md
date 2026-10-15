@@ -15,6 +15,14 @@
 | **`StreamingPeakDecay` ($K=12, \tau=2.0$)** | 40.02 | 46.80 | 29.13 | Supresión en 1 hora; 69/116 ventanas (in-sample). |
 | **`SeasonalDualScaleRobustZ` + Percentil + `StreamingPeakDecay` ($K=12, \tau=2.0, W=16000)** | 45.19 | 50.82 | 34.16 | Doble escala `max(MAD, std_global)`; determinista. Debilidad: AdExchange −3.91. |
 | **`EchoStatePredictor` + Percentil + `StreamingPeakDecay` ($K=24, \tau=2.0, W=16000)** | **49.05** | **57.01** | **38.99** | **Configuración oficial:** reservorio denso ESN-RLS (d=16, Nres=64); K del micro-grid in-sample. Debilidad: artificial −5.08. |
+| **`RefractorySuppressor + SpatialSpikeBypass + PeakDecay + Percentil + ESN` (full, titular media)** | **57.68 ± 3.08 (n=3; mejor-de-tres 60.81)** | 68.45\* | 43.40\* | Titular = media (42: 60.81, 7: 54.66, 99: 57.58). \*Low FN/FP de seed 42. Empatado con Skyline/KNN-CAD dentro del ruido. LOCO 60.06 ± 7.26. |
+| **`ESN + SpatialSpikeBypass` solo (media 3 semillas, replay offline)** | **58.50 ± 0.62** | — | — | Componente robusto: +10.20 pareado, 3/3 positivo. Variante más estable (LOCO pendiente). |
+| **`ESN + RefractorySuppressor` solo (media 3 semillas, replay offline)** | **52.38 ± 3.05** | — | — | +4.11 pareado sobre base, 3/3 positivo; frágil apilado sobre spatial (full−spatial −0.82). |
+| **`Trivial (score 0) + SpatialSpikeBypass`** | **50.83** | 49.95 | 52.56 | Determinista. La regla "rompió el rango" sola le gana al ESN entero (49.05). |
+| **`Doble escala (45.19) + SpatialSpikeBypass`** | **58.22** | 55.07 | 62.81 | Determinista. Empata con ESN+bypass (58.50±0.62): dado el bypass, el ESN aporta +0.28. |
+| **Cura burn-in ECDF (excisión t=600/N=300)** | 49.19 aislada / 58.49 en full (s42) | — | — | **Archivada:** +0.14 aislada, −2.32 en full. Rescata jumpsup pero paga FPs. |
+| **Ensemble max/mediana de crudos + full (determinista)** | 59.35 / 58.80 | — | — | **Experimental:** +1.67/+1.12 sobre media, bajo el +3. Sin lotería de semilla. |
+| **LevelRarity (soft bypass, p-valor de cola, K=80, hl=2000)** | **55.50 (−2.18)** | 38.40 | 62.90 | **Archivado.** Recupera 14/17 ventanas pero 418 FPs nuevos. Rareza real, discriminación insuficiente. |
 
 ---
 

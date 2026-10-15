@@ -1,0 +1,10 @@
+{
+  "detector": "sixeyes_abl_full_s42",
+  "scores": {
+    "reward_low_FN_rate": 68.44695492731546,
+    "reward_low_FP_rate": 43.40258819822537,
+    "standard": 60.80745461437347
+  },
+  "seed": "s42",
+  "variant": "full"
+}

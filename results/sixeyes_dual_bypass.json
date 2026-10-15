@@ -1,0 +1,8 @@
+{
+  "detector": "sixeyes_dual_bypass",
+  "scores": {
+    "reward_low_FN_rate": 62.80920515463782,
+    "reward_low_FP_rate": 55.074612312425934,
+    "standard": 58.22113483395217
+  }
+}

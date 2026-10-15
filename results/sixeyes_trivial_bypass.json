@@ -1,0 +1,8 @@
+{
+  "detector": "sixeyes_trivial_bypass",
+  "scores": {
+    "reward_low_FN_rate": 52.56449422487971,
+    "reward_low_FP_rate": 49.94586314087259,
+    "standard": 50.82949995800923
+  }
+}

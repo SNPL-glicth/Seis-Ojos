@@ -1,0 +1,9 @@
+{
+  "detector": "sixeyes_asymrefr_s42",
+  "scores": {
+    "reward_low_FN_rate": 66.07580111423351,
+    "reward_low_FP_rate": 51.71279963580265,
+    "standard": 59.31926587339154
+  },
+  "seed": 42
+}
