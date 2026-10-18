@@ -5,7 +5,9 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+repo_root = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(repo_root))
+sys.path.insert(0, str(repo_root / "experiments" / "tsb_frozen_p05"))
 from frozen_runner import factory, FIELDNAMES, append_rows_dict
 import evaluate_frozen_p05
 from sixeyes.evaluation.tsb_runner import _get_tsb_metrics

@@ -26,7 +26,9 @@ from typing import Dict, Any, List, Set
 import numpy as np
 import pandas as pd
 
-sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
+_p = Path(__file__).resolve()
+_root = _p.parents[2] if "experiments" in _p.parts else _p.parent
+sys.path.insert(0, str(_root / "src"))
 from sixeyes.evaluation.tsb_runner import _resolve_tsb_path, _get_tsb_metrics
 from sixeyes.detectors.zscore_robusto import RollingRobustZ
 from sixeyes.detectors.aleatorio import RandomDetector
