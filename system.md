@@ -1,4 +1,4 @@
-# Six Eyes — Biblia Técnica y Forense (`system.md`)
+# Six Eyes — (`system.md`)
 
 > Documento maestro de arquitectura. Fuente de verdad de ingeniería: qué es el sistema,
 > por qué gana, por qué todo lo demás pierde, y por qué el benchmark no deja subir más.

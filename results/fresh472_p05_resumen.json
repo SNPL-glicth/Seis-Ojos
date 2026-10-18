@@ -1,0 +1,34 @@
+{
+  "n_pareado": 335,
+  "AUC-ROC_P05": 0.7833,
+  "AUC-ROC_P10": 0.7558,
+  "AUC-ROC_dif": {
+    "media": 0.0275,
+    "ic95": [
+      0.0213,
+      0.0339
+    ],
+    "win_rate": 0.725
+  },
+  "AUC-PR_P05": 0.2442,
+  "AUC-PR_P10": 0.1782,
+  "AUC-PR_dif": {
+    "media": 0.0659,
+    "ic95": [
+      0.054,
+      0.079
+    ],
+    "win_rate": 0.654
+  },
+  "VUS-PR_P05": 0.2838,
+  "VUS-PR_P10": NaN,
+  "VUS-PR_dif": {
+    "media": NaN,
+    "ic95": [
+      NaN,
+      NaN
+    ],
+    "win_rate": 0.376
+  },
+  "promocion_preregistrada": false
+}

@@ -1,0 +1,30 @@
+{
+  "n_series_ok": 43,
+  "means": {
+    "P00": 0.7498,
+    "P05": 0.7612,
+    "P10": 0.7217,
+    "random": 0.4874,
+    "zscore": 0.5984
+  },
+  "P05_vs_P10": {
+    "dif_media": 0.0394,
+    "ic95": [
+      0.0109,
+      0.0794
+    ],
+    "win_rate": 0.674,
+    "exito_preregistrado": true
+  },
+  "P00_vs_P10": {
+    "dif_media": 0.0281,
+    "ic95": [
+      -0.0049,
+      0.0727
+    ],
+    "win_rate": 0.465,
+    "exito_preregistrado": false
+  },
+  "random_mean": 0.4874,
+  "zscore_mean": 0.5984
+}

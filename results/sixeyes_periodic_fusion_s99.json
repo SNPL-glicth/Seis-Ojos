@@ -1,0 +1,301 @@
+{
+  "detector": "sixeyes_periodic_fusion_s99",
+  "seed": 99,
+  "scores": {
+    "standard": 57.55014471279016,
+    "reward_low_FP_rate": 42.47580461114384,
+    "reward_low_FN_rate": 67.10239532576816
+  },
+  "gate_stats": [
+    {
+      "File": "artificialNoAnomaly/art_daily_no_noise.csv",
+      "Length": 4032,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "artificialNoAnomaly/art_daily_perfect_square_wave.csv",
+      "Length": 4032,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "artificialNoAnomaly/art_daily_small_noise.csv",
+      "Length": 4032,
+      "GateOpenPct": 78.57142857142857
+    },
+    {
+      "File": "artificialNoAnomaly/art_flatline.csv",
+      "Length": 4032,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "artificialNoAnomaly/art_noisy.csv",
+      "Length": 4032,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "artificialWithAnomaly/art_daily_flatmiddle.csv",
+      "Length": 4032,
+      "GateOpenPct": 50.644841269841265
+    },
+    {
+      "File": "artificialWithAnomaly/art_daily_jumpsdown.csv",
+      "Length": 4032,
+      "GateOpenPct": 53.422619047619044
+    },
+    {
+      "File": "artificialWithAnomaly/art_daily_jumpsup.csv",
+      "Length": 4032,
+      "GateOpenPct": 53.000992063492056
+    },
+    {
+      "File": "artificialWithAnomaly/art_daily_nojump.csv",
+      "Length": 4032,
+      "GateOpenPct": 53.02579365079365
+    },
+    {
+      "File": "artificialWithAnomaly/art_increase_spike_density.csv",
+      "Length": 4032,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "artificialWithAnomaly/art_load_balancer_spikes.csv",
+      "Length": 4032,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realAdExchange/exchange-2_cpc_results.csv",
+      "Length": 1624,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realAdExchange/exchange-2_cpm_results.csv",
+      "Length": 1624,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realAdExchange/exchange-3_cpc_results.csv",
+      "Length": 1538,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realAdExchange/exchange-3_cpm_results.csv",
+      "Length": 1538,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realAdExchange/exchange-4_cpc_results.csv",
+      "Length": 1643,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realAdExchange/exchange-4_cpm_results.csv",
+      "Length": 1643,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realAWSCloudwatch/ec2_cpu_utilization_24ae8d.csv",
+      "Length": 4032,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realAWSCloudwatch/ec2_cpu_utilization_53ea38.csv",
+      "Length": 4032,
+      "GateOpenPct": 92.2123015873016
+    },
+    {
+      "File": "realAWSCloudwatch/ec2_cpu_utilization_5f5533.csv",
+      "Length": 4032,
+      "GateOpenPct": 16.294642857142858
+    },
+    {
+      "File": "realAWSCloudwatch/ec2_cpu_utilization_77c1ca.csv",
+      "Length": 4032,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realAWSCloudwatch/ec2_cpu_utilization_825cc2.csv",
+      "Length": 4032,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realAWSCloudwatch/ec2_cpu_utilization_ac20cd.csv",
+      "Length": 4032,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realAWSCloudwatch/ec2_cpu_utilization_c6585a.csv",
+      "Length": 4032,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realAWSCloudwatch/ec2_cpu_utilization_fe7f93.csv",
+      "Length": 4032,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realAWSCloudwatch/ec2_disk_write_bytes_1ef3de.csv",
+      "Length": 4730,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realAWSCloudwatch/ec2_disk_write_bytes_c0d644.csv",
+      "Length": 4032,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realAWSCloudwatch/ec2_network_in_257a54.csv",
+      "Length": 4032,
+      "GateOpenPct": 33.804563492063494
+    },
+    {
+      "File": "realAWSCloudwatch/ec2_network_in_5abac7.csv",
+      "Length": 4730,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realAWSCloudwatch/elb_request_count_8c0756.csv",
+      "Length": 4032,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realAWSCloudwatch/grok_asg_anomaly.csv",
+      "Length": 4621,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realAWSCloudwatch/iio_us-east-1_i-a2eb1cd9_NetworkIn.csv",
+      "Length": 1243,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realAWSCloudwatch/rds_cpu_utilization_cc0c53.csv",
+      "Length": 4032,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realAWSCloudwatch/rds_cpu_utilization_e47b3b.csv",
+      "Length": 4032,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realKnownCause/ambient_temperature_system_failure.csv",
+      "Length": 7267,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realKnownCause/cpu_utilization_asg_misconfiguration.csv",
+      "Length": 18050,
+      "GateOpenPct": 96.34349030470915
+    },
+    {
+      "File": "realKnownCause/ec2_request_latency_system_failure.csv",
+      "Length": 4032,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realKnownCause/machine_temperature_system_failure.csv",
+      "Length": 22695,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realKnownCause/nyc_taxi.csv",
+      "Length": 10320,
+      "GateOpenPct": 0.01937984496124031
+    },
+    {
+      "File": "realKnownCause/rogue_agent_key_hold.csv",
+      "Length": 1882,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realKnownCause/rogue_agent_key_updown.csv",
+      "Length": 5315,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realTraffic/occupancy_6005.csv",
+      "Length": 2380,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realTraffic/occupancy_t4013.csv",
+      "Length": 2500,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realTraffic/speed_6005.csv",
+      "Length": 2500,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realTraffic/speed_7578.csv",
+      "Length": 1127,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realTraffic/speed_t4013.csv",
+      "Length": 2495,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realTraffic/TravelTime_387.csv",
+      "Length": 2500,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realTraffic/TravelTime_451.csv",
+      "Length": 2162,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realTweets/Twitter_volume_AAPL.csv",
+      "Length": 15902,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realTweets/Twitter_volume_AMZN.csv",
+      "Length": 15831,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realTweets/Twitter_volume_CRM.csv",
+      "Length": 15902,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realTweets/Twitter_volume_CVS.csv",
+      "Length": 15853,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realTweets/Twitter_volume_FB.csv",
+      "Length": 15833,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realTweets/Twitter_volume_GOOG.csv",
+      "Length": 15842,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realTweets/Twitter_volume_IBM.csv",
+      "Length": 15893,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realTweets/Twitter_volume_KO.csv",
+      "Length": 15851,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realTweets/Twitter_volume_PFE.csv",
+      "Length": 15858,
+      "GateOpenPct": 0.0
+    },
+    {
+      "File": "realTweets/Twitter_volume_UPS.csv",
+      "Length": 15866,
+      "GateOpenPct": 0.0
+    }
+  ]
+}

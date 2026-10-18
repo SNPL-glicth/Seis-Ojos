@@ -1,0 +1,95 @@
+{
+  "continuous": {
+    "A_meseta": {
+      "init_raw_score": 3.4998947120435298,
+      "fin_raw_score": 0.03210197952465756,
+      "raw_absorption_ratio": 0.9908277299273629,
+      "init_calibrated_score": 0.9944292937896767,
+      "fin_calibrated_score": 0.6216371763681401,
+      "score_absorption_ratio": 0.3748804663636374,
+      "max_recovery_score": 0.9868585732165206,
+      "mean_recovery_score": 0.6698553716742557,
+      "fa_recovery_steps_gt_05": 114,
+      "cum_w_rec_total": 45.53871826955957,
+      "cum_w_fc_total": 53.56638200345695
+    },
+    "B_deriva": {
+      "mean_drift_score": 0.47655697142247033,
+      "max_drift_score": 0.990340030911901,
+      "false_alarm_rate_gt_05": 0.4714285714285714,
+      "mean_raw_drift_error": 0.011870699707314998,
+      "cum_w_rec_total": 26.32221629382883,
+      "cum_w_fc_total": 35.83603786763351
+    },
+    "C_estacionaria": {
+      "mean_steady_score": 0.38471667753269995,
+      "max_steady_score": 0.9772024729520865,
+      "false_alarm_rate_gt_05": 0.34,
+      "mean_raw_steady_error": 0.005712933669152312,
+      "cum_w_rec_total": 20.305416253802786,
+      "cum_w_fc_total": 32.5111572622855
+    }
+  },
+  "frozen": {
+    "A_meseta": {
+      "init_raw_score": 4.669063108243497,
+      "fin_raw_score": 0.20139789152787166,
+      "raw_absorption_ratio": 0.9568654595453437,
+      "init_calibrated_score": 0.9942640838653418,
+      "fin_calibrated_score": 0.8030967840828479,
+      "score_absorption_ratio": 0.19227014521062058,
+      "max_recovery_score": 0.940625,
+      "mean_recovery_score": 0.6536542775314885,
+      "fa_recovery_steps_gt_05": 125,
+      "cum_w_rec_total": 9.168740124250656,
+      "cum_w_fc_total": 11.639634555580281
+    },
+    "B_deriva": {
+      "mean_drift_score": 0.6439252729857926,
+      "max_drift_score": 0.9995762711864407,
+      "false_alarm_rate_gt_05": 0.6778571428571428,
+      "mean_raw_drift_error": 0.11486041211635684,
+      "cum_w_rec_total": 9.168740124250656,
+      "cum_w_fc_total": 11.639634555580281
+    },
+    "C_estacionaria": {
+      "mean_steady_score": 0.44974508918958217,
+      "max_steady_score": 0.9934312210200927,
+      "false_alarm_rate_gt_05": 0.43176470588235294,
+      "mean_raw_steady_error": 0.009916910481569044,
+      "cum_w_rec_total": 9.168740124250656,
+      "cum_w_fc_total": 11.639634555580281
+    }
+  },
+  "gated": {
+    "A_meseta": {
+      "init_raw_score": 4.811763391646089,
+      "fin_raw_score": 0.005576290441591755,
+      "raw_absorption_ratio": 0.9988411129168834,
+      "init_calibrated_score": 0.9942640838653418,
+      "fin_calibrated_score": 0.3231752695365506,
+      "score_absorption_ratio": 0.6749603301769072,
+      "max_recovery_score": 0.9650127226463104,
+      "mean_recovery_score": 0.4460706546525458,
+      "fa_recovery_steps_gt_05": 58,
+      "cum_w_rec_total": 23.298397520877636,
+      "cum_w_fc_total": 31.607776061317473
+    },
+    "B_deriva": {
+      "mean_drift_score": 0.47655697142247033,
+      "max_drift_score": 0.990340030911901,
+      "false_alarm_rate_gt_05": 0.4714285714285714,
+      "mean_raw_drift_error": 0.011870699707314998,
+      "cum_w_rec_total": 26.32221629382883,
+      "cum_w_fc_total": 35.83603786763351
+    },
+    "C_estacionaria": {
+      "mean_steady_score": 0.38471667753269995,
+      "max_steady_score": 0.9772024729520865,
+      "false_alarm_rate_gt_05": 0.34,
+      "mean_raw_steady_error": 0.005712933669152312,
+      "cum_w_rec_total": 20.305416253802786,
+      "cum_w_fc_total": 32.5111572622855
+    }
+  }
+}
