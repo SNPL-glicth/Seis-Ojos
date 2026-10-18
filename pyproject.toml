@@ -24,9 +24,12 @@ sixeyes = ["py.typed"]
 [tool.pyright]
 extraPaths = [
     ".",
+    "experiments/tsb_frozen_p05",
+    "archive/gates",
     "../benchmarks/tsb_ad/TSB-AD",
     "../benchmarks/nab"
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["src", "experiments/tsb_frozen_p05"]

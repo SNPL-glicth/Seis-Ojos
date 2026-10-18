@@ -91,7 +91,7 @@ def run_series_all_arms(file_path_str: str, timeout_s: float = 3600.0) -> List[D
     from TSB_AD.utils.slidingWindows import find_length_rank
 
     # slidingWindow idéntico calculado una sola vez
-    sliding_window = find_length_rank(data.reshape(-1, 1), rank=1)
+    sliding_window = find_length_rank(np.asarray(data).reshape(-1, 1), rank=1)
 
     results = []
     for arm in ARMS:
