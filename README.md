@@ -26,55 +26,91 @@ EchoStatePredictor (ESN-RLS, d=16, Nres=64, ρ=0.9, λ=0.999)
 
 1. **Estandarización causal rodante ($W_{\text{norm}} = 6400$):**
    Con sumas rodantes $O(1)$ de los valores previos:
-   $$z_t = \frac{x_t - \mu_{t-1}}{\sigma_{t-1}} \quad (\text{si } t < 2 \text{ o } \sigma \le 10^{-9}, \; z_t = 0.0)$$
+
+   $$
+   z_t = \frac{x_t - \mu_{t-1}}{\sigma_{t-1}} \quad (\text{si } t < 2 \text{ o } \sigma \le 10^{-9}, \; z_t = 0.0)
+   $$
 
 2. **Incrustación de Takens y Dinámica de Reconstrucción (ESN):**
    El vector de retardos alimenta la recurrencia:
-   $$v_t = [z_t, z_{t-1}, \dots, z_{t-15}]^T \in \mathbb{R}^{16}$$
-   $$h_t = \tanh(W_{\text{in}} v_t + W_{\text{res}} h_{t-1}) \in \mathbb{R}^{64}$$
+
+   $$
+   v_t = [z_t, z_{t-1}, \dots, z_{t-15}]^T \in \mathbb{R}^{16}
+   $$
+
+   $$
+   h_t = \tanh(W_{\text{in}} v_t + W_{\text{res}} h_{t-1}) \in \mathbb{R}^{64}
+   $$
+
    *Hallazgo estructural (reconstrucción vs pronóstico):* $v_t$ incorpora a la observación contemporánea $z_t$ en la primera coordenada. Por tanto, el readout lineal $\hat{z}_t = w_{t-1}^T h_t$ actúa como un **detector de error de reconstrucción** sobre rasgos de una ventana que ya contiene el valor actual, no como un pronóstico $t+1$ a partir de estados estrictamente previos.
    
    El error cuadrático instantáneo se emite **antes** de actualizar el readout:
-   $$e_t = (z_t - \hat{z}_t)^2$$
+
+   $$
+   e_t = (z_t - \hat{z}_t)^2
+   $$
+
    Tras emitir el score, los pesos de salida $w$ se adaptan mediante Recursive Least Squares (RLS) con factor de olvido $\lambda = 0.999$:
-   $$K_t = \frac{P_{t-1} h_t}{\lambda + h_t^T P_{t-1} h_t}, \quad w_t = w_{t-1} + K_t (z_t - \hat{z}_t), \quad P_t = \frac{P_{t-1} - K_t h_t^T P_{t-1}}{\lambda}$$
+
+   $$
+   K_t = \frac{P_{t-1} h_t}{\lambda + h_t^T P_{t-1} h_t}, \quad w_t = w_{t-1} + K_t (z_t - \hat{z}_t), \quad P_t = \frac{P_{t-1} - K_t h_t^T P_{t-1}}{\lambda}
+   $$
 
 3. **Calibración ECDF Causal ($W_{\text{cal}} = 16000$):**
    Convierte el error no calibrado en percentil uniforme sobre la ventana FIFO de errores previos $W$:
-   $$p_t = \begin{cases} 
+
+   $$
+   p_t = \begin{cases} 
    0.0 & \text{si } |W| < 288 \text{ o } e_t = 0.0 \\ 
-   \frac{\#\{i \in W : e_i < e_t\} + 0.5 \cdot \#\{i \in W : e_i = e_t\} + 0.5}{|W| + 1} & \text{si } |W| \ge 288 
-   \end{cases}$$
+   \dfrac{\#\{i \in W : e_i < e_t\} + 0.5 \cdot \#\{i \in W : e_i = e_t\} + 0.5}{|W| + 1} & \text{si } |W| \ge 288 
+   \end{cases}
+   $$
 
 4. **Supresión de No-Máximos Causal con Decaimiento Exponencial (PeakDecay):**
    Conserva nuevas crestas locales en ventana $K = 24$ y amortigua réplicas con $\tau = 2.0$:
-   $$q_t = \begin{cases} 
+
+   $$
+   q_t = \begin{cases} 
    p_t & \text{si } p_t > \max(p_{t-24 \dots t-1}) \quad (\text{actualiza } t^* = t) \\ 
-   p_t \cdot \exp\left(-\frac{t - t^*}{2.0}\right) & \text{en otro caso} 
-   \end{cases}$$
+   p_t \cdot \exp\left(-\dfrac{t - t^*}{2.0}\right) & \text{en otro caso} 
+   \end{cases}
+   $$
 
 5. **Bypass Espacial de Ruptura de Rango (SpatialSpikeBypass):**
    Mantiene cotas extremas causales $m_t = \min_{i < t} x_i$, $M_t = \max_{i < t} x_i$ y $R_t = M_t - m_t$:
-   $$r_t = \begin{cases} 
+
+   $$
+   r_t = \begin{cases} 
    1.0 & \text{si } t \ge 100, \; R_t > 10^{-12} \text{ y } (x_t < m_t - 0.05 R_t \text{ o } x_t > M_t + 0.05 R_t) \\ 
    q_t & \text{en otro caso} 
-   \end{cases}$$
+   \end{cases}
+   $$
 
 6. **Silenciador Refractario Post-Pico (RefractorySuppressor):**
    Si el score alcanza el umbral de disparo $\ge 0.990$, silencia a $0.0$ durante $W_{\text{rest}} = 80$ pasos:
-   $$S_t = \begin{cases} 
+
+   $$
+   S_t = \begin{cases} 
    0.0 & \text{si } t < t_{\text{silencio}} \\ 
    r_t & \text{en otro caso (si } r_t \ge 0.990, \text{ programa } t_{\text{silencio}} = t + 1 + 80) 
-   \end{cases}$$
+   \end{cases}
+   $$
 
 7. **Alerta y Optimización Global NAB:**
-   $$\text{Alerta}_t = \mathbb{I}[S_t \ge \theta^*]$$
+
+   $$
+   \text{Alerta}_t = \mathbb{I}[S_t \ge \theta^*]
+   $$
+
    donde $\theta^*$ es el umbral escalar global optimizado en el corpus completo por el Sweeper oficial de NAB.
 
 ### 1.2 Ecuación del Puntaje NAB (Score Oficial Standard)
 
 El puntaje del benchmark NAB normaliza la recompensa neta frente al detector nulo (`null`) y el detector perfecto (`perfect`):
-$$\text{Score}_{\text{NAB}} = 100 \cdot \frac{\text{Score}_{\text{raw}} - \text{Score}_{\text{null}}}{\text{Score}_{\text{perfect}} - \text{Score}_{\text{null}}}$$
+
+$$
+\text{Score}_{\text{NAB}} = 100 \cdot \frac{\text{Score}_{\text{raw}} - \text{Score}_{\text{null}}}{\text{Score}_{\text{perfect}} - \text{Score}_{\text{null}}}
+$$
 
 Para el perfil `standard` sobre el corpus de 58 series (116 ventanas de anomalía etiquetadas):
 - $\text{Score}_{\text{null}} = -116.0$ (penalización de $-1.0$ por cada una de las 116 ventanas omitidas).
@@ -82,7 +118,11 @@ Para el perfil `standard` sobre el corpus de 58 series (116 ventanas de anomalí
 - Denominador: $\text{Score}_{\text{perfect}} - \text{Score}_{\text{null}} = 116.0 - (-116.0) = 232.0$.
 
 Descomposición exacta de la recompensa bruta:
-$$\text{Score}_{\text{raw}} = \sum_{w=1}^{H} c_w - M - 0.11 \cdot F_{\text{eff}}$$
+
+$$
+\text{Score}_{\text{raw}} = \sum_{w=1}^{H} c_w - M - 0.11 \cdot F_{\text{eff}}
+$$
+
 donde:
 - $H$ es el número de ventanas detectadas (aciertos, $H \le 116$).
 - $c_w \in (0, 1]$ es el crédito otorgado por la función sigmoide escalada según la precocidad del primer impacto dentro de la ventana $w$.
@@ -90,9 +130,16 @@ donde:
 - $F_{\text{eff}} = \sum_{j \in \text{FP}} \sigma(d_j)$ es el conteo efectivo ponderado de falsas alarmas fuera de ventana.
 
 Sustituyendo $M = 116 - H$:
-$$\text{Score}_{\text{raw}} = \sum_{w=1}^{H} c_w - (116 - H) - 0.11 \cdot F_{\text{eff}} = \sum_{w=1}^{H} c_w + H - 116 - 0.11 \cdot F_{\text{eff}}$$
+
+$$
+\text{Score}_{\text{raw}} = \sum_{w=1}^{H} c_w - (116 - H) - 0.11 \cdot F_{\text{eff}} = \sum_{w=1}^{H} c_w + H - 116 - 0.11 \cdot F_{\text{eff}}
+$$
+
 Por tanto:
-$$\text{Score}_{\text{NAB}} = 100 \cdot \frac{\sum_{w=1}^{H} c_w + H - 0.11 \cdot F_{\text{eff}}}{232}$$
+
+$$
+\text{Score}_{\text{NAB}} = 100 \cdot \frac{\sum_{w=1}^{H} c_w + H - 0.11 \cdot F_{\text{eff}}}{232}
+$$
 
 *(Validado matemáticamente y contrastado en `tests/test_ecuacion_referencia.py` con discrepancia cero contra el código real).*
 
@@ -219,13 +266,25 @@ Todo experimento no promovido queda archivado con su medición oficial registrad
 ### 5.1 Propiedad del Óptimo Global del Sweeper ($\approx 17$ FPs Efectivos por Ventana)
 
 A partir de la función de coste oficial de NAB Standard:
-$$\text{Score}_{\text{raw}} = \sum_{w=1}^{H} c_w + H - 116 - 0.11 \cdot F_{\text{eff}}$$
+
+$$
+\text{Score}_{\text{raw}} = \sum_{w=1}^{H} c_w + H - 116 - 0.11 \cdot F_{\text{eff}}
+$$
+
 Cualquier detector en su umbral óptimo global $\theta^*$ satisface como propiedad matemática de primer orden la condición de parada del optimizador:
-$$\Delta \text{Score} - 0.11 \cdot \Delta F_{\text{eff}} \approx 0 \implies \frac{d F_{\text{eff}}}{d H} \approx \frac{1 + c_{\text{medio}}}{0.11}$$
+
+$$
+\Delta \text{Score} - 0.11 \cdot \Delta F_{\text{eff}} \approx 0 \implies \frac{d F_{\text{eff}}}{d H} \approx \frac{1 + c_{\text{medio}}}{0.11}
+$$
+
 No se trata de un fenómeno físico o intrínseco del modelo, sino de una **propiedad analítica del óptimo** impuesta por la métrica:
 - **Crédito medio medido en seed 42 ($c_{\text{medio}}$):** **0.8709** ($\sum_{w} c_w = 84.48$ sobre $H = 97$ ventanas detectadas).
 - **Cociente marginal teórico de equilibrio:**
-  $$\frac{1 + 0.8709}{0.11} = \frac{1.8709}{0.11} \approx 17.01 \; \text{FPs efectivos por ventana nueva}$$
+
+  $$
+  \frac{1 + 0.8709}{0.11} = \frac{1.8709}{0.11} \approx 17.01 \; \text{FPs efectivos por ventana nueva}
+  $$
+
 - **Falsas alarmas efectivas medidas ($F_{\text{eff}}$):** **367.31** (correspondientes a 382 puntos de alerta fuera de ventana ponderados por su distancia).
 - **Valores discretos medidos en el entorno:** En la vecindad de $\theta^*$, los cocientes discretos medidos $\Delta F_{\text{eff}} / \Delta H$ oscilan entre **9.33 y 15.81** (por debajo de 17.01 debido a la naturaleza en escalera de $H(\theta)$ y a que el optimizador se detiene en una meseta discreta de $H=97$).
 
