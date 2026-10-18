@@ -235,7 +235,7 @@ Auditoría forense con `check_bug_una_serie.py` sobre la serie `029_WSD_id_1_Web
 
 ### 3.2 Evaluación Congelada Oficial de P05 (Candidato vs Base P10 en 472 Frescas — COMPLETA)
 
-Corrida limpia, única y pre-registrada bajo el protocolo inmutable [`evaluate_frozen_p05.py`](evaluate_frozen_p05.py) fijado en el commit `5cb22fb8` (tag `prereg-p05-v1`).
+Corrida limpia, única y pre-registrada bajo el protocolo inmutable [`evaluate_frozen_p05.py`](experiments/tsb_frozen_p05/evaluate_frozen_p05.py) fijado en el commit `5cb22fb8` (tag `prereg-p05-v1`).
 - **Cobertura G4:** **472/472 series pareadas (100.0%, 0 excluidas)**.
 - **Veredicto pre-registrado (`decisive_ci: "both"`):** **`SUCCESS: True`** (cumplimiento simultáneo en bootstrap por serie y bootstrap clusterizado por familia de series).
 
@@ -273,7 +273,7 @@ Corrida limpia, única y pre-registrada bajo el protocolo inmutable [`evaluate_f
 
 ### 3.4 Estado
 
-**PROMOCIÓN CIENTÍFICA VALIDADA OUT-OF-SAMPLE.** Conforme al acta [`ACTA_PREREGISTRO_P05.md`](ACTA_PREREGISTRO_P05.md), P05 supera formalmente el criterio pre-registrado sin regresiones en métricas de precisión temporal. Se consolida el reporte en [`NOTA_TECNICA_FROZEN_P05.md`](NOTA_TECNICA_FROZEN_P05.md).
+**PROMOCIÓN CIENTÍFICA VALIDADA OUT-OF-SAMPLE.** Conforme al acta [`ACTA_PREREGISTRO_P05.md`](experiments/tsb_frozen_p05/ACTA_PREREGISTRO_P05.md), P05 supera formalmente el criterio pre-registrado sin regresiones en métricas de precisión temporal. Se consolida el reporte en [`NOTA_TECNICA_FROZEN_P05.md`](experiments/tsb_frozen_p05/NOTA_TECNICA_FROZEN_P05.md).
 
 ---
 

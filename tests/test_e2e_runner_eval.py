@@ -77,3 +77,4 @@ def test_e2e_runner_dictwriter_and_evaluate_contract():
             for arm in ("P10", "P05", "random", "zscore"):
                 assert arm in data[s], f"Brazo {arm} no encontrado en {s}"
                 assert np.isfinite(data[s][arm]["auc_roc"]), f"AUC-ROC no finito en {arm}"
+            assert data[s]["P05"]["auc_roc"] > data[s]["P10"]["auc_roc"]
