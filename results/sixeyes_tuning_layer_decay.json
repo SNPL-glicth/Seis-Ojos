@@ -1,0 +1,43 @@
+{
+  "anom_all": {
+    "bypass": 0.107102,
+    "cal": 0.616877,
+    "peak": 0.106424,
+    "raw": 620.784427,
+    "refr": 0.066774
+  },
+  "anom_long": {
+    "bypass": 0.085299,
+    "cal": 0.650005,
+    "peak": 0.084717,
+    "raw": 8.284549,
+    "refr": 0.051019
+  },
+  "anom_short": {
+    "bypass": 0.130037,
+    "cal": 0.582028,
+    "peak": 0.12926,
+    "raw": 1265.113891,
+    "refr": 0.083349
+  },
+  "auc_bypass": 0.5288,
+  "auc_cal": 0.6327,
+  "auc_peak": 0.5286,
+  "auc_raw": 0.7291,
+  "auc_refr": 0.4165,
+  "drop_cal2peak_fin": 0.508211,
+  "drop_cal2peak_inicio": 0.498937,
+  "drop_cal2peak_medio": 0.527955,
+  "n_anom": 44343,
+  "n_fin": 13728,
+  "n_inicio": 17405,
+  "n_medio": 13210,
+  "n_points": 2234843,
+  "normal": {
+    "bypass": 0.073424,
+    "cal": 0.480739,
+    "peak": 0.073378,
+    "raw": 9908.333254,
+    "refr": 0.059422
+  }
+}

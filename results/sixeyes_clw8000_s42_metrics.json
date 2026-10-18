@@ -1,0 +1,16 @@
+{
+  "baseline": {
+    "fp_tweets": 214,
+    "hits": 97,
+    "kc_hits": 17,
+    "kc_tot": 19,
+    "thr": 0.9907663316582914
+  },
+  "variant": {
+    "fp_tweets": 30,
+    "hits": 77,
+    "kc_hits": 11,
+    "kc_tot": 19,
+    "thr": 0.9899186416696144
+  }
+}

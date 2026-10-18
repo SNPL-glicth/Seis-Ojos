@@ -1,0 +1,9 @@
+{
+  "detector": "sixeyes_adapt_gated_s42",
+  "scores": {
+    "reward_low_FN_rate": 68.20819353824878,
+    "reward_low_FP_rate": 47.18994231034269,
+    "standard": 60.14011865567782
+  },
+  "seed": "s42"
+}

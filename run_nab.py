@@ -39,6 +39,9 @@ from sixeyes.detectors.biseasonal import BiSeasonalRobustZ
 from sixeyes.detectors.calibrador_percentil import PercentileCalibrator
 from sixeyes.detectors.subespacio import SubspaceResidualDetector
 from sixeyes.detectors.peak_decay import StreamingPeakDecay, DEFAULT_K_WINDOW, DEFAULT_TAU
+from sixeyes.experimental.causal_adaptive_threshold import CausalAdaptiveThreshold
+from sixeyes.experimental.regime_gated_refractory import RegimeGatedRefractory
+from sixeyes.experimental.cusum_drift import CUSUMDrift
 from sixeyes.evaluation.nab_runner import NABRunner
 
 RUTA_DEFECTO_NAB = NAB_DIR
@@ -46,6 +49,8 @@ RUTA_DEFECTO_NAB = NAB_DIR
 # Única lista válida: coincide 1:1 con las ramas implementadas abajo.
 DETECTORES_SOPORTADOS = [
     "refractory",
+    "adaptive_gated",
+    "cusum",
     "peak_decay",
     "dual_decay",
     "seasonal_decay",
@@ -62,7 +67,7 @@ DETECTORES_SOPORTADOS = [
 
 
 def build_factory(detector: str, bucket_minutes: int, k_window: int, tau: float,
-                  cal_window: int = 16000):
+                   cal_window: int = 16000, seed: int = 42):
     """Fábrica única del pipeline oficial y baselines. Sin variantes fantasma.
 
     NOTA: el nombre del detector nunca contiene puntos (NAB parsea
@@ -73,6 +78,33 @@ def build_factory(detector: str, bucket_minutes: int, k_window: int, tau: float,
     tau_tag = str(tau).replace(".", "p")
     cal_tag = f"_w{cal_window}" if cal_window > 0 else "_wInf"
     max_hist = cal_window if cal_window > 0 else None
+    if detector == "adaptive_gated":
+        # Intento 1 pre-registrado (2026-10-15): umbral adaptativo causal +
+        # refractario gated. Orden: ESN -> Cal -> PeakDecay -> AdaptiveThreshold
+        # -> SpatialBypass (ruptura fisica intacta) -> GatedRefractory.
+        def factory_ag(mh=max_hist, kw=k_window, t=tau, sd=seed):
+            esn = EchoStatePredictor(seed=sd)
+            cal = PercentileCalibrator(esn, max_history=mh)
+            decay = StreamingPeakDecay(cal, k_window=kw, tau=t)
+            adapt = CausalAdaptiveThreshold(decay)
+            spatial = SpatialSpikeBypass(adapt, tolerance=0.05, warmup=100)
+            return RegimeGatedRefractory(spatial)
+        name = f"sixeyes_adapt_gated_s{seed}_k{k_window}_tau{tau_tag}{cal_tag}"
+        return factory_ag, name
+    if detector == "cusum":
+        # Intento 1 pre-registrado (2026-10-15): CUSUM bilateral k=0.5/h=5.0 de
+        # libro sobre residuos CON SIGNO. Rama paralela al predictor oficial:
+        # SignedESN -> CUSUM -> Cal -> PeakDecay -> Spatial -> Refractory estatico
+        # (downstream identico al titular para aislar el efecto de CUSUM).
+        def factory_cu(mh=max_hist, kw=k_window, t=tau, sd=seed):
+            esn = EchoStatePredictor(seed=sd, signed_output=True)
+            cus = CUSUMDrift(esn)
+            cal = PercentileCalibrator(cus, max_history=mh)
+            decay = StreamingPeakDecay(cal, k_window=kw, tau=t)
+            spatial = SpatialSpikeBypass(decay, tolerance=0.05, warmup=100)
+            return RefractorySuppressor(spatial, w_rest=80, trigger_threshold=0.990)
+        name = f"sixeyes_cusum_s{seed}_k{k_window}_tau{tau_tag}{cal_tag}"
+        return factory_cu, name
     if detector == "refractory":
         def factory_ref(mh=max_hist, kw=k_window, t=tau):
             esn = EchoStatePredictor(seed=42)
@@ -153,6 +185,8 @@ def main() -> None:
     parser.add_argument("--cal-window", type=int, default=16000,
                         help="Ventana ECDF del calibrador. <=0 = no acotado "
                              "(solo reproducción histórica K=160, coste O(N)).")
+    parser.add_argument("--seed", type=int, default=42,
+                        help="Semilla del ESN (solo adaptive_gated; resto la fijan internamente).")
     parser.add_argument(
         "--nab-path", type=Path, default=RUTA_DEFECTO_NAB,
         help="Ruta al repositorio local de NAB.",
@@ -162,7 +196,7 @@ def main() -> None:
     runner = NABRunner(nab_root=args.nab_path)
     fabrica_detector, nombre_detector = build_factory(
         args.detector, args.bucket_minutes, args.k_window, args.tau,
-        args.cal_window
+        args.cal_window, args.seed
     )
 
     print("=" * 60)

@@ -1,0 +1,15 @@
+{
+  "n_files": 211,
+  "cand_mean": 0.7128,
+  "cand_std_seeds": "n/a (solo cand_s42)",
+  "zscore_mean": "n/a (no data)",
+  "random_mean": "n/a (no data)",
+  "diff_mean": "n/a",
+  "diff_ci95": [
+    0.6906,
+    0.7344
+  ],
+  "frac_cand_over_05": 0.9005,
+  "pass": true,
+  "note": "Solo cand_s42 disponible; zscore/random no registrados en CSV parcial. Continuar con LOCO + conjunto fresco."
+}

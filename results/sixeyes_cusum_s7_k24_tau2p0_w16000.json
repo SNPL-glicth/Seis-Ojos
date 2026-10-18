@@ -1,0 +1,14 @@
+{
+    "config": {
+        "bucket_minutes": 15,
+        "cal_window": 16000,
+        "k_window": 24,
+        "tau": 2.0
+    },
+    "detector": "sixeyes_cusum_s7_k24_tau2p0_w16000",
+    "scores": {
+        "reward_low_FN_rate": 55.51282545132417,
+        "reward_low_FP_rate": 50.607271928768284,
+        "standard": 53.09682438388282
+    }
+}

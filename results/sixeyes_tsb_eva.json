@@ -1,0 +1,25 @@
+{
+  "aggregate": {
+    "mean_AUC-PR": 0.0799,
+    "mean_AUC-ROC": 0.403,
+    "mean_Affiliation-F": 0.6626,
+    "mean_Event-based-F1": 0.0861,
+    "mean_PA-F1": 0.443,
+    "mean_R-based-F1": 0.03,
+    "mean_Standard-F1": 0.0434,
+    "mean_VUS-PR": 0.116,
+    "mean_VUS-ROC": 0.4931,
+    "med_AUC-PR": 0.0414,
+    "med_AUC-ROC": 0.3903,
+    "med_Affiliation-F": 0.6641,
+    "med_Event-based-F1": 0.0464,
+    "med_PA-F1": 0.4037,
+    "med_R-based-F1": 0.0091,
+    "med_Standard-F1": 0.0271,
+    "med_VUS-PR": 0.0505,
+    "med_VUS-ROC": 0.4629,
+    "n": 350,
+    "ok": 349
+  },
+  "detector": "frozen_official_s42"
+}

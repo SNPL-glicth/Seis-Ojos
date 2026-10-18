@@ -1,0 +1,32 @@
+{
+  "A_base": {
+    "mean_auc_pr": 0.2622,
+    "mean_auc_roc": 0.7217,
+    "med_auc_roc": 0.7659,
+    "ok": 43
+  },
+  "B_peak": {
+    "mean_auc_pr": 0.1059,
+    "mean_auc_roc": 0.6432,
+    "med_auc_roc": 0.6209,
+    "ok": 43
+  },
+  "C_bypass": {
+    "mean_auc_pr": 0.0938,
+    "mean_auc_roc": 0.6442,
+    "med_auc_roc": 0.6209,
+    "ok": 43
+  },
+  "D_full": {
+    "mean_auc_pr": 0.0689,
+    "mean_auc_roc": 0.448,
+    "med_auc_roc": 0.4326,
+    "ok": 43
+  },
+  "E_calspatial": {
+    "mean_auc_pr": 0.2267,
+    "mean_auc_roc": 0.7217,
+    "med_auc_roc": 0.7655,
+    "ok": 43
+  }
+}

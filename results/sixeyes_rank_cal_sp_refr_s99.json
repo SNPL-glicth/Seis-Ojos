@@ -1,0 +1,10 @@
+{
+  "detector": "sixeyes_rank_cal_sp_refr_s99",
+  "scores": {
+    "reward_low_FN_rate": 66.17430284300919,
+    "reward_low_FP_rate": 40.78714974278149,
+    "standard": 57.45110943692758
+  },
+  "seed": 99,
+  "variant": "cal_sp_refr"
+}

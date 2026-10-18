@@ -127,8 +127,22 @@ class EchoStatePredictor(Detector):
             vec = np.concatenate([vec, self._time_vector(timestamp)])
         h_new = np.tanh(self._win @ vec + self._wres @ self._h)
         pred_z = float(self._wout @ h_new)
+        if not math.isfinite(pred_z) or not bool(np.all(np.isfinite(self._P))):
+            # Anti-windup (2026-10-15, caso 550_SWaT): covarianza divergida en tramos
+            # degenerados. Se re-ancla el readout (w=0, P=I) y se puntúa contra pred=0:
+            # el punto se emite como error extremo, no como silencio ni excepción.
+            self._wout = np.zeros(self._n)
+            self._P = np.eye(self._n) * RLS_DELTA
+            pred_z = 0.0
         resid = z - pred_z
-        err = resid if self._signed_output else resid ** 2
+        # Techo numérico honesto: el residuo se capa en vez de desbordar
+        # (`resid ** 2` lanzaba OverflowError). La ECDF lo ordena como extremo.
+        if math.isnan(resid):
+            err = 0.0
+        elif self._signed_output:
+            err = max(-1e6, min(1e6, resid))
+        else:
+            err = min(resid * resid, 1e12) if math.isfinite(resid) else 1e12
         # RLS DESPUÉS de puntuar (causalidad).
         h = h_new.reshape(-1, 1)
         Ph = self._P @ h

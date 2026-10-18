@@ -92,3 +92,17 @@ class TestEchoState:
         c = EchoStatePredictor(signed_output=True)
         sc = [c.update(v, "2024-01-01T00:00:00") for v in vals]
         assert sc == sb
+
+    def test_antiwindup_rls_no_revienta(self):
+        # Caso 550_SWaT (TSB-Eva): OverflowError en `resid ** 2`. Tras el arreglo,
+        # readout divergido => techo finito + re-anclaje, sin excepcion.
+        import math
+        det = EchoStatePredictor(seed=42)
+        for i in range(30):
+            det.update(0.97, "2024-01-01T00:00:00")
+        det._wout = np.full(64, 1e308)
+        det._P = np.eye(64) * 1e308
+        s = det.update(0.97, "2024-01-01T00:00:00")
+        assert math.isfinite(s) and s >= 0.0
+        s2 = det.update(0.97, "2024-01-01T00:00:00")
+        assert math.isfinite(s2) and s2 >= 0.0  # sigue vivo tras re-anclar

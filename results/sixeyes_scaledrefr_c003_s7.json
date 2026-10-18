@@ -1,0 +1,10 @@
+{
+  "c": 0.03,
+  "detector": "sixeyes_scaledrefr_c003_s7",
+  "scores": {
+    "reward_low_FN_rate": 65.93047844553885,
+    "reward_low_FP_rate": 42.97365455063775,
+    "standard": 57.63255251915151
+  },
+  "seed": "s7"
+}

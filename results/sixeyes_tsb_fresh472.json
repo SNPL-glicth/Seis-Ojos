@@ -1,0 +1,16 @@
+{
+  "n_files": 218,
+  "n_paired": 182,
+  "cand_mean": 0.5065,
+  "zscore_mean": 0.268,
+  "random_mean": 0.011,
+  "diff_mean": 0.2385,
+  "diff_ci95": [
+    0.1884,
+    0.2889
+  ],
+  "frac_cand_over_05": 0.533,
+  "frac_z_over_05": 0.1868,
+  "pass": false,
+  "note": "472/472 series completadas. AUC-ROC y AUC-PR solamente, sin VUS. 182 series pareadas para el criterio principal."
+}

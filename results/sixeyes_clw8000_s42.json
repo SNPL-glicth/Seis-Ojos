@@ -1,0 +1,11 @@
+{
+  "detector": "sixeyes_clw8000_s42",
+  "long": 8000,
+  "scores": {
+    "reward_low_FN_rate": 61.372569640032424,
+    "reward_low_FP_rate": 55.7806203812855,
+    "standard": 58.574163726549074
+  },
+  "seed": 42,
+  "short": 10
+}
