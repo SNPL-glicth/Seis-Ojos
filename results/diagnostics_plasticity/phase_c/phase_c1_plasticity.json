@@ -1,0 +1,49 @@
+{
+  "deliverable": "phase_c1_plasticity",
+  "description": "Aislamiento de la plasticidad RLS pura manteniendo normalizaci\u00f3n fija",
+  "baseline_continuous": {
+    "pre_normal_baseline_raw": 0.006551088999862139,
+    "init_anomaly_cycle_raw": 2.4572121765750228,
+    "fin_anomaly_cycle_raw": 0.04457137524638892,
+    "meseta_all_mean_raw": 0.704763911246897,
+    "true_absorption_ratio": 0.9818609985448978,
+    "recup_immediate_cycle_raw": 1.5053123704592064,
+    "recup_extended_3cycles_raw": 0.5414308647672661,
+    "max_recup_peak_raw": 20.140007426390298,
+    "recup_elevation_ratio": 229.7804793204434,
+    "tail_steps_gt_3x_normal": 155,
+    "config": {
+      "freeze_w": false,
+      "freeze_norm": true,
+      "h_intervention": "none",
+      "desc": "C.1 Control: RLS continuo con normalizaci\u00f3n limpia (plasticidad activa sin sesgo norm)"
+    }
+  },
+  "frozen_w": {
+    "pre_normal_baseline_raw": 0.007938961591479792,
+    "init_anomaly_cycle_raw": 5.830971425040891,
+    "fin_anomaly_cycle_raw": 7.072757833647241,
+    "meseta_all_mean_raw": 6.750306624039584,
+    "true_absorption_ratio": 0.0,
+    "recup_immediate_cycle_raw": 0.3372793799380953,
+    "recup_extended_3cycles_raw": 0.1184776800576071,
+    "max_recup_peak_raw": 2.9095482117467952,
+    "recup_elevation_ratio": 42.48406747553338,
+    "tail_steps_gt_3x_normal": 31,
+    "config": {
+      "freeze_w": true,
+      "freeze_norm": true,
+      "h_intervention": "none",
+      "desc": "C.1 Aislamiento RLS: Pesos congelados con normalizaci\u00f3n limpia (plasticidad pura = 0)"
+    }
+  },
+  "findings": {
+    "absorption_continuous_ratio": 0.9818609985448978,
+    "absorption_frozen_ratio": 0.0,
+    "recovery_elevation_continuous": 229.7804793204434,
+    "recovery_elevation_frozen": 42.48406747553338,
+    "tail_duration_continuous_steps": 155,
+    "tail_duration_frozen_steps": 31,
+    "conclusion": "La adaptaci\u00f3n continua de w absorbe el 98.19% de la meseta y multiplica por 5.4x la elevaci\u00f3n del error al retorno (229.8x vs 42.5x), extendiendo la cola an\u00f3mala de 31 a 155 pasos."
+  }
+}

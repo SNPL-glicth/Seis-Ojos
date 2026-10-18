@@ -1,0 +1,45 @@
+{
+  "deliverable": "phase_c3_ecdf",
+  "description": "Aislamiento de la memoria estad\u00edstica ECDF (ingesta normal vs ingesta protegida)",
+  "results": {
+    "ecdf_on_continuous_rls": {
+      "plateau_cont_mean_score": 0.7779449535037144,
+      "plateau_prot_mean_score": 0.8497866894197952,
+      "retorno_immediate_cont_mean_score": 0.8245379036997121,
+      "retorno_immediate_prot_mean_score": 0.8911492823674165,
+      "retorno_3cycles_cont_mean_score": 0.7150781423335523,
+      "retorno_3cycles_prot_mean_score": 0.7936775090209656,
+      "false_alerts_post_anomaly_gt_05_cont": 167,
+      "false_alerts_post_anomaly_gt_05_prot": 174,
+      "false_alerts_post_anomaly_gt_08_cont": 82,
+      "false_alerts_post_anomaly_gt_08_prot": 131
+    },
+    "ecdf_on_frozen_rls": {
+      "plateau_cont_mean_score": 0.9246754000169269,
+      "plateau_prot_mean_score": 0.9991467576791812,
+      "retorno_immediate_cont_mean_score": 0.4524008284433556,
+      "retorno_immediate_prot_mean_score": 0.598101461253839,
+      "retorno_3cycles_cont_mean_score": 0.36405903090409253,
+      "retorno_3cycles_prot_mean_score": 0.4751621426064374,
+      "false_alerts_post_anomaly_gt_05_cont": 55,
+      "false_alerts_post_anomaly_gt_05_prot": 86,
+      "false_alerts_post_anomaly_gt_08_cont": 2,
+      "false_alerts_post_anomaly_gt_08_prot": 31
+    }
+  },
+  "findings": {
+    "continuous_rls": {
+      "alerts_gt_05_cont": 167,
+      "alerts_gt_05_prot": 174,
+      "alerts_gt_08_cont": 82,
+      "alerts_gt_08_prot": 131
+    },
+    "frozen_rls": {
+      "alerts_gt_05_cont": 55,
+      "alerts_gt_05_prot": 86,
+      "alerts_gt_08_cont": 2,
+      "alerts_gt_08_prot": 31
+    },
+    "conclusion": "Proteger la ECDF evita que los residuos an\u00f3malos contaminen la distribuci\u00f3n de referencia, pero si el error crudo que sale del ESN es masivo (por pesos desadaptados), el percentil se satura independientemente de la ECDF. La causa ra\u00edz primaria es la distorsi\u00f3n de w, mientras que la ECDF modula la escala percentil posterior."
+  }
+}

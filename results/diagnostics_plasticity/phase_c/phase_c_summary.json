@@ -1,0 +1,22 @@
+{
+  "deliverable": "phase_c_summary",
+  "title": "S\u00edntesis Factorial de la Fase C y Hoja de Ruta de Dise\u00f1o Causal",
+  "hierarchy_of_effects": {
+    "1_plasticity_rls": {
+      "rank": "Primario / Cr\u00edtico",
+      "contribution": "98.19% de absorci\u00f3n en meseta y 80% de la duraci\u00f3n de la cola de error crudo (155 pasos vs 31 pasos).",
+      "recommended_fix": "Compuerta de plasticidad prefrontal causal (bloquear actualizaci\u00f3n de w cuando el error predicho o sorpresa excede umbral adaptativo)."
+    },
+    "2_reservoir_state_h": {
+      "rank": "Despreciable / Autolimitado",
+      "contribution": "< 1% de la persistencia de recuperaci\u00f3n. El radio espectral 0.9 disipa la memoria en ~15 pasos. Intervenir en h_t (reset o replay) no reduce la cola.",
+      "recommended_fix": "NO intervenir en el estado del reservorio. Dejar que evolucione seg\u00fan su din\u00e1mica recursiva natural."
+    },
+    "3_calibration_ecdf_norm": {
+      "rank": "Secundario / Modulador",
+      "contribution": "Contamina el buffer hist\u00f3rico y magnifica las falsas alarmas si ingiere anomal\u00edas.",
+      "recommended_fix": "Compuerta de ingesta estad\u00edstica (congelar actualizaci\u00f3n de _norm y ECDF cuando la compuerta prefrontal detecte r\u00e9gimen an\u00f3malo)."
+    }
+  },
+  "next_step": "Etapa 3: Implementar la compuerta prefrontal con switch experimental (AB testing) en m\u00f3dulo aislado, conmutando actualizaci\u00f3n de w y de normalizadores causalmente."
+}

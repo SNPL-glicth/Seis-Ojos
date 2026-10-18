@@ -1,0 +1,67 @@
+{
+  "deliverable": "phase_c2_reservoir",
+  "description": "Aislamiento de la inercia din\u00e1mica del reservorio h_t en t=800",
+  "natural_inertia": {
+    "pre_normal_baseline_raw": 0.006551088999862139,
+    "init_anomaly_cycle_raw": 2.4572121765750228,
+    "fin_anomaly_cycle_raw": 0.04457137524638892,
+    "meseta_all_mean_raw": 0.704763911246897,
+    "true_absorption_ratio": 0.9818609985448978,
+    "recup_immediate_cycle_raw": 1.5053123704592064,
+    "recup_extended_3cycles_raw": 0.5414308647672661,
+    "max_recup_peak_raw": 20.140007426390298,
+    "recup_elevation_ratio": 229.7804793204434,
+    "tail_steps_gt_3x_normal": 155,
+    "config": {
+      "freeze_w": false,
+      "freeze_norm": true,
+      "h_intervention": "none",
+      "desc": "C.2 Control: Inercia natural de h_t al regresar"
+    }
+  },
+  "reset_zero": {
+    "pre_normal_baseline_raw": 0.006551088999862139,
+    "init_anomaly_cycle_raw": 2.4572121765750228,
+    "fin_anomaly_cycle_raw": 0.04457137524638892,
+    "meseta_all_mean_raw": 0.704763911246897,
+    "true_absorption_ratio": 0.9818609985448978,
+    "recup_immediate_cycle_raw": 1.4704570644894088,
+    "recup_extended_3cycles_raw": 0.531997956470676,
+    "max_recup_peak_raw": 20.648889096851256,
+    "recup_elevation_ratio": 224.45994315149025,
+    "tail_steps_gt_3x_normal": 155,
+    "config": {
+      "freeze_w": false,
+      "freeze_norm": true,
+      "h_intervention": "zero",
+      "desc": "C.2 Intervenci\u00f3n: Reset de choque h_800 = 0"
+    }
+  },
+  "phase_reference_restore": {
+    "pre_normal_baseline_raw": 0.006551088999862139,
+    "init_anomaly_cycle_raw": 2.4572121765750228,
+    "fin_anomaly_cycle_raw": 0.04457137524638892,
+    "meseta_all_mean_raw": 0.704763911246897,
+    "true_absorption_ratio": 0.9818609985448978,
+    "recup_immediate_cycle_raw": 1.6096893628949005,
+    "recup_extended_3cycles_raw": 0.5772041492630006,
+    "max_recup_peak_raw": 22.23051160520368,
+    "recup_elevation_ratio": 245.71324903825527,
+    "tail_steps_gt_3x_normal": 154,
+    "config": {
+      "freeze_w": false,
+      "freeze_norm": true,
+      "h_intervention": "phase_ref",
+      "desc": "C.2 Intervenci\u00f3n: Restauraci\u00f3n de h_800 desde referencia normal en misma fase peri\u00f3dica"
+    }
+  },
+  "findings": {
+    "natural_immediate_error": 1.5053123704592064,
+    "reset_zero_immediate_error": 1.4704570644894088,
+    "phase_restore_immediate_error": 1.6096893628949005,
+    "natural_tail_steps": 155,
+    "reset_zero_tail_steps": 155,
+    "phase_restore_tail_steps": 154,
+    "conclusion": "El estado din\u00e1mico h_t NO es la causa de la persistencia de la recuperaci\u00f3n. Con reset=0 o restauraci\u00f3n exacta de fase, la cola dura id\u00e9nticos 154-155 pasos. El reservorio exhibe fading memory que decae en <20 pasos; el 100% de la persistencia lenta proviene de los pesos w."
+  }
+}

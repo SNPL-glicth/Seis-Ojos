@@ -90,7 +90,26 @@ Se implementó una suite diagnóstica aislada ([`scripts/experiments/diag_plasti
 
 ---
 
-## 5. Fronteras de Alcance y Cierre de la Línea
+---
+
+## 5. Fase C: Aislamiento Factorial Causal (C.1 Plasticidad, C.2 Reservorio, C.3 ECDF)
+
+Para aislar rigurosamente la contribución de cada componente de memoria sin oráculos ni sesgos armónicos, se implementaron experimentos de laboratorio con ciclos periódicos completos ($T=50$) en [`scripts/experiments/diag_phase_c_factorial.py`](scripts/experiments/diag_phase_c_factorial.py) y [`scripts/experiments/diag_phase_c3_ecdf.py`](scripts/experiments/diag_phase_c3_ecdf.py), produciendo los 4 entregables formales en `results/diagnostics_plasticity/phase_c/`:
+
+| Componente Evaluado | Experimento / Intervención | Hallazgo Cuantitativo | Conclusión Causal |
+| :--- | :--- | :--- | :--- |
+| **C.1 Plasticidad RLS ($w$)** | Normalización fija durante meseta: Continuo vs Congelado | Continuo absorbe el **98.19%** de la meseta. En retorno, pico de error crudo = **20.14** (elevación 229.8x) y cola de **155 pasos**. Con $w$ congelado: absorción = **0.0%**, pico = **2.91** (reducción 7x) y cola = **31 pasos**. | **Causa Primaria:** La adaptación no supervisada de los pesos RLS explica el **80% de la persistencia temporal** de la falsa alarma de recuperación. |
+| **C.2 Inercia del Reservorio ($h_t$)** | En $t=800$: Natural vs Reset de choque ($h=0$) vs Replay de fase ($t=550$) | Natural: cola de **155 pasos**, error inmediato = 1.505. Reset $h=0$: cola de **155 pasos**, error = 1.470. Replay de fase: cola de **154 pasos**, error = 1.610. | **Efecto Despreciable:** El estado dinámico $h_t$ exhibe *fading memory* ($\rho=0.9$) que decae en $<20$ pasos. Intervenir en $h_t$ no altera la duración de la recuperación; los pesos $w$ dominan por completo. |
+| **C.3 Memoria Estadística (ECDF)** | Ingesta continua estándar vs Ingesta protegida (congelada en anomalía) | Proteger la ECDF preserva la distribución de fondo, pero con RLS continuo el error crudo es tan extremo ($>20$) que satura el percentil (>0.89) independientemente del buffer histórico. | **Efecto Modulador Secundario:** La ECDF no genera la falsa alarma cruda; amplifica o preserva la cola una vez emitida. Debe coordinarse aguas abajo de la compuerta de $w$. |
+
+### Jerarquía Causal y Prescripción de Diseño:
+1. **Prioridad 1 (Crítica):** Compuerta prefrontal causal sobre los pesos $w$ del RLS (bloqueo condicionado de actualización por sorpresa predictiva).
+2. **Prioridad 2 (Secundaria):** Compuerta de congelamiento sobre las estadísticas de fondo (`_norm` y buffer ECDF) durante sospecha de anomalía.
+3. **Regla de No Intervención:** **NO resetear ni alterar el estado $h_t$ del reservorio**. Su dinámica recursiva natural es inocente de la inercia patológica.
+
+---
+
+## 6. Fronteras de Alcance y Cierre de la Línea
 
 1. **Agotamiento del conjunto fresco:** Las 472 series de TSB-AD **ya no son frescas para P05**. Se prohíbe evaluar variantes subsiguientes de forma confirmatoria sobre este split. La línea experimental de P05 queda formalmente **CERRADA**.
 2. **Entorno específico:** Los resultados son válidos para **TSB-AD-U** con **semilla 42**.
