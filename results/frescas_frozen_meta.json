@@ -1,0 +1,20 @@
+{
+  "tag": "prereg-p05-v1",
+  "commit_hash": "5cb22fb8702eeac8d9621490a7257c22fc790f46",
+  "start_time": 1792336491.9240584,
+  "arms": [
+    "P10",
+    "P05",
+    "random",
+    "zscore"
+  ],
+  "fieldnames": [
+    "series",
+    "family",
+    "n_points",
+    "arm",
+    "auc_roc",
+    "auc_pr",
+    "vus_pr"
+  ]
+}

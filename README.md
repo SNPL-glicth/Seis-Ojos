@@ -233,41 +233,47 @@ Auditoría forense con `check_bug_una_serie.py` sobre la serie `029_WSD_id_1_Web
 - **Causa raíz forense confirmada:** mezcla de esquemas de columnas en `results/sixeyes_tsb_fresh472_rows.csv`. El archivo contiene 211 filas a 12 columnas con orden `...,AUC-PR,AUC-ROC,...` (cabecera vigente) y 645 filas a 5 columnas con orden antiguo `...,AUC-ROC,AUC-PR,...`. Al parsear todo con la cabecera actual, el AUC-ROC verdadero de las filas nuevas cae en la columna `AUC-PR` y viceversa. Además, los "91 duplicados" resultaron ser el solape entre ambos bloques con valores idénticos fila a fila (sin corridas distintas ocultas).
 - **Los "0.0081, 0.0015, 0.1330" citados en actas previas se retiran:** eran AUC-PR, no AUC-ROC.
 
-### 3.2 Re-agregación histórica previa (PROVISIONAL - Sujeta a reemplazo por corrida limpia congelada)
+### 3.2 Evaluación Congelada Oficial de P05 (Candidato vs Base P10 en 472 Frescas — COMPLETA)
 
-> [!WARNING]
-> Las cifras de este apartado (0.783 candidato, 0.750 z-score, desglose corto/largo) proceden de una concatenación preliminar de archivos históricos (`sixeyes_fresh257_cobertura.csv` y subconjuntos previos). Quedan marcadas formalmente como **PROVISIONALES / NO OFICIALES** y serán sustituidas íntegramente por la corrida congelada del protocolo `evaluate_frozen_p05.py`.
+Corrida limpia, única y pre-registrada bajo el protocolo inmutable [`evaluate_frozen_p05.py`](evaluate_frozen_p05.py) fijado en el commit `5cb22fb8` (tag `prereg-p05-v1`).
+- **Cobertura G4:** **472/472 series pareadas (100.0%, 0 excluidas)**.
+- **Veredicto pre-registrado (`decisive_ci: "both"`):** **`SUCCESS: True`** (cumplimiento simultáneo en bootstrap por serie y bootstrap clusterizado por familia de series).
 
-**Pareado preliminar previo (provisional, pendiente de reemplazo):**
+**Resultados Pareados de 4 Brazos (n = 472/472, 100.0%):**
 
-| Brazo | AUC-ROC medio | Series > 0.5 |
-| :--- | :---: | :---: |
-| **Candidato (`cand_s42`)** | *0.783 (prov)* | 93.4% |
-| Z-Score (`zscore`) | *0.750 (prov)* | — |
-| Random | *0.502 (prov)* | 52.6% |
-
-- **cand vs zscore (provisional):** diferencia media **+0.033**, IC95 bootstrap **[0.017, 0.049]**.
-- **cand vs random (provisional):** diferencia media **+0.280**, IC95 **[0.261, 0.300]**.
-
-**Descomposición por longitud — corte EXPLORATORIO (provisional y no pre-registrado):**
-
-| Segmento | n | cand | zscore | random |
+| Brazo | AUC-ROC medio | AUC-PR medio | VUS-PR medio | Win Rate vs P10 |
 | :--- | :---: | :---: | :---: | :---: |
-| Cortas ($\le$ mediana) | 236 | *0.869* | ***0.909*** | *0.506* |
-| Largas ($\gt$ mediana) | 236 | ***0.697*** | *0.591* | *0.499* |
+| **Candidato Híbrido (`P05`)** | **0.8153** | **0.2978** | **0.3541** | — |
+| Base Oficial (`P10` / `cand_s42`) | 0.7828 | 0.2047 | 0.2854 | — |
+| Z-Score Robusto (`zscore`) | 0.7497 | 0.3588 | 0.2849 | — |
+| Detector Aleatorio (`random`) | 0.5025 | 0.0097 | 0.0530 | — |
 
-### 3.3 Puertas de Sanidad Metodológica (G1–G4) en corrida previa
+**Deltas Pareados Candidato P05 vs Base P10 (Criterio Primario y Guardrails):**
+- **$\Delta(\text{AUC-ROC})$ (Primaria):** Media **+0.0325** | IC95 Series **[+0.0273, +0.0379]** | IC95 Cluster Familia **[+0.0143, +0.0564]** | Win rate: **76.1%** (359/472).
+- **$\Delta(\text{AUC-PR})$ (Guarda):** Media **+0.0930** | IC95 Series **[+0.0810, +0.1057]** | IC95 Cluster Familia **[+0.0207, +0.1665]** | Win rate: **71.0%** (335/472).
+- **$\Delta(\text{VUS-PR})$ (Guarda):** Media **+0.0687** | IC95 Series **[+0.0583, +0.0794]** | IC95 Cluster Familia **[+0.0145, +0.1230]** | Win rate: **67.2%** (317/472).
+
+**Descomposición por longitud — corte EXPLORATORIO (mediana = 7500.5 puntos):**
+
+| Segmento | n | P10 (ROC) | P05 (ROC) | Z-Score (ROC) | $\Delta(\text{P05} - \text{P10})$ | IC 95% Series | Win Rate |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Cortas** ($\le 7500$) | 236 | 0.8689 | **0.9099** | 0.9088 | **+0.0411** | [+0.0345, +0.0480] | **84.3%** |
+| **Largas** ($> 7500$) | 236 | 0.6967 | **0.7206** | 0.5906 | **+0.0239** | [+0.0156, +0.0322] | **67.8%** |
+
+*Hallazgo:* La debilidad de P10 frente al Z-Score en series cortas (0.869 vs 0.909) es corregida por P05 (0.910), mientras que en series largas P05 consolida una ventaja neta de +0.130 sobre el Z-Score y +0.024 sobre P10.
+
+### 3.3 Puertas de Sanidad Metodológica (G1–G4)
 
 | Puerta | Condición | Valor | Estado |
 | :---: | :--- | :---: | :---: |
-| **G1** | Random $\in [0.45, 0.55]$ | 0.502 | **OK** |
-| **G2** | Z-Score $\in [0.52, 0.66]$ | 0.750 | **FALLO** (fuera de rango; explicación post-hoc por población no aprobada) |
+| **G1** | Random $\in [0.45, 0.55]$ | 0.5025 | **APROBADA** |
+| **G2** | Z-Score $\in [0.52, 0.66]$ | 0.7497 | **FALLO (Registrado Formalmente)** |
 | **G3** | Paridad Z-Score vs referencia en Tuning | — | **APROBADA** (discrepancia 0.0000 < 0.01 contra `results/ZScore_Raw_tsb_results.csv`) |
-| **G4** | Cobertura pareada $\ge 80\%$ de las 472 | 100% | **OK** |
+| **G4** | Cobertura pareada $\ge 80\%$ de las 472 | 100% (472/472) | **APROBADA** |
 
 ### 3.4 Estado
 
-**ESTADO CONGELADO PARA VALIDACIÓN DEFINITIVA.** Se descarta cualquier claim definitivo basado en cifras provisionales. Se ejecuta el protocolo pre-registrado [evaluate_frozen_p05.py](evaluate_frozen_p05.py) con `decisive_ci: "both"` sobre las 472 series frescas intactas contra la base P10.
+**PROMOCIÓN CIENTÍFICA VALIDADA OUT-OF-SAMPLE.** Conforme al acta [`ACTA_PREREGISTRO_P05.md`](ACTA_PREREGISTRO_P05.md), P05 supera formalmente el criterio pre-registrado sin regresiones en métricas de precisión temporal. Se consolida el reporte en [`NOTA_TECNICA_FROZEN_P05.md`](NOTA_TECNICA_FROZEN_P05.md).
 
 ---
 

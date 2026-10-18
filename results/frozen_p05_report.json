@@ -1,0 +1,133 @@
+{
+  "prereg": {
+    "candidate": "P05",
+    "baseline": "P10",
+    "random": "random",
+    "zscore": "zscore",
+    "primary_metric": "auc_roc",
+    "guardrail_metrics": [
+      "auc_pr",
+      "vus_pr"
+    ],
+    "ci": 0.95,
+    "n_boot": 10000,
+    "boot_seed": 12345,
+    "g1_range": [
+      0.45,
+      0.55
+    ],
+    "g2_range": [
+      0.52,
+      0.66
+    ],
+    "g4_min_coverage": 0.8,
+    "n_expected_series": 472,
+    "noninferiority_margin": 0.01,
+    "decisive_ci": "both"
+  },
+  "excluded": {
+    "n": 0,
+    "ids": []
+  },
+  "G4_coverage": {
+    "n": 472,
+    "coverage": 1.0,
+    "pass": true
+  },
+  "G1_random": {
+    "mean_auc_roc": 0.5025188286103541,
+    "pass": true
+  },
+  "G2_zscore": {
+    "mean_auc_roc": 0.7497303610256764,
+    "pass": false,
+    "note": "registrar FALLO si queda fuera, aunque se explique después"
+  },
+  "paired": {
+    "auc_roc": {
+      "n": 472,
+      "mean_delta": 0.032494395674591295,
+      "ci": [
+        0.027254527033286898,
+        0.03793827158695278
+      ],
+      "ci_cluster_family": [
+        0.014347949811801477,
+        0.056362299554715875
+      ],
+      "win_rate": 0.760593220338983,
+      "ties": 17,
+      "noninferior_margin_ok": true
+    },
+    "auc_pr": {
+      "n": 472,
+      "mean_delta": 0.09303937023119695,
+      "ci": [
+        0.08101260614671138,
+        0.10566950147274853
+      ],
+      "ci_cluster_family": [
+        0.020741403752581454,
+        0.166518750681684
+      ],
+      "win_rate": 0.7097457627118644,
+      "ties": 24,
+      "noninferior_margin_ok": true
+    },
+    "vus_pr": {
+      "n": 472,
+      "mean_delta": 0.06867017483036833,
+      "ci": [
+        0.058296037079951284,
+        0.07936790385864306
+      ],
+      "ci_cluster_family": [
+        0.014458590388762339,
+        0.12297989268376801
+      ],
+      "win_rate": 0.6716101694915254,
+      "ties": 19,
+      "noninferior_margin_ok": true
+    }
+  },
+  "verdict": {
+    "decisive_ci": "both",
+    "primary_ci_lower_gt_0": true,
+    "guardrails": {
+      "auc_pr": true,
+      "vus_pr": true
+    },
+    "SUCCESS": true
+  },
+  "EXPLORATORY_short_long": {
+    "length_threshold_median": 7500.5,
+    "short": {
+      "n": 236,
+      "mean_delta": 0.04111438842092024,
+      "ci": [
+        0.034528512230529246,
+        0.04800205923329354
+      ],
+      "ci_cluster_family": [
+        0.04034333320904224,
+        0.04115569495012799
+      ],
+      "win_rate": 0.8432203389830508,
+      "ties": 17
+    },
+    "long": {
+      "n": 236,
+      "mean_delta": 0.023874402928262355,
+      "ci": [
+        0.015632302138163707,
+        0.032237843648084165
+      ],
+      "ci_cluster_family": [
+        0.00841603605734345,
+        0.16990494726897204
+      ],
+      "win_rate": 0.6779661016949152,
+      "ties": 0
+    }
+  }
+}
