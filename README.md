@@ -24,85 +24,85 @@ EchoStatePredictor (ESN-RLS, d=16, Nres=64, ρ=0.9, λ=0.999)
 
 ### 1.1 Ecuación Única del Pipeline (según implementación en código)
 
-1. **Estandarización causal rodante ($W_{\text{norm}} = 6400$):**
-   Con sumas rodantes $O(1)$ de los valores previos:
+**1. Estandarización causal rodante ($W_{\text{norm}} = 6400$):**  
+Con sumas rodantes $O(1)$ de los valores previos:
 
-   $$
-   z_t = \frac{x_t - \mu_{t-1}}{\sigma_{t-1}} \quad (\text{si } t < 2 \text{ o } \sigma \le 10^{-9}, \; z_t = 0.0)
-   $$
+$$
+z_t = \frac{x_t - \mu_{t-1}}{\sigma_{t-1}} \quad (\text{si } t < 2 \text{ o } \sigma \le 10^{-9}, \; z_t = 0.0)
+$$
 
-2. **Incrustación de Takens y Dinámica de Reconstrucción (ESN):**
-   El vector de retardos alimenta la recurrencia:
+**2. Incrustación de Takens y Dinámica de Reconstrucción (ESN):**  
+El vector de retardos alimenta la recurrencia:
 
-   $$
-   v_t = [z_t, z_{t-1}, \dots, z_{t-15}]^T \in \mathbb{R}^{16}
-   $$
+$$
+v_t = [z_t, z_{t-1}, \dots, z_{t-15}]^T \in \mathbb{R}^{16}
+$$
 
-   $$
-   h_t = \tanh(W_{\text{in}} v_t + W_{\text{res}} h_{t-1}) \in \mathbb{R}^{64}
-   $$
+$$
+h_t = \tanh(W_{\text{in}} v_t + W_{\text{res}} h_{t-1}) \in \mathbb{R}^{64}
+$$
 
-   *Hallazgo estructural (reconstrucción vs pronóstico):* $v_t$ incorpora a la observación contemporánea $z_t$ en la primera coordenada. Por tanto, el readout lineal $\hat{z}_t = w_{t-1}^T h_t$ actúa como un **detector de error de reconstrucción** sobre rasgos de una ventana que ya contiene el valor actual, no como un pronóstico $t+1$ a partir de estados estrictamente previos.
-   
-   El error cuadrático instantáneo se emite **antes** de actualizar el readout:
+*Hallazgo estructural (reconstrucción vs pronóstico):* $v_t$ incorpora a la observación contemporánea $z_t$ en la primera coordenada. Por tanto, el readout lineal $\hat{z}_t = w_{t-1}^T h_t$ actúa como un **detector de error de reconstrucción** sobre rasgos de una ventana que ya contiene el valor actual, no como un pronóstico $t+1$ a partir de estados estrictamente previos.
 
-   $$
-   e_t = (z_t - \hat{z}_t)^2
-   $$
+El error cuadrático instantáneo se emite **antes** de actualizar el readout:
 
-   Tras emitir el score, los pesos de salida $w$ se adaptan mediante Recursive Least Squares (RLS) con factor de olvido $\lambda = 0.999$:
+$$
+e_t = (z_t - \hat{z}_t)^2
+$$
 
-   $$
-   K_t = \frac{P_{t-1} h_t}{\lambda + h_t^T P_{t-1} h_t}, \quad w_t = w_{t-1} + K_t (z_t - \hat{z}_t), \quad P_t = \frac{P_{t-1} - K_t h_t^T P_{t-1}}{\lambda}
-   $$
+Tras emitir el score, los pesos de salida $w$ se adaptan mediante Recursive Least Squares (RLS) con factor de olvido $\lambda = 0.999$:
 
-3. **Calibración ECDF Causal ($W_{\text{cal}} = 16000$):**
-   Convierte el error no calibrado en percentil uniforme sobre la ventana FIFO de errores previos $W$:
+$$
+K_t = \frac{P_{t-1} h_t}{\lambda + h_t^T P_{t-1} h_t}, \quad w_t = w_{t-1} + K_t (z_t - \hat{z}_t), \quad P_t = \frac{P_{t-1} - K_t h_t^T P_{t-1}}{\lambda}
+$$
 
-   $$
-   p_t = \begin{cases} 
-   0.0 & \text{si } |W| < 288 \text{ o } e_t = 0.0 \\ 
-   \dfrac{\#\{i \in W : e_i < e_t\} + 0.5 \cdot \#\{i \in W : e_i = e_t\} + 0.5}{|W| + 1} & \text{si } |W| \ge 288 
-   \end{cases}
-   $$
+**3. Calibración ECDF Causal ($W_{\text{cal}} = 16000$):**  
+Convierte el error no calibrado en percentil uniforme sobre la ventana FIFO de errores previos $W$:
 
-4. **Supresión de No-Máximos Causal con Decaimiento Exponencial (PeakDecay):**
-   Conserva nuevas crestas locales en ventana $K = 24$ y amortigua réplicas con $\tau = 2.0$:
+$$
+p_t = \begin{cases} 
+0.0 & \text{si } |W| < 288 \text{ o } e_t = 0.0 \\ 
+\dfrac{|\{i \in W : e_i < e_t\}| + 0.5 \cdot |\{i \in W : e_i = e_t\}| + 0.5}{|W| + 1} & \text{si } |W| \ge 288 
+\end{cases}
+$$
 
-   $$
-   q_t = \begin{cases} 
-   p_t & \text{si } p_t > \max(p_{t-24 \dots t-1}) \quad (\text{actualiza } t^* = t) \\ 
-   p_t \cdot \exp\left(-\dfrac{t - t^*}{2.0}\right) & \text{en otro caso} 
-   \end{cases}
-   $$
+**4. Supresión de No-Máximos Causal con Decaimiento Exponencial (PeakDecay):**  
+Conserva nuevas crestas locales en ventana $K = 24$ y amortigua réplicas con $\tau = 2.0$:
 
-5. **Bypass Espacial de Ruptura de Rango (SpatialSpikeBypass):**
-   Mantiene cotas extremas causales $m_t = \min_{i < t} x_i$, $M_t = \max_{i < t} x_i$ y $R_t = M_t - m_t$:
+$$
+q_t = \begin{cases} 
+p_t & \text{si } p_t > \max(p_{t-24 \dots t-1}) \quad (\text{actualiza } t^* = t) \\ 
+p_t \cdot \exp\left(-\dfrac{t - t^*}{2.0}\right) & \text{en otro caso} 
+\end{cases}
+$$
 
-   $$
-   r_t = \begin{cases} 
-   1.0 & \text{si } t \ge 100, \; R_t > 10^{-12} \text{ y } (x_t < m_t - 0.05 R_t \text{ o } x_t > M_t + 0.05 R_t) \\ 
-   q_t & \text{en otro caso} 
-   \end{cases}
-   $$
+**5. Bypass Espacial de Ruptura de Rango (SpatialSpikeBypass):**  
+Mantiene cotas extremas causales $m_t = \min_{i < t} x_i$, $M_t = \max_{i < t} x_i$ y $R_t = M_t - m_t$:
 
-6. **Silenciador Refractario Post-Pico (RefractorySuppressor):**
-   Si el score alcanza el umbral de disparo $\ge 0.990$, silencia a $0.0$ durante $W_{\text{rest}} = 80$ pasos:
+$$
+r_t = \begin{cases} 
+1.0 & \text{si } t \ge 100, \; R_t > 10^{-12} \text{ y } (x_t < m_t - 0.05 R_t \text{ o } x_t > M_t + 0.05 R_t) \\ 
+q_t & \text{en otro caso} 
+\end{cases}
+$$
 
-   $$
-   S_t = \begin{cases} 
-   0.0 & \text{si } t < t_{\text{silencio}} \\ 
-   r_t & \text{en otro caso (si } r_t \ge 0.990, \text{ programa } t_{\text{silencio}} = t + 1 + 80) 
-   \end{cases}
-   $$
+**6. Silenciador Refractario Post-Pico (RefractorySuppressor):**  
+Si el score alcanza el umbral de disparo $\ge 0.990$, silencia a $0.0$ durante $W_{\text{rest}} = 80$ pasos:
 
-7. **Alerta y Optimización Global NAB:**
+$$
+S_t = \begin{cases} 
+0.0 & \text{si } t < t_{\text{silencio}} \\ 
+r_t & \text{en otro caso (si } r_t \ge 0.990, \text{ programa } t_{\text{silencio}} = t + 1 + 80) 
+\end{cases}
+$$
 
-   $$
-   \text{Alerta}_t = \mathbb{I}[S_t \ge \theta^*]
-   $$
+**7. Alerta y Optimización Global NAB:**
 
-   donde $\theta^*$ es el umbral escalar global optimizado en el corpus completo por el Sweeper oficial de NAB.
+$$
+\text{Alerta}_t = \mathbb{I}[S_t \ge \theta^*]
+$$
+
+donde $\theta^*$ es el umbral escalar global optimizado en el corpus completo por el Sweeper oficial de NAB.
 
 ### 1.2 Ecuación del Puntaje NAB (Score Oficial Standard)
 
