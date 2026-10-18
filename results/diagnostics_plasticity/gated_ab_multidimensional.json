@@ -1,0 +1,68 @@
+{
+  "PredictiveReadoutESN_Baseline": {
+    "variant": "PredictiveReadoutESN_Baseline",
+    "fidelity": {
+      "stat_mean_score": 0.00550713139075522,
+      "stat_p95_score": 0.01891231505427493,
+      "stat_false_alerts_gt_05": 0
+    },
+    "retention": {
+      "drift_tracking_mean_error": 0.015318835198134475,
+      "drift_max_score": 0.2630323975581944,
+      "drift_suppressed_ratio": 0.0
+    },
+    "recovery": {
+      "recovery_tail_steps_gt_3x_normal": 132,
+      "immediate_recovery_cycle_mean": 0.41738839177024767,
+      "max_recovery_peak": 2.2369993470008636,
+      "absorption_ratio": 0.954420197378808
+    },
+    "compute": {
+      "avg_latency_us_per_step": 178.1328
+    }
+  },
+  "GatedReadoutESN_Off (A/B Control)": {
+    "variant": "GatedReadoutESN_Off (A/B Control)",
+    "fidelity": {
+      "stat_mean_score": 0.00550713139075522,
+      "stat_p95_score": 0.01891231505427493,
+      "stat_false_alerts_gt_05": 0
+    },
+    "retention": {
+      "drift_tracking_mean_error": 0.015318835198134475,
+      "drift_max_score": 0.2630323975581944,
+      "drift_suppressed_ratio": 0.0
+    },
+    "recovery": {
+      "recovery_tail_steps_gt_3x_normal": 132,
+      "immediate_recovery_cycle_mean": 0.41738839177024767,
+      "max_recovery_peak": 2.2369993470008636,
+      "absorption_ratio": 0.954420197378808
+    },
+    "compute": {
+      "avg_latency_us_per_step": 186.24153333333334
+    }
+  },
+  "GatedReadoutESN_Active (Compuerta Prefrontal)": {
+    "variant": "GatedReadoutESN_Active (Compuerta Prefrontal)",
+    "fidelity": {
+      "stat_mean_score": 0.006093962044121129,
+      "stat_p95_score": 0.020377900196182266,
+      "stat_false_alerts_gt_05": 0
+    },
+    "retention": {
+      "drift_tracking_mean_error": 1.0579718491589503,
+      "drift_max_score": 7.9176000420512755,
+      "drift_suppressed_ratio": 0.3123425692695214
+    },
+    "recovery": {
+      "recovery_tail_steps_gt_3x_normal": 27,
+      "immediate_recovery_cycle_mean": 0.2458510171394499,
+      "max_recovery_peak": 2.510284968418613,
+      "absorption_ratio": 0.0
+    },
+    "compute": {
+      "avg_latency_us_per_step": 172.8237
+    }
+  }
+}

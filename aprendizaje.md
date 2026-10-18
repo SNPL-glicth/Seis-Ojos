@@ -109,7 +109,26 @@ Para aislar rigurosamente la contribución de cada componente de memoria sin or�
 
 ---
 
-## 6. Fronteras de Alcance y Cierre de la Línea
+## 6. Etapa 3: Evaluación A/B Multidimensional de Plasticidad Regulada
+
+Implementación de [`GatedReadoutESN`](src/sixeyes/experimental/gated_readout_esn.py) extendiendo directamente [`PredictiveReadoutESN`](src/sixeyes/experimental/predictive_readout_esn.py) mediante Template Method hooks (`_should_update_weights` y `_should_ingest_norm`), garantizando paridad A/B estricta.
+
+Resultados auditados del evaluador cuatridimensional ([`scripts/experiments/eval_gated_readout_ab.py`](scripts/experiments/eval_gated_readout_ab.py)):
+
+| Métrica / Dimensión | Línea Base Oficial (`PredictiveReadoutESN`) | Control A/B (`GatedReadoutESN_Off`) | Compuerta Prefrontal Activa (`GatedReadoutESN_Active`) | Conclusión / Trade-off |
+| :--- | :---: | :---: | :---: | :--- |
+| **Equivalencia A/B** | Referencia | **100.0% Idéntico bit a bit** | N/A | Paridad demostrada matemáticamente. |
+| **Fidelidad (Estacionario p95)** | 0.0189 | 0.0189 | **0.0203** | Cero falsas alarmas basales (>0.5). |
+| **Recuperación (Cola post-meseta)** | **132 pasos** | **132 pasos** | **27 pasos (reducción del 79.5%)** | La compuerta extingue la persistencia de falsas alarmas. |
+| **Retención (Error medio en deriva)** | **0.0153** | **0.0153** | **1.0579** (Supresión: **31.2%**) | **Hallazgo Crítico:** La compuerta binaria fija con $\sigma=3.0$ confunde rampas rápidas con anomalías y frena el 31% del aprendizaje legítimo. |
+| **Cómputo (Latencia por paso)** | 178.1 µs | 186.2 µs | **172.8 µs** | Overhead imperceptible (<8 µs), >5,000 pts/seg en tiempo real. |
+
+### Hallazgo Metodológico de la Etapa 3:
+La compuerta prefrontal binaria elimina el 80% de la cola de falsa alarma de recuperación, pero **evidencia el costo de la hipoplastia en derivas rápidas (suprime 31.2% de actualizaciones)**. Esto demuestra empíricamente que Six Eyes requiere evolucionar hacia la **Fase III: un controlador continuo de plasticidad** con tasa adaptativa proporcional a la persistencia de la señal, en lugar de un interruptor de todo o nada.
+
+---
+
+## 7. Fronteras de Alcance y Cierre de la Línea
 
 1. **Agotamiento del conjunto fresco:** Las 472 series de TSB-AD **ya no son frescas para P05**. Se prohíbe evaluar variantes subsiguientes de forma confirmatoria sobre este split. La línea experimental de P05 queda formalmente **CERRADA**.
 2. **Entorno específico:** Los resultados son válidos para **TSB-AD-U** con **semilla 42**.
