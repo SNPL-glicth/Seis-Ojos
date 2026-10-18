@@ -270,6 +270,36 @@ completo con artefacto y archivado por incumplirlo. Ningún número sin `results
   familia salvo modelo de segundo orden/jerárquico (otro proyecto). Artefactos
   `results/sixeyes_ste_s{42,7,99}.json`.
 
+### 3.6 Rama Periódica Residual (`PeriodicResidualDetector` + MaxFusion) — Empate dentro del ruido, no cumple el criterio de promoción (58.02 ± 2.40)
+
+- **Mecanismo intentado (`src/sixeyes/experimental/periodic_residual.py`):** rama
+  paralela que modela dependencia con lags autoperiódicos sobre el valor crudo,
+  calibrada causalmente (`PercentileCalibrator`, W=16000) y fusionada por máx con la
+  rama ESN cruda (`MaxFusion`). Cadena aguas abajo idéntica al baseline: PeakDecay
+  (K=24, τ=2), SpatialSpikeBypass, RefractorySuppressor (w=80, t=0.990).
+  Auditoría causal en `scripts/experiments/eval_periodic_nab.py`, 3 semillas pareadas
+  sobre `raw_esn`, `results/sixeyes_periodic_fusion_s{42,7,99}.json`.
+- **Resultado métrico (pareado por semilla contra su baseline correspondiente):**
+  s42 **61.16 (+0.35)** | s7 **55.34 (+0.67)** | s99 **57.55 (−0.03)** → **media 58.02
+  ± 2.40 vs 57.68 ± 3.08: diferencia media +0.33**. Contra el pareado multisemilla
+  (60.81 / 54.66 / 57.58), la fusión **empata dentro del ruido, no pierde**; pero
+  **no cumple el criterio pre-registrado** (media ≥ 60.68, ninguna semilla peor): la
+  media queda a −2.66 y ninguna semilla supera a su baseline de forma significativa.
+- **Causa raíz exacta (asimetría rescate/supresión):** en s42 no pierde ventanas
+  (4 ganadas: 3 artificiales + `ec2_cpu_utilization_53ea38`) pero la fusión por máx
+  **infla la tasa de activación upstream**, con coste puro de FPs reales:
+  376→402 (+26), KnownCause 71→87, `cpu_utilization_asg_misconfig` +16
+  (21→37, sin ventanas nuevas) → Delta FP total +45 contra Delta H +4
+  (cociente marginal 11.25, bajo el equilibrio ~17.01 solo porque el rescate se
+  concentra en ventanas baratas de artificiales). En s7/s99 el patrón invierte:
+  compuerta abierta en ~90% de las series desplaza el refractario y **suprime
+  ventanas valiosas** (nyc_taxi 7→2 TP, Twitter_volume_AAPL 9→6 TP,
+  `asg_misconfig` 10→9 TP con +19 FP). Sin compuerta selectiva por periodicidad
+  real (la rama abre en series apériodicas), el signo del intercambio depende de
+  la semilla. Archivada.
+
+**Falsaciones laterales que confirman el diagnóstico (no promocionan):**
+
 **Falsaciones laterales que confirman el diagnóstico (no promocionan):**
 multi-horizonte [1,3,6] 43.42 (ruido de base en h=3,6 domina la norma); likelihood
 L1/L2/L3+firmada 33.47/30.11/39.51/32.89 (likelihood corta-vs-larga no discrimina);
