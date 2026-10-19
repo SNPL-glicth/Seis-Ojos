@@ -1,0 +1,61 @@
+{
+  "n_series": 43,
+  "means_auc_roc": {
+    "P05": 0.7612,
+    "P05_FaseIII": 0.7583,
+    "P05_FaseV": 0.7647,
+    "P10": 0.7217
+  },
+  "means_vus_pr": {
+    "P05": 0.3389,
+    "P05_FaseIII": 0.3423,
+    "P05_FaseV": 0.3349,
+    "P10": 0.2908
+  },
+  "means_auc_pr": {
+    "P05": 0.3154,
+    "P05_FaseIII": 0.3205,
+    "P05_FaseV": 0.3173,
+    "P10": 0.2267
+  },
+  "P05_FaseV_vs_P05": {
+    "n_pareadas": 43,
+    "delta_auc_roc": 0.0036,
+    "ic95_auc_roc": [
+      -0.0092,
+      0.0217
+    ],
+    "win_rate_auc_roc": 0.512,
+    "delta_vus_pr": -0.004,
+    "ic95_vus_pr": [
+      -0.0156,
+      0.0098
+    ],
+    "delta_auc_pr": 0.0019,
+    "ic95_auc_pr": [
+      -0.0073,
+      0.0125
+    ],
+    "supera_p05": false
+  },
+  "P05_FaseIII_vs_P05": {
+    "n_pareadas": 42,
+    "delta_auc_roc": -0.0047,
+    "ic95_auc_roc": [
+      -0.0112,
+      0.0014
+    ],
+    "win_rate_auc_roc": 0.357,
+    "delta_vus_pr": -0.0045,
+    "ic95_vus_pr": [
+      -0.0133,
+      0.0042
+    ],
+    "delta_auc_pr": -0.0021,
+    "ic95_auc_pr": [
+      -0.0124,
+      0.0075
+    ],
+    "supera_p05": false
+  }
+}

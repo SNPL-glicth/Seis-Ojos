@@ -1,0 +1,23 @@
+{
+    "baseline_esn": {
+        "n_eval": 43,
+        "vus_pr_mean": 0.1499573262803332,
+        "auc_pr_mean": 0.10588861639591736,
+        "auc_roc_mean": 0.6432075173678727,
+        "time_det_mean": 5.319184114766675
+    },
+    "fase_iii_plasticity": {
+        "n_eval": 42,
+        "vus_pr_mean": 0.18692873382435943,
+        "auc_pr_mean": 0.18601103996418286,
+        "auc_roc_mean": 0.6376239598574842,
+        "time_det_mean": 12.263974320320855
+    },
+    "fase_v_regime_huber": {
+        "n_eval": 43,
+        "vus_pr_mean": 0.18635036217614057,
+        "auc_pr_mean": 0.18437610115575323,
+        "auc_roc_mean": 0.6563407232058852,
+        "time_det_mean": 13.93653080629748
+    }
+}

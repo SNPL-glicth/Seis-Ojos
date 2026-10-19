@@ -1,0 +1,10 @@
+{
+  "detector": "sixeyes_p05_titular_s42",
+  "scores": {
+    "standard": 51.686875951408304,
+    "reward_low_FP_rate": 36.379385777456264,
+    "reward_low_FN_rate": 62.24206375316442
+  },
+  "duracion_s": 151.82977843284607,
+  "delta_vs_titular": -9.123124048591698
+}
