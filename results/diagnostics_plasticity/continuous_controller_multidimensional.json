@@ -1,0 +1,618 @@
+{
+  "seeds": [
+    42,
+    7,
+    99,
+    123,
+    2024,
+    314,
+    555,
+    777,
+    888,
+    999
+  ],
+  "summary": {
+    "Baseline_PredictiveESN": {
+      "plateau_tail_steps": {
+        "mean": 88.7,
+        "std": 17.349639765712716,
+        "min": 64.0,
+        "max": 125.0
+      },
+      "plateau_absorption": {
+        "mean": 0.9782873436046351,
+        "std": 0.011612754039380929,
+        "min": 0.9532054988843175,
+        "max": 0.9927471365840379
+      },
+      "plateau_recup_peak": {
+        "mean": 4.248097125789888,
+        "std": 1.7218933228209266,
+        "min": 1.7586034319735357,
+        "max": 6.731029163200899
+      },
+      "drift_mean_error": {
+        "mean": 0.012935630341398996,
+        "std": 0.002718654318065552,
+        "min": 0.009002590421314767,
+        "max": 0.017893434622343864
+      },
+      "drift_max_error": {
+        "mean": 0.15262695326708592,
+        "std": 0.036075099294781525,
+        "min": 0.08420814613218217,
+        "max": 0.21042713176120695
+      },
+      "brownian_mean_error": {
+        "mean": 0.025131957181771032,
+        "std": 0.011511404766418253,
+        "min": 0.013918872690072246,
+        "max": 0.046982391961445845
+      },
+      "brownian_max_error": {
+        "mean": 0.5528332684815703,
+        "std": 0.41335873764788245,
+        "min": 0.23049034158548118,
+        "max": 1.6619857720904463
+      },
+      "spikes_p95": {
+        "mean": 0.15033183582443144,
+        "std": 0.03804945641151855,
+        "min": 0.07479515804021422,
+        "max": 0.2041350615359608
+      },
+      "latency_us": {
+        "mean": 317.4029966666667,
+        "std": 37.543332099917706,
+        "min": 273.39413333333334,
+        "max": 405.2869666666667
+      },
+      "p_min_eig": {
+        "mean": 3.5285831330221275e-05,
+        "std": 4.518449816171456e-06,
+        "min": 2.8711855248261168e-05,
+        "max": 4.321636313858568e-05
+      },
+      "p_max_cond": {
+        "mean": 41862.117686730315,
+        "std": 16047.31235938093,
+        "min": 18345.627788739203,
+        "max": 69547.25409699493
+      }
+    },
+    "Gated_BinaryControl": {
+      "plateau_tail_steps": {
+        "mean": 23.3,
+        "std": 5.040833264451424,
+        "min": 16.0,
+        "max": 35.0
+      },
+      "plateau_absorption": {
+        "mean": 0.05169915398501705,
+        "std": 0.09878364880467572,
+        "min": 0.0,
+        "max": 0.2612365457336632
+      },
+      "plateau_recup_peak": {
+        "mean": 2.8759001604149668,
+        "std": 0.46884622851637026,
+        "min": 1.8657780523800216,
+        "max": 3.544266528766207
+      },
+      "drift_mean_error": {
+        "mean": 0.3358889999265221,
+        "std": 0.37132229510273385,
+        "min": 0.01752955247128051,
+        "max": 1.1581870605613493
+      },
+      "drift_max_error": {
+        "mean": 3.015443194870496,
+        "std": 2.9888510123442793,
+        "min": 0.2664266627033174,
+        "max": 8.787072459103118
+      },
+      "brownian_mean_error": {
+        "mean": 10.760370362027851,
+        "std": 32.10650841020495,
+        "min": 0.01892003715808373,
+        "max": 107.07979519955563
+      },
+      "brownian_max_error": {
+        "mean": 35.4217199275358,
+        "std": 102.7934892075652,
+        "min": 0.2626153244382061,
+        "max": 343.7870908205135
+      },
+      "spikes_p95": {
+        "mean": 0.3368412450594522,
+        "std": 0.07661386643923271,
+        "min": 0.2439071859087813,
+        "max": 0.5256403757155041
+      },
+      "latency_us": {
+        "mean": 294.52929000000006,
+        "std": 40.52738185596951,
+        "min": 226.39415000000002,
+        "max": 385.44350000000003
+      },
+      "p_min_eig": {
+        "mean": 4.01921771934325e-05,
+        "std": 6.404233347655365e-06,
+        "min": 3.1883404663483474e-05,
+        "max": 5.6193992109646e-05
+      },
+      "p_max_cond": {
+        "mean": 41679.589131024615,
+        "std": 17764.337908772504,
+        "min": 27817.719056681228,
+        "max": 91770.18648466117
+      }
+    },
+    "Continuous_Controller": {
+      "plateau_tail_steps": {
+        "mean": 77.3,
+        "std": 17.832834883999798,
+        "min": 56.0,
+        "max": 116.0
+      },
+      "plateau_absorption": {
+        "mean": 0.9843866203037969,
+        "std": 0.007820701602849707,
+        "min": 0.969305625902434,
+        "max": 0.9957054639545171
+      },
+      "plateau_recup_peak": {
+        "mean": 2.8756100243832163,
+        "std": 1.072115653507791,
+        "min": 1.6732394268960658,
+        "max": 4.368188045501958
+      },
+      "drift_mean_error": {
+        "mean": 0.012939140192300358,
+        "std": 0.002719432573045644,
+        "min": 0.009005230688744908,
+        "max": 0.017898736891152366
+      },
+      "drift_max_error": {
+        "mean": 0.1526349112383477,
+        "std": 0.03606477238629393,
+        "min": 0.08423458861485372,
+        "max": 0.21047436817430024
+      },
+      "brownian_mean_error": {
+        "mean": 0.025141350739003678,
+        "std": 0.011527351727141678,
+        "min": 0.013937059814018733,
+        "max": 0.04705004327586295
+      },
+      "brownian_max_error": {
+        "mean": 0.5527049179433048,
+        "std": 0.41303663728409695,
+        "min": 0.23006897363193896,
+        "max": 1.660609608538989
+      },
+      "spikes_p95": {
+        "mean": 0.15414601084680146,
+        "std": 0.05195122357446998,
+        "min": 0.057162465516123875,
+        "max": 0.25220668129591095
+      },
+      "latency_us": {
+        "mean": 612.2352549999999,
+        "std": 61.30191102111249,
+        "min": 511.1138833333333,
+        "max": 676.3169666666668
+      },
+      "p_min_eig": {
+        "mean": 3.536762991226561e-05,
+        "std": 4.541045529428637e-06,
+        "min": 2.8760742906911233e-05,
+        "max": 4.33159156743174e-05
+      },
+      "p_max_cond": {
+        "mean": 42287.442422938526,
+        "std": 15158.080512449278,
+        "min": 21465.579884059563,
+        "max": 69134.4901467047
+      }
+    }
+  },
+  "runs": {
+    "Baseline_PredictiveESN": [
+      {
+        "plateau_tail_steps": 85,
+        "plateau_absorption": 0.9532054988843175,
+        "plateau_recup_peak": 2.2186606550239727,
+        "drift_mean_error": 0.016010707795206823,
+        "drift_max_error": 0.21042713176120695,
+        "brownian_mean_error": 0.046982391961445845,
+        "brownian_max_error": 0.8661079917900378,
+        "spikes_p95": 0.18264393043054794,
+        "latency_us": 282.9585333333333,
+        "p_min_eig": 3.694490496676521e-05,
+        "p_max_cond": 22520.041230688083
+      },
+      {
+        "plateau_tail_steps": 64,
+        "plateau_absorption": 0.9677551610665843,
+        "plateau_recup_peak": 4.42249873168539,
+        "drift_mean_error": 0.014568603783786875,
+        "drift_max_error": 0.15888542247839157,
+        "brownian_mean_error": 0.0158888173601348,
+        "brownian_max_error": 0.6156779171024714,
+        "spikes_p95": 0.15282100326250583,
+        "latency_us": 405.2869666666667,
+        "p_min_eig": 3.783872917307485e-05,
+        "p_max_cond": 49438.36671488088
+      },
+      {
+        "plateau_tail_steps": 89,
+        "plateau_absorption": 0.9786292237345567,
+        "plateau_recup_peak": 4.967399513098993,
+        "drift_mean_error": 0.010951488445740358,
+        "drift_max_error": 0.14562245935406418,
+        "brownian_mean_error": 0.020316225201752615,
+        "brownian_max_error": 0.34207323130148665,
+        "spikes_p95": 0.1696362516362756,
+        "latency_us": 333.8524666666667,
+        "p_min_eig": 2.9808843296470286e-05,
+        "p_max_cond": 60146.00717238465
+      },
+      {
+        "plateau_tail_steps": 99,
+        "plateau_absorption": 0.9659205682788438,
+        "plateau_recup_peak": 6.731029163200899,
+        "drift_mean_error": 0.013032790685679564,
+        "drift_max_error": 0.16265285450667297,
+        "brownian_mean_error": 0.01780361104685456,
+        "brownian_max_error": 0.4114276610115958,
+        "spikes_p95": 0.07479515804021422,
+        "latency_us": 297.453,
+        "p_min_eig": 4.100617490705291e-05,
+        "p_max_cond": 41316.11576698321
+      },
+      {
+        "plateau_tail_steps": 71,
+        "plateau_absorption": 0.9829964413932336,
+        "plateau_recup_peak": 2.70318674950149,
+        "drift_mean_error": 0.01286600713478061,
+        "drift_max_error": 0.10779960177991772,
+        "brownian_mean_error": 0.03982138482623193,
+        "brownian_max_error": 0.5103820842639207,
+        "spikes_p95": 0.15468691187051317,
+        "latency_us": 347.2885166666666,
+        "p_min_eig": 3.16431347627978e-05,
+        "p_max_cond": 26661.967844846364
+      },
+      {
+        "plateau_tail_steps": 103,
+        "plateau_absorption": 0.9823797545849745,
+        "plateau_recup_peak": 6.114309799807205,
+        "drift_mean_error": 0.017893434622343864,
+        "drift_max_error": 0.17174854734274708,
+        "brownian_mean_error": 0.018821804105398424,
+        "brownian_max_error": 0.28617178308246116,
+        "spikes_p95": 0.09617232853028952,
+        "latency_us": 332.41803333333337,
+        "p_min_eig": 3.51551682571454e-05,
+        "p_max_cond": 43162.8866503384
+      },
+      {
+        "plateau_tail_steps": 82,
+        "plateau_absorption": 0.9927471365840379,
+        "plateau_recup_peak": 1.7586034319735357,
+        "drift_mean_error": 0.009672843968517144,
+        "drift_max_error": 0.12701268080305073,
+        "brownian_mean_error": 0.013918872690072246,
+        "brownian_max_error": 0.3701520984197565,
+        "spikes_p95": 0.12644252745800474,
+        "latency_us": 316.7839,
+        "p_min_eig": 3.1953590043750036e-05,
+        "p_max_cond": 69547.25409699493
+      },
+      {
+        "plateau_tail_steps": 125,
+        "plateau_absorption": 0.9839270001715786,
+        "plateau_recup_peak": 4.682586802598738,
+        "drift_mean_error": 0.009002590421314767,
+        "drift_max_error": 0.08420814613218217,
+        "brownian_mean_error": 0.022629415027346854,
+        "brownian_max_error": 0.2338638041680456,
+        "spikes_p95": 0.1647694529502345,
+        "latency_us": 273.39413333333334,
+        "p_min_eig": 4.321636313858568e-05,
+        "p_max_cond": 18345.627788739203
+      },
+      {
+        "plateau_tail_steps": 98,
+        "plateau_absorption": 0.9874214561681938,
+        "plateau_recup_peak": 6.242353551150999,
+        "drift_mean_error": 0.014551189550392269,
+        "drift_max_error": 0.19284325545207914,
+        "brownian_mean_error": 0.03952436668997755,
+        "brownian_max_error": 1.6619857720904463,
+        "spikes_p95": 0.17721573252976833,
+        "latency_us": 302.2986333333333,
+        "p_min_eig": 2.8711855248261168e-05,
+        "p_max_cond": 54916.33040499156
+      },
+      {
+        "plateau_tail_steps": 71,
+        "plateau_absorption": 0.987891195180029,
+        "plateau_recup_peak": 2.6403428598576695,
+        "drift_mean_error": 0.01080664700622771,
+        "drift_max_error": 0.16506943306054675,
+        "brownian_mean_error": 0.015612682908495516,
+        "brownian_max_error": 0.23049034158548118,
+        "spikes_p95": 0.2041350615359608,
+        "latency_us": 282.2957833333333,
+        "p_min_eig": 3.6579549508309356e-05,
+        "p_max_cond": 32566.579196455892
+      }
+    ],
+    "Gated_BinaryControl": [
+      {
+        "plateau_tail_steps": 16,
+        "plateau_absorption": 0.0,
+        "plateau_recup_peak": 2.5057915216841495,
+        "drift_mean_error": 0.7629184238399513,
+        "drift_max_error": 6.553575285202417,
+        "brownian_mean_error": 0.15599497216376257,
+        "brownian_max_error": 3.7846502485854305,
+        "spikes_p95": 0.3763436490385952,
+        "latency_us": 291.6728166666667,
+        "p_min_eig": 4.160615764511611e-05,
+        "p_max_cond": 32662.083813418674
+      },
+      {
+        "plateau_tail_steps": 25,
+        "plateau_absorption": 0.0,
+        "plateau_recup_peak": 3.279955443680053,
+        "drift_mean_error": 0.025016263461999654,
+        "drift_max_error": 0.7404784007473567,
+        "brownian_mean_error": 0.01892003715808373,
+        "brownian_max_error": 0.6253416631080583,
+        "spikes_p95": 0.3371525544632332,
+        "latency_us": 308.52684999999997,
+        "p_min_eig": 3.7898664374537225e-05,
+        "p_max_cond": 50781.1862960439
+      },
+      {
+        "plateau_tail_steps": 23,
+        "plateau_absorption": 0.0021072809574623455,
+        "plateau_recup_peak": 3.256287874588971,
+        "drift_mean_error": 0.01752955247128051,
+        "drift_max_error": 0.5231108038203539,
+        "brownian_mean_error": 0.10283187175580218,
+        "brownian_max_error": 1.85007765052397,
+        "spikes_p95": 0.30740338530945577,
+        "latency_us": 250.88276666666667,
+        "p_min_eig": 3.742519401897518e-05,
+        "p_max_cond": 38127.78584534924
+      },
+      {
+        "plateau_tail_steps": 27,
+        "plateau_absorption": 0.0,
+        "plateau_recup_peak": 1.8657780523800216,
+        "drift_mean_error": 0.12803730625259668,
+        "drift_max_error": 1.07461381821504,
+        "brownian_mean_error": 0.020489458089778378,
+        "brownian_max_error": 0.42162501574193123,
+        "spikes_p95": 0.295937395933327,
+        "latency_us": 385.44350000000003,
+        "p_min_eig": 4.1248532028523534e-05,
+        "p_max_cond": 41919.83038297049
+      },
+      {
+        "plateau_tail_steps": 17,
+        "plateau_absorption": 0.0,
+        "plateau_recup_peak": 2.9349189868534356,
+        "drift_mean_error": 0.5854062063856109,
+        "drift_max_error": 6.484993896100379,
+        "brownian_mean_error": 0.048464336388247355,
+        "brownian_max_error": 0.5468003833805624,
+        "spikes_p95": 0.5256403757155041,
+        "latency_us": 318.9594333333333,
+        "p_min_eig": 3.3386533569422174e-05,
+        "p_max_cond": 33097.121619709185
+      },
+      {
+        "plateau_tail_steps": 23,
+        "plateau_absorption": 0.0,
+        "plateau_recup_peak": 2.541030062658135,
+        "drift_mean_error": 1.1581870605613493,
+        "drift_max_error": 8.787072459103118,
+        "brownian_mean_error": 0.11186808327445094,
+        "brownian_max_error": 1.5613290444703036,
+        "spikes_p95": 0.3628315878090584,
+        "latency_us": 226.39415000000002,
+        "p_min_eig": 3.905435403354419e-05,
+        "p_max_cond": 33784.77381090563
+      },
+      {
+        "plateau_tail_steps": 21,
+        "plateau_absorption": 0.2612365457336632,
+        "plateau_recup_peak": 3.0443472832266147,
+        "drift_mean_error": 0.15137912079074106,
+        "drift_max_error": 1.1188444236902755,
+        "brownian_mean_error": 0.021515255515944902,
+        "brownian_max_error": 1.1148448004668279,
+        "spikes_p95": 0.37168123172728973,
+        "latency_us": 293.1510333333333,
+        "p_min_eig": 3.1883404663483474e-05,
+        "p_max_cond": 91770.18648466117
+      },
+      {
+        "plateau_tail_steps": 35,
+        "plateau_absorption": 0.017524809730925562,
+        "plateau_recup_peak": 3.1593671008260573,
+        "drift_mean_error": 0.019271110229766374,
+        "drift_max_error": 0.2664266627033174,
+        "brownian_mean_error": 0.02447935594451879,
+        "brownian_max_error": 0.26282432412914913,
+        "spikes_p95": 0.2439071859087813,
+        "latency_us": 279.9051666666667,
+        "p_min_eig": 4.455956614743526e-05,
+        "p_max_cond": 27817.719056681228
+      },
+      {
+        "plateau_tail_steps": 24,
+        "plateau_absorption": 0.0,
+        "plateau_recup_peak": 2.627258749486025,
+        "drift_mean_error": 0.44215517909612323,
+        "drift_max_error": 3.7414302168022604,
+        "brownian_mean_error": 107.07979519955563,
+        "brownian_max_error": 343.7870908205135,
+        "spikes_p95": 0.28902704206852975,
+        "latency_us": 312.4173,
+        "p_min_eig": 5.6193992109646e-05,
+        "p_max_cond": 35024.21527079484
+      },
+      {
+        "plateau_tail_steps": 22,
+        "plateau_absorption": 0.23612290342811948,
+        "plateau_recup_peak": 3.544266528766207,
+        "drift_mean_error": 0.0689897761758021,
+        "drift_max_error": 0.8638859823204451,
+        "brownian_mean_error": 0.01934505043228975,
+        "brownian_max_error": 0.2626153244382061,
+        "spikes_p95": 0.2584880426207471,
+        "latency_us": 277.93988333333334,
+        "p_min_eig": 3.8665373343641785e-05,
+        "p_max_cond": 31810.98872971182
+      }
+    ],
+    "Continuous_Controller": [
+      {
+        "plateau_tail_steps": 63,
+        "plateau_absorption": 0.969305625902434,
+        "plateau_recup_peak": 1.7316277472522184,
+        "drift_mean_error": 0.016015533389765996,
+        "drift_max_error": 0.21047436817430024,
+        "brownian_mean_error": 0.04705004327586295,
+        "brownian_max_error": 0.8662948503194113,
+        "spikes_p95": 0.16551485381142672,
+        "latency_us": 648.9326833333333,
+        "p_min_eig": 3.707489659235219e-05,
+        "p_max_cond": 25254.559940475126
+      },
+      {
+        "plateau_tail_steps": 56,
+        "plateau_absorption": 0.9738025980221594,
+        "plateau_recup_peak": 3.3170261964834733,
+        "drift_mean_error": 0.014571728192215272,
+        "drift_max_error": 0.15881080870668043,
+        "brownian_mean_error": 0.015912678638481892,
+        "brownian_max_error": 0.6152608530348904,
+        "spikes_p95": 0.25220668129591095,
+        "latency_us": 667.4994666666666,
+        "p_min_eig": 3.790844320643407e-05,
+        "p_max_cond": 49142.54572981007
+      },
+      {
+        "plateau_tail_steps": 83,
+        "plateau_absorption": 0.9821679389895664,
+        "plateau_recup_peak": 4.368188045501958,
+        "drift_mean_error": 0.010953961836526865,
+        "drift_max_error": 0.14565139025022653,
+        "brownian_mean_error": 0.020331519782236823,
+        "brownian_max_error": 0.3418990010819574,
+        "spikes_p95": 0.17415560852186684,
+        "latency_us": 649.2078833333333,
+        "p_min_eig": 2.9855371647747107e-05,
+        "p_max_cond": 59926.06265272015
+      },
+      {
+        "plateau_tail_steps": 84,
+        "plateau_absorption": 0.9795287606875706,
+        "plateau_recup_peak": 3.808441075307929,
+        "drift_mean_error": 0.01303584755436981,
+        "drift_max_error": 0.16274941701031048,
+        "brownian_mean_error": 0.017697839595370007,
+        "brownian_max_error": 0.4127796311050206,
+        "spikes_p95": 0.057162465516123875,
+        "latency_us": 676.3169666666668,
+        "p_min_eig": 4.11123014728794e-05,
+        "p_max_cond": 41094.096245429035
+      },
+      {
+        "plateau_tail_steps": 60,
+        "plateau_absorption": 0.9865445375113553,
+        "plateau_recup_peak": 1.6732394268960658,
+        "drift_mean_error": 0.012870027281460054,
+        "drift_max_error": 0.10787038250607747,
+        "brownian_mean_error": 0.03983120861521014,
+        "brownian_max_error": 0.5105797336468296,
+        "spikes_p95": 0.18871831107432227,
+        "latency_us": 512.0039166666667,
+        "p_min_eig": 3.1686547392141686e-05,
+        "p_max_cond": 26812.553804266085
+      },
+      {
+        "plateau_tail_steps": 81,
+        "plateau_absorption": 0.9862544932584278,
+        "plateau_recup_peak": 3.771356789008969,
+        "drift_mean_error": 0.017898736891152366,
+        "drift_max_error": 0.1717111893270701,
+        "brownian_mean_error": 0.018853712171750962,
+        "brownian_max_error": 0.28595959372699387,
+        "spikes_p95": 0.09280404970292894,
+        "latency_us": 541.68205,
+        "p_min_eig": 3.52199727746482e-05,
+        "p_max_cond": 42977.582154523145
+      },
+      {
+        "plateau_tail_steps": 73,
+        "plateau_absorption": 0.9957054639545171,
+        "plateau_recup_peak": 1.718551805571744,
+        "drift_mean_error": 0.009674284070238312,
+        "drift_max_error": 0.12698893889406354,
+        "brownian_mean_error": 0.013937059814018733,
+        "brownian_max_error": 0.37013614704891906,
+        "spikes_p95": 0.15184187570878716,
+        "latency_us": 511.1138833333333,
+        "p_min_eig": 3.201844783350679e-05,
+        "p_max_cond": 69134.4901467047
+      },
+      {
+        "plateau_tail_steps": 116,
+        "plateau_absorption": 0.9896131518582093,
+        "plateau_recup_peak": 2.423936397832072,
+        "drift_mean_error": 0.009005230688744908,
+        "drift_max_error": 0.08423458861485372,
+        "brownian_mean_error": 0.02264187862821035,
+        "brownian_max_error": 0.23346078729809724,
+        "spikes_p95": 0.17647607462177547,
+        "latency_us": 652.8658666666666,
+        "p_min_eig": 4.33159156743174e-05,
+        "p_max_cond": 21465.579884059563
+      },
+      {
+        "plateau_tail_steps": 96,
+        "plateau_absorption": 0.9887373373191003,
+        "plateau_recup_peak": 4.213525040857011,
+        "drift_mean_error": 0.014554498244336259,
+        "drift_max_error": 0.19280729989767384,
+        "brownian_mean_error": 0.03953927827352475,
+        "brownian_max_error": 1.660609608538989,
+        "spikes_p95": 0.1126074473659734,
+        "latency_us": 625.3389166666666,
+        "p_min_eig": 2.8760742906911233e-05,
+        "p_max_cond": 54728.339883201144
+      },
+      {
+        "plateau_tail_steps": 61,
+        "plateau_absorption": 0.9922062955346269,
+        "plateau_recup_peak": 1.7302077191207204,
+        "drift_mean_error": 0.010811553774193725,
+        "drift_max_error": 0.1650507290022206,
+        "brownian_mean_error": 0.015618288595370143,
+        "brownian_max_error": 0.23006897363193896,
+        "spikes_p95": 0.16997274084889888,
+        "latency_us": 637.3909166666667,
+        "p_min_eig": 3.6723659621717985e-05,
+        "p_max_cond": 32338.613788196155
+      }
+    ]
+  }
+}

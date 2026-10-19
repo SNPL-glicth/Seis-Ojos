@@ -128,7 +128,28 @@ La compuerta prefrontal binaria elimina el 80% de la cola de falsa alarma de rec
 
 ---
 
-## 7. Fronteras de Alcance y Cierre de la Línea
+## 7. Fase III: Controlador Continuo de Plasticidad Cinemática y RLS Ponderado
+
+Implementación del controlador continuo en [`src/sixeyes/experimental/continuous_plasticity_controller.py`](src/sixeyes/experimental/continuous_plasticity_controller.py) y del paso RLS ponderado formal con Sherman-Morrison en [`src/sixeyes/experimental/weighted_rls.py`](src/sixeyes/experimental/weighted_rls.py).
+
+Batería rigurosa de **10 semillas independientes** (`[42, 7, 99, 123, 2024, 314, 555, 777, 888, 999]`) sobre 4 regímenes fuera de distribución ([`scripts/experiments/eval_continuous_plasticity_ab.py`](scripts/experiments/eval_continuous_plasticity_ab.py)), con resultados consolidados en [`results/diagnostics_plasticity/continuous_controller_multidimensional.json`](results/diagnostics_plasticity/continuous_controller_multidimensional.json):
+
+| Dimensión / Régimen | Baseline Oficial (`PredictiveReadoutESN`) | Control Binario (`GatedReadoutESN`) | Candidato Continuo (`ContinuousPlasticityController`) | Conclusión Científica |
+| :--- | :---: | :---: | :---: | :--- |
+| **Retención en Deriva (Rampa)** | **0.0129 ± 0.0027** | 0.3359 ± 0.3713 *(Colapso)* | **0.0129 ± 0.0027** | **Cero Hipoplastia:** El controlador continuo sigue la rampa con idéntica precisión que la línea base sin frenar el aprendizaje. |
+| **Caminata Browniana (No estacionaria)** | **0.0251 ± 0.0115** | 10.7604 ± 32.1065 *(Inestabilidad)* | **0.0251 ± 0.0115** | **Robustez Estocástica:** La compuerta binaria desestabiliza series sin periodicidad; el continuo mantiene estabilidad idéntica al baseline. |
+| **Recuperación tras Meseta (Cola)** | 88.7 ± 17.3 pasos | **23.3 ± 5.0 pasos** | **77.3 ± 17.8 pasos** | **Confirmación Teórica del Suelo Adaptativo ($q_t \le \eta_t \le 1$):** Durante una meseta muy prolongada, $q_t$ acumula sesgo y reactiva parcialmente la plasticidad. |
+| **Sanidad Espectral de $P_t$ ($\lambda_{\min}$)** | $3.53 \times 10^{-5}$ | $4.02 \times 10^{-5}$ | **$3.54 \times 10^{-5}$** | **Estabilidad Numérica Probada:** $P_t$ permanece estrictamente definida positiva en el 100% de los pasos en las 10 semillas. |
+| **Número de Condición $\kappa(P_t)$** | $4.19 \times 10^4$ | $4.17 \times 10^4$ | **$4.23 \times 10^4$** | Condicionamiento acotado e indistinguible del RLS estándar. |
+| **Cómputo (Latencia por paso)** | 317.4 ± 37.5 µs | 294.5 ± 40.5 µs | **612.2 ± 61.3 µs** | Overhead de ~290 µs debido a la ventana móvil de MAD, perfectamente viable en tiempo real (>1,600 pts/seg). |
+
+### Conclusión Epistemológica de la Fase III:
+1. **Éxito en Adaptación sin Hipoplastia:** El controlador cinemático resuelve por completo el defecto de la compuerta binaria en derivas y procesos estocásticos (error idéntico al baseline).
+2. **La Paradoja de la Meseta Sostenida:** La cota analítica demostrada ($q_t \le \eta_t \le 1$) protege el modelo ante shocks breves, pero ante anomalías arbitrariamente largas reactiva gradualmente la plasticidad al interpretar la persistencia como nuevo régimen normal. Esto delimita formalmente la frontera entre una política adaptativa local y la necesidad de memoria episódica o contextual externa.
+
+---
+
+## 8. Fronteras de Alcance y Cierre de la Línea
 
 1. **Agotamiento del conjunto fresco:** Las 472 series de TSB-AD **ya no son frescas para P05**. Se prohíbe evaluar variantes subsiguientes de forma confirmatoria sobre este split. La línea experimental de P05 queda formalmente **CERRADA**.
 2. **Entorno específico:** Los resultados son válidos para **TSB-AD-U** con **semilla 42**.
