@@ -1,0 +1,68 @@
+{
+  "WindowedMAD (Base Fase III)": {
+    "latency": {
+      "p50_us": 128.1,
+      "p95_us": 305.2,
+      "p99_us": 1937.1080000000015,
+      "mean_us": 221.05350199999998,
+      "max_us": 119530.2
+    },
+    "outlier_test": {
+      "nominal_scale": 0.04575478552563518,
+      "scale_post_outlier_t101": 0.13363488897063147,
+      "inflation_ratio_t101": 2.920675672182081,
+      "scale_post_outlier_t110": 0.13206742399938198,
+      "inflation_ratio_t110": 2.886417726193649,
+      "is_immune_to_single_outlier": false
+    },
+    "shock_test": {
+      "v_shock_t500": 26.194767764658984,
+      "scale_s_t500": 0.12371868025726264,
+      "false_alarm_count_clean": 0
+    }
+  },
+  "StreamingEWMA (Recursivo L1)": {
+    "latency": {
+      "p50_us": 1.1,
+      "p95_us": 2.6,
+      "p99_us": 3.2,
+      "mean_us": 1.5440379999999998,
+      "max_us": 2297.8
+    },
+    "outlier_test": {
+      "nominal_scale": 0.04475334057077183,
+      "scale_post_outlier_t101": 0.2118305108034095,
+      "inflation_ratio_t101": 4.733289361236084,
+      "scale_post_outlier_t110": 0.19849088620620475,
+      "inflation_ratio_t110": 4.435219442274173,
+      "is_immune_to_single_outlier": false
+    },
+    "shock_test": {
+      "v_shock_t500": 14.63092393304337,
+      "scale_s_t500": 0.2215022176535219,
+      "false_alarm_count_clean": 0
+    }
+  },
+  "StreamingHuber (Recursivo Robust)": {
+    "latency": {
+      "p50_us": 1.0,
+      "p95_us": 2.7,
+      "p99_us": 3.4,
+      "mean_us": 1.9346140000000003,
+      "max_us": 4918.6
+    },
+    "outlier_test": {
+      "nominal_scale": 0.04508553118233688,
+      "scale_post_outlier_t101": 0.044471658765312436,
+      "inflation_ratio_t101": 0.9863842700545815,
+      "scale_post_outlier_t110": 0.044371798942191246,
+      "inflation_ratio_t110": 0.9841693727138507,
+      "is_immune_to_single_outlier": true
+    },
+    "shock_test": {
+      "v_shock_t500": 26.360001647059807,
+      "scale_s_t500": 0.12294316748840461,
+      "false_alarm_count_clean": 0
+    }
+  }
+}

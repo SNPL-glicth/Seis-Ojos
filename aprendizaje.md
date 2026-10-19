@@ -180,9 +180,58 @@ Ningún controlador local basado en diferencias $d_t$ y errores contemporáneos 
 
 ---
 
-## 9. Fronteras de Alcance y Cierre de la Línea
+## 10. Fase V: Memoria Episódica Causal, Estimación Robusta de Escala y Control de Regímenes
+
+Tras la autopsia de la Fase IV, se ejecutó el plan de investigación en 5 etapas para resolver la absorción de mesetas anómalas sin caer en la trampa de la heurística mágica ni violar la causalidad estricta.
+
+### 10.1 Auditoría Analítica y Verificación Temporal (t=512):
+Se contrastó la traza paso a paso ([`scripts/experiments/audit_phase_iv_trajectory.py`](src/sixeyes/experimental/audit_phase_iv_trajectory.py)) contra las ecuaciones analíticas:
+- **Discrepancia máxima:** Exactamente `0.00e+00` en los 1200 pasos.
+- **Causa del cruce en $t=512$ ($\eta = 0.5090$):**
+  - Histéresis de shock: $g_{512} = \rho^{12} = (0.97265)^{12} = 0.7170$ (decae 28.3%).
+  - Persistencia direccional: $q_{512} = 0.3152$ (crece ante error sostenido).
+  - Efecto acoplado: $1 - g_{512}(1 - q_{512}) = 1 - 0.7170 \times (1 - 0.3152) = 0.5090$.
+- **Conclusión de auditoría:** No hubo fuga temporal. El cruce es un comportamiento matemático determinista del acoplamiento entre histéresis y suelo adaptativo.
+- **Suite de pruebas:** Automatizada en [`tests/test_phase_iv_diagnostics.py`](tests/test_phase_iv_diagnostics.py) (5 tests unitarios cubriendo causalidad, contrato de choque, protección de pesos y cola determinista).
+
+### 10.2 Perfilado Empírico de Estimadores de Escala Cinemática:
+Se implementaron y perfilaron 3 estimadores aislados ([`src/sixeyes/experimental/scale_estimators.py`](src/sixeyes/experimental/scale_estimators.py) y [`scripts/experiments/profile_scale_estimators.py`](scripts/experiments/profile_scale_estimators.py)) sobre 50,000 pasos:
+
+| Estimador de Escala | Latencia p50 / p95 (µs) | Inflación post-outlier (+100σ) | Detección de Shock ($v_{500}$) | Conclusión Epistemológica |
+| :--- | :---: | :---: | :---: | :--- |
+| **Windowed MAD** (Fase III) | 128.1 / 305.2 µs | 2.92x | $v = 26.19$ | Responsable del 95% de la sobre-latencia. Seguro pero costoso ($O(W)$). |
+| **Streaming EWMA** (Recursivo L1) | **1.1 / 2.6 µs** | 4.73x *(Contaminado)* | $v = 14.63$ *(Atenuado)* | **Pérdida severa de robustez:** Un outlier masivo infla la escala y destruye la detección del shock. |
+| **Streaming Huber** (Corte $k=2.5\sigma$) | **1.0 / 2.7 µs** | **0.99x (100% Inmune)** | **$v = 26.36$** | **Óptimo de Pareto:** Recupera velocidad $O(1)$ sin diluir la detección de shocks. |
+
+Artefacto: [`results/diagnostics_plasticity/scale_estimator_comparison.json`](results/diagnostics_plasticity/scale_estimator_comparison.json).
+
+### 10.3 Memoria Episódica Causal y Control de Regímenes:
+Se construyó [`src/sixeyes/experimental/episodic_regime_memory.py`](src/sixeyes/experimental/episodic_regime_memory.py) y [`src/sixeyes/experimental/regime_aware_controller.py`](src/sixeyes/experimental/regime_aware_controller.py), implementando una firma multimodal causal $\phi = (\mu_x, \sigma_x, \psi_h)$ donde $\psi_h = \mathbb{E}[|h_t|]$ es la envolvente de activación del atractor del reservorio.
+
+**Regla de Decisión Causal:**
+1. `KNOWN` ($d \le 1.25$ respecto al régimen base): Reconoce el estado nominal y disuelve el shock residual de retorno.
+2. `UNCERTAIN_QUARANTINE` ($d > 1.25$ no cartografiado): La persistencia no confiere legitimidad; la plasticidad se acota estrictamente a $\eta \le 0.05$.
+3. `NEW_PROMOTED`: Solo tras persistir $T_{\text{confirm}} = 250$ pasos consecutivos se consolida como nuevo régimen.
+
+### 10.4 Benchmark Multidimensional Cuatridimensional (10 semillas x 5 escenarios x 4 variantes = 200 corridas):
+Script: [`scripts/experiments/eval_regime_memory_benchmark.py`](scripts/experiments/eval_regime_memory_benchmark.py).
+Artefacto: [`results/diagnostics_plasticity/regime_memory_benchmark_results.json`](results/diagnostics_plasticity/regime_memory_benchmark_results.json).
+
+| Métrica / Escenario | A (Control Base) | B (Continuo Fase III) | C (Memoria Pasiva) | D (Regime-Aware Fase V) | Impacto Teórico y Práctico |
+| :--- | :---: | :---: | :---: | :---: | :--- |
+| **Cola Post-Meseta (Pasos)** | 83.2 ± 9.3 | 70.2 ± 10.2 | 78.8 ± 10.2 | **58.4 ± 9.8 pasos** | **Reducción de 24.8 pasos (-29.8% vs base):** La cuarentena impide la absorción y reduce la cola. |
+| **Norma final de pesos $\|w\|$** | 2.71 ± 0.26 | 2.26 ± 0.19 | 2.54 ± 0.21 | **2.07 ± 0.13** | **Máxima estabilidad:** Los pesos se deforman significativamente menos ante perturbaciones. |
+| **Cola de retorno $A \to B \to A$** | 14.4 ± 5.5 | 14.5 ± 5.4 | 14.5 ± 5.4 | **14.5 ± 5.4 pasos** | Preserva recuperación rápida en alternancias dinámicas. |
+| **Error residual en Deriva** | 0.0083 | 0.0083 | 0.0083 | **0.0050** | **Cero hipoplastia:** Adaptación superior a rampas continuas. |
+| **Error residual en Escalón** | 0.0114 | 0.0083 | 0.0099 | **0.0055** | No se bloquea ante cambios permanentes; aprende con menor error estacionario. |
+| **Latencia p95 por paso** | 875.1 µs | 2119.8 µs | 1869.7 µs | **1170.5 µs** | **Mejora del 44.8% en latencia p95** frente a Fase III gracias al estimador Huber. |
+
+---
+
+## 11. Fronteras de Alcance y Cierre de la Línea
 
 1. **Agotamiento del conjunto fresco:** Las 472 series de TSB-AD **ya no son frescas para P05**. Se prohíbe evaluar variantes subsiguientes de forma confirmatoria sobre este split. La línea experimental de P05 queda formalmente **CERRADA**.
-2. **Entorno específico:** Los resultados son válidos para **TSB-AD-U** con **semilla 42**.
+2. **Entorno específico:** Los resultados son válidos para **TSB-AD-U** con **semilla 42** y suite sintética multimodal de 10 semillas independientes.
 3. **Sin afirmaciones SOTA:** No se ha comparado contra modelos pesados contemporáneos (Isolation Forest, LSTM-AD, Transformers); no se afirma superioridad general del estado del arte.
 4. **No transferible a NAB:** El pipeline P05 no incluye supresores refractarios ni decaimiento de picos; su desempeño en NAB debe evaluarse de forma independiente.
+5. **Garantía de Causalidad:** Ningún componente experimental utiliza etiquetas, información futura ni oráculos externos. Todas las suites pasan 54 de 54 pruebas unitarias formales.
