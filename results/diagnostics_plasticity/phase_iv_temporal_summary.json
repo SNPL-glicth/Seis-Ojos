@@ -1,0 +1,32 @@
+{
+  "anomaly_window": [
+    500,
+    700
+  ],
+  "step_shock_onset_t500": {
+    "shock_v": 26.194767764658984,
+    "initial_gain_eta": 0.044895851059568614,
+    "initial_persistence_q": 0.044895851059501765
+  },
+  "plasticity_reactivation_steps": {
+    "step_eta_gt_0p2": 504,
+    "steps_protected_under_0p2": 4,
+    "step_eta_gt_0p5": 512,
+    "steps_protected_under_0p5": 12,
+    "step_eta_gt_0p8": 539,
+    "steps_protected_under_0p8": 39
+  },
+  "weight_norms_fc": {
+    "norm_at_onset_t500": 1.195155592447016,
+    "norm_at_end_t700_base": 3.1664461178113656,
+    "norm_at_end_t700_ctrl": 2.6426341556977406,
+    "relative_distortion_ctrl_vs_base": 0.7342796734556364
+  },
+  "return_recovery_tail": {
+    "tail_steps_base": 85,
+    "tail_steps_ctrl": 63,
+    "tail_reduction_percent": 25.882352941176475,
+    "shock_v_at_return_t700": 27.81597314903456,
+    "gain_eta_at_return_t700": 0.009671113243268525
+  }
+}

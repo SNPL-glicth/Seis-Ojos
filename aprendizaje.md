@@ -149,7 +149,38 @@ Batería rigurosa de **10 semillas independientes** (`[42, 7, 99, 123, 2024, 314
 
 ---
 
-## 8. Fronteras de Alcance y Cierre de la Línea
+## 8. Fase IV: Diagnóstico Temporal Fino, Autopsia de Latencia y la Transición a Memoria Contextual
+
+Se ejecutó una instrumentación temporal paso a paso ([`scripts/experiments/diag_phase_iv_temporal_trajectory.py`](scripts/experiments/diag_phase_iv_temporal_trajectory.py)) para registrar con precisión de reloj la cinemática de $v_t$, $q_t$, $\eta_t$ y la evolución de los pesos $w_t$ durante una meseta de 200 pasos ($t \in [500, 700)$) y su retorno.
+
+Artefactos auditables generados:
+- Traza completa paso a paso: [`results/diagnostics_plasticity/phase_iv_temporal_trajectory.csv`](results/diagnostics_plasticity/phase_iv_temporal_trajectory.csv)
+- Resumen temporal: [`results/diagnostics_plasticity/phase_iv_temporal_summary.json`](results/diagnostics_plasticity/phase_iv_temporal_summary.json)
+
+### 8.1 Hallazgos Cuantitativos del Diagnóstico Temporal:
+1. **Protección Inicial Inmediata en $t=500$:**
+   El shock cinemático salta a $v_{500} = 26.19$, forzando a la ganancia a caer a $\eta_{500} = 0.0449$ (**95.5% de protección plástica en el paso 0**).
+2. **Duración de la Ventana de Protección Efectiva:**
+   Dura exactamente **12 pasos** ($t \in [500, 512)$).
+   En $t=512$, el integrador de persistencia direccional $q_t$ acumula errores consistentes y cruza el umbral $0.50$.
+   Debido a la cota analítica demostrada ($q_t \le \eta_t \le 1$), $\eta_t$ es forzada a subir a $\eta > 0.50$ en $t=512$ y a $\eta > 0.80$ en $t=526$.
+3. **Deformación de Pesos RLS:**
+   Durante los primeros 12 pasos, los pesos permanecen intactos. Durante los 188 pasos restantes de la meseta, el modelo interpreta que la persistencia es un cambio legítimo y adapta sus pesos con $\eta \approx 0.85$.
+   En $t=700$, la distorsión relativa de $\|w_{\text{fc}}\|$ respecto al baseline es del **73.4%** ($2.64$ vs $3.17$).
+4. **Shock de Retorno en $t=700$:**
+   Al retornar a la normalidad, se produce un nuevo shock cinemático inverso ($v_{700} = 27.82$), reduciendo de nuevo la ganancia a $\eta_{700} = 0.0097$ (**99.0% de protección inmediata**).
+   La cola residual se reduce de 85 pasos (baseline) a 63 pasos (controlador).
+
+### 8.2 Autopsia de Latencia:
+- El incremento de latencia de **317.4 µs a 612.2 µs/paso** proviene en un 95% del cálculo de $\text{MAD}$ mediante `np.median` repetido sobre el deque en cada paso.
+- **Ruta de optimización:** Sustituir la doble mediana de numpy por un estimador recursivo streaming $O(1)$ (desviación absoluta media EWMA) para recuperar la latencia basal (<350 µs/paso).
+
+### 8.3 Conclusión Epistemológica Central:
+Ningún controlador local basado en diferencias $d_t$ y errores contemporáneos $e_t$ puede distinguir una anomalía arbitrariamente prolongada de una rampa legítima sin información contextual. Si la anomalía persiste más allá del horizonte del integrador (~15 pasos), el suelo adaptativo forzosamente reactiva el aprendizaje. Para resolver la paradoja se requiere una **memoria episódica / control de régimen superior**.
+
+---
+
+## 9. Fronteras de Alcance y Cierre de la Línea
 
 1. **Agotamiento del conjunto fresco:** Las 472 series de TSB-AD **ya no son frescas para P05**. Se prohíbe evaluar variantes subsiguientes de forma confirmatoria sobre este split. La línea experimental de P05 queda formalmente **CERRADA**.
 2. **Entorno específico:** Los resultados son válidos para **TSB-AD-U** con **semilla 42**.
