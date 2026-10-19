@@ -80,13 +80,15 @@ class StreamingEWMAEstimator:
             self._s = max(abs(d), 1e-4)
             return self._s
 
-        # Error respecto a media móvil
+        # Escala previa estrictamente antes del incremento d_t (causalidad temporal)
+        s_prior = max(self._s, 1e-6 * max(1.0, abs(prev_x)))
+
         err = d - self._mu
-        # Actualización de media y escala L1
+        # Actualización de media y escala L1 para el siguiente paso t+1
         self._mu += self.alpha * err
         abs_err = abs(err)
         self._s = (1.0 - self.alpha) * self._s + self.alpha * (abs_err * NORMAL_MEAN_DEV_TO_SIGMA)
-        return max(self._s, 1e-6 * max(1.0, abs(prev_x)))
+        return s_prior
 
     def reset(self) -> None:
         self._mu = 0.0
@@ -113,9 +115,12 @@ class StreamingHuberEstimator:
             self._s = max(abs(d), 1e-4)
             return self._s
 
+        # Escala previa estrictamente antes del incremento d_t (causalidad temporal)
+        s_prior = max(self._s, 1e-6 * max(1.0, abs(prev_x)))
+
         err = d - self._mu
         limit = self.clip_sigmas * self._s
-        # Recorte robusto de Huber para que outliers masivos no contaminen s_t
+        # Recorte robusto de Huber para que outliers masivos no contaminen s_{t+1}
         clipped_err = max(-limit, min(limit, err))
         self._mu += self.alpha * clipped_err
         
@@ -123,7 +128,7 @@ class StreamingHuberEstimator:
         # Factor de corrección asintótica de Huber para k=2.5
         huber_scale_factor = 1.28
         self._s = (1.0 - self.alpha) * self._s + self.alpha * (abs_clipped * huber_scale_factor)
-        return max(self._s, 1e-6 * max(1.0, abs(prev_x)))
+        return s_prior
 
     def reset(self) -> None:
         self._mu = 0.0

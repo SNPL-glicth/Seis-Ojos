@@ -113,7 +113,9 @@ class RegimeAwarePlasticityController(ContinuousPlasticityController):
         self, score: float, z: float, pred_rec: float, pred_fc: float
     ) -> bool:
         # Llamar a la lógica base de ContinuousPlasticityController
-        super()._should_update_weights(score, z, pred_rec, pred_fc)
+        base_decision = super()._should_update_weights(score, z, pred_rec, pred_fc)
+        if not base_decision:
+            return False
 
         if not self.enable_controller or not self.enable_memory:
             return True
@@ -162,12 +164,18 @@ class RegimeAwarePlasticityController(ContinuousPlasticityController):
             eta_modulated = min(current_eta, self.quarantine_cap)
             self._last["eta"] = eta_modulated
             self._set_eta(eta_modulated)
-        elif status == "KNOWN" and best_id == 0:
-            # Regreso al régimen base nominal conocido: acelerar recuperación
-            if self._g > 0.5 and dist <= 1.0:
-                # Si todavía hay shock residual de retorno pero el atractor es idéntico a Casa,
-                # disolver shock residual
-                self._g *= 0.5
+        elif status == "AMBIGUOUS_BORDER":
+            # Franja de histéresis: amortiguación conservadora sin reiniciar ni acelerar
+            eta_modulated = min(current_eta, max(self.quarantine_cap, 0.25))
+            self._last["eta"] = eta_modulated
+            self._set_eta(eta_modulated)
+        elif status in ("KNOWN", "STABLE_PROMOTED"):
+            # Régimen conocido o nuevo régimen con estabilidad demostrada
+            if status == "KNOWN" and best_id == 0:
+                if self._g > 0.5 and dist <= 1.0:
+                    self._g *= 0.5
+            # Preserva la adaptación plena del controlador
+            self._set_eta(current_eta)
 
         return True
 
