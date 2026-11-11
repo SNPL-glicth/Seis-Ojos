@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://relic.dev/schemas/curriculum_level.json",
+  "title": "RELIC_Curriculum_Level_V2",
+  "description": "Especificación declarativa de niveles de aprendizaje para el Sandbox Curricular de RELIC, con evaluación estadística calibrada.",
+  "type": "object",
+  "required": [
+    "level_id",
+    "level_index",
+    "name",
+    "domain",
+    "is_holdout",
+    "mastery_criteria",
+    "regression_evaluation_spec",
+    "allowed_operations",
+    "generator_parameters",
+    "oracle_spec"
+  ],
+  "properties": {
+    "level_id": {
+      "type": "string",
+      "pattern": "^L[0-9]{2}_[a-z0-9_]+$"
+    },
+    "level_index": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "domain": {
+      "type": "string",
+      "enum": ["inventory", "abstract_math", "spatial_graph", "software_dependency", "relational_order", "rule_string"]
+    },
+    "is_holdout": {
+      "type": "boolean",
+      "description": "Si es true, este nivel nunca es accesible durante entrenamiento del agente; se reserva exclusivamente para evaluación congelada."
+    },
+    "prerequisites": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "allowed_operations": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "generator_parameters": {
+      "type": "object",
+      "required": ["max_depth", "entity_pool_size", "noise_rate_pct", "ambiguity_rate_pct"],
+      "properties": {
+        "max_depth": { "type": "integer", "minimum": 1, "maximum": 16 },
+        "entity_pool_size": { "type": "integer", "minimum": 2 },
+        "noise_rate_pct": { "type": "number", "minimum": 0, "maximum": 100 },
+        "ambiguity_rate_pct": { "type": "number", "minimum": 0, "maximum": 100 },
+        "allow_negative_numbers": { "type": "boolean" },
+        "allow_decimal_numbers": { "type": "boolean" }
+      }
+    },
+    "mastery_criteria": {
+      "type": "object",
+      "required": ["window_episodes", "min_wilson_lower_bound_95", "min_accuracy_pct", "max_confident_hallucination_pct"],
+      "properties": {
+        "window_episodes": { "type": "integer", "minimum": 40, "maximum": 500, "description": "Ventana fija de evaluación de maestría (e.g. N = 60)." },
+        "min_wilson_lower_bound_95": { "type": "number", "minimum": 0.5, "maximum": 1.0, "description": "Límite inferior de Wilson calibrado (e.g. 0.80 para N=60 requiere >= 53/60 aciertos)." },
+        "min_accuracy_pct": { "type": "number", "minimum": 50.0, "maximum": 100.0 },
+        "max_confident_hallucination_pct": { "type": "number", "minimum": 0.0, "maximum": 5.0 }
+      }
+    },
+    "regression_evaluation_spec": {
+      "type": "object",
+      "required": ["fixed_eval_bank_size_per_prior_level", "prior_level_min_wilson_lower_bound"],
+      "properties": {
+        "fixed_eval_bank_size_per_prior_level": {
+          "type": "integer",
+          "minimum": 30,
+          "description": "Tamaño del banco fijo de regresión por cada nivel previo superado (e.g. N = 40 casos por nivel)."
+        },
+        "prior_level_min_wilson_lower_bound": {
+          "type": "number",
+          "minimum": 0.70,
+          "maximum": 0.95,
+          "description": "Límite inferior de Wilson exigido en el banco fijo (e.g. 0.80 en N=40 requiere >= 38/40 aciertos)."
+        }
+      }
+    },
+    "oracle_spec": {
+      "type": "object",
+      "required": ["verifier_engine", "timeout_ms"],
+      "properties": {
+        "verifier_engine": {
+          "type": "string",
+          "enum": ["relic_core::arithmetic", "relic_core::reasoning_bfs", "relic_core::relational_graph", "relic_core::rule_catalog"]
+        },
+        "timeout_ms": { "type": "integer", "minimum": 10, "maximum": 1000 }
+      }
+    }
+  }
+}

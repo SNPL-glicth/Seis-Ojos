@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://relic.dev/schemas/sandbox_event.json",
+  "title": "RELIC_Sandbox_Event_V1",
+  "description": "Esquema versionado de eventos de telemetría y ejecución en tiempo real del Sandbox y el Motor RELIC.",
+  "type": "object",
+  "required": [
+    "event_id",
+    "schema_version",
+    "timestamp_utc",
+    "episode_id",
+    "step_index",
+    "event_type",
+    "payload"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "Identificador único ordenable temporalmente (UUIDv7 o prefijo timestamp-secuencial)."
+    },
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "timestamp_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "episode_id": {
+      "type": "string"
+    },
+    "step_index": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "level_id": {
+      "type": "string"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "EPISODE_STARTED",
+        "OBSERVATION_EMITTED",
+        "RIR_PROPOSED",
+        "VERIFIER_EVALUATED",
+        "REWARD_CALCULATED",
+        "MEMORY_READ",
+        "MEMORY_WRITTEN",
+        "EPISTEMIC_ABSTENTION",
+        "LEVEL_TRANSITION",
+        "EPISODE_COMPLETED"
+      ]
+    },
+    "payload": {
+      "type": "object"
+    },
+    "system_telemetry": {
+      "type": "object",
+      "properties": {
+        "latency_ms": { "type": "number", "minimum": 0 },
+        "rss_memory_mb": { "type": "number", "minimum": 0 },
+        "cpu_usage_pct": { "type": "number", "minimum": 0, "maximum": 100 }
+      }
+    }
+  }
+}

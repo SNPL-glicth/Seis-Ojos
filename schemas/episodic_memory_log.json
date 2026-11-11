@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://relic.dev/schemas/episodic_memory_log.json",
+  "title": "RELIC_Episodic_Memory_Entry_V2",
+  "description": "Formato de línea individual (JSONL) para la bitácora inmutable de sólo-añadir (Append-Only Log) con Hash-Chaining y autenticación HMAC-SHA256.",
+  "type": "object",
+  "required": [
+    "entry_id",
+    "timestamp_utc",
+    "prev_hash_sha256",
+    "fact_type",
+    "provenance",
+    "confidence",
+    "epistemic_status",
+    "entry_hash_sha256",
+    "hmac_sha256"
+  ],
+  "properties": {
+    "entry_id": {
+      "type": "string",
+      "description": "Identificador único temporalmente ordenable (UUIDv7)."
+    },
+    "timestamp_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "prev_hash_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "Hash SHA-256 de la línea anterior para garantizar inmutabilidad en cadena (hash-chaining). Para el bloque génesis, '0000...0000'."
+    },
+    "fact_type": {
+      "type": "string",
+      "enum": ["DIRECTED_EDGE", "ATTRIBUTE_VALUE", "TEMPORAL_SEQUENCE", "INVALIDATION_MARKER"]
+    },
+    "subject": {
+      "type": "string"
+    },
+    "predicate": {
+      "type": "string"
+    },
+    "object": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "unit": { "type": "string" },
+        "quantity": { "type": "number" },
+        "domain": { "type": "string" }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["source_kind", "source_ref"],
+      "properties": {
+        "source_kind": {
+          "type": "string",
+          "enum": ["VERIFIED_ORACLE", "GROUND_TRUTH_DATASET", "AGENT_INFERENCE_UNCONFIRMED", "OPERATOR_OVERRIDE"]
+        },
+        "source_ref": { "type": "string" },
+        "episode_id": { "type": "string" },
+        "level_id": { "type": "string" }
+      }
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "epistemic_status": {
+      "type": "string",
+      "enum": ["CONFIRMED_FACT", "PROVISIONAL_HYPOTHESIS", "CONTRADICTED_ARCHIVED", "QUARANTINED"]
+    },
+    "supersedes_entry_id": {
+      "type": ["string", "null"],
+      "description": "Si este hecho invalida o actualiza uno anterior, ID del registro superado."
+    },
+    "entry_hash_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "Hash SHA-256 del contenido canónico de la entrada concatenado con prev_hash_sha256."
+    },
+    "hmac_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "Firma de autenticación HMAC-SHA256 computada con la clave privada simétrica del proceso confiable de RELIC."
+    }
+  }
+}
